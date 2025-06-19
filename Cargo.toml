@@ -1,0 +1,10 @@
+[workspace]
+members = [
+    "pearl_calculator_core",
+]
+resolver = "3"
+
+[workspace.package]
+version = "0.1.0"
+authors = ["MliroLirrorsIngenuity admin@lolicon.best"]
+edition = "2024"
