@@ -1,16 +1,18 @@
+use std::marker::PhantomData;
+
 use crate::physics::aabb::aabb_box::AABBBox;
-use crate::physics::constants::constants::{
-    PEARL_DRAG_MULTIPLIER, PEARL_GRAVITY_ACCELERATION, PEARL_HEIGHT, PEARL_RADIUS,
-};
-use crate::physics::entities::entities::{EntityData, EntityTrait};
+use crate::physics::constants::constants::{PEARL_HEIGHT, PEARL_RADIUS};
+use crate::physics::entities::entities::EntityData;
+use crate::physics::entities::movement::PearlMovement;
 use crate::physics::world::space::Space3D;
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct PearlEntity {
+pub struct PearlEntity<M: PearlMovement> {
     pub data: EntityData,
+    _movement: PhantomData<M>,
 }
 
-impl PearlEntity {
+impl<M: PearlMovement> PearlEntity<M> {
     pub fn new(position: Space3D, motion: Space3D) -> Self {
         let bounding_box = AABBBox::new(
             position.x - PEARL_RADIUS,
@@ -23,16 +25,9 @@ impl PearlEntity {
         let mut data = EntityData::new(position, motion, bounding_box);
         data.is_gravity = true;
 
-        Self { data }
-    }
-}
-
-impl EntityTrait for PearlEntity {
-    fn tick(&mut self) {
-        if self.data.is_gravity {
-            self.data.motion.y -= PEARL_GRAVITY_ACCELERATION;
+        Self {
+            data,
+            _movement: PhantomData,
         }
-
-        self.data.motion *= PEARL_DRAG_MULTIPLIER;
     }
 }

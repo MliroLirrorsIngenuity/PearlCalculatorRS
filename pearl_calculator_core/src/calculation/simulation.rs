@@ -5,7 +5,9 @@ use crate::physics::constants::constants::{
     FLOAT_PRECISION_EPSILON, PEARL_EXPLOSION_Y_FACTOR, PEARL_HEIGHT, TNT_ENTITY_Y_OFFSET,
     TNT_EXPLOSION_RADIUS,
 };
-use crate::physics::entities::entities::EntityTrait;
+use crate::physics::entities::movement::{
+    MovementLegacy, MovementPost1212, PearlMovement, PearlVersion,
+};
 use crate::physics::entities::pearl_entities::PearlEntity;
 use crate::physics::entities::tnt_entities::TNTEntity;
 use crate::physics::world::space::Space3D;
@@ -16,8 +18,27 @@ pub fn run(
     destination: Option<Space3D>,
     max_ticks: u32,
     world_collisions: &[AABBBox],
+    offset: Option<Space3D>,
+    version: PearlVersion,
 ) -> Option<CalculationResult> {
-    let mut pearl = PearlEntity::new(data.pearl_position, data.pearl_motion);
+    match version {
+        PearlVersion::Legacy => {
+            run_internal::<MovementLegacy>(data, destination, max_ticks, world_collisions, offset)
+        }
+        PearlVersion::Post1212 => {
+            run_internal::<MovementPost1212>(data, destination, max_ticks, world_collisions, offset)
+        }
+    }
+}
+
+fn run_internal<M: PearlMovement + Clone>(
+    data: &GeneralData,
+    destination: Option<Space3D>,
+    max_ticks: u32,
+    world_collisions: &[AABBBox],
+    offset: Option<Space3D>,
+) -> Option<CalculationResult> {
+    let mut pearl = PearlEntity::<M>::new(data.pearl_position, data.pearl_motion);
     let mut tnt_entities: Vec<TNTEntity> = data
         .tnt_charges
         .iter()
@@ -34,14 +55,7 @@ pub fn run(
             }
         }
 
-        pearl.data.move_entity(
-            pearl.data.motion.x,
-            pearl.data.motion.y,
-            pearl.data.motion.z,
-            world_collisions,
-        );
-
-        pearl.tick();
+        M::run_tick_sequence(&mut pearl, world_collisions);
 
         traces.push_back(pearl.data.position);
     }
@@ -59,9 +73,21 @@ pub fn run(
     let mut final_traces: Vec<Space3D> = traces.into_iter().collect();
     final_traces.dedup();
 
+    let (final_landing_pos_with_offset, final_traces_with_offset) = match offset {
+        Some(offset_vec) => {
+            let final_pos = final_landing_pos + offset_vec;
+            let final_traces = final_traces
+                .into_iter()
+                .map(|pos| pos + offset_vec)
+                .collect();
+            (final_pos, final_traces)
+        }
+        None => (final_landing_pos, final_traces),
+    };
+
     Some(CalculationResult {
-        landing_position: final_landing_pos,
-        pearl_trace: final_traces,
+        landing_position: final_landing_pos_with_offset,
+        pearl_trace: final_traces_with_offset,
         is_successful: is_success,
         tick: max_ticks,
         final_motion: pearl.data.motion,

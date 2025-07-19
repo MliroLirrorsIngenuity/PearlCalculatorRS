@@ -2,6 +2,7 @@ use crate::calculation::inputs::{Cannon, GeneralData};
 use crate::calculation::results::{CalculationResult, TNTResult};
 use crate::calculation::simulation;
 use crate::physics::constants::constants::{FLOAT_PRECISION_EPSILON, PEARL_DRAG_MULTIPLIER};
+use crate::physics::entities::movement::PearlVersion;
 use crate::physics::world::direction::Direction;
 use crate::physics::world::layout_direction::LayoutDirection;
 use crate::physics::world::space::Space3D;
@@ -12,6 +13,7 @@ pub fn calculate_tnt_amount(
     max_tnt: u32,
     max_ticks: u32,
     max_distance: f64,
+    version: PearlVersion,
 ) -> Vec<TNTResult> {
     let mut results = Vec::new();
 
@@ -40,7 +42,11 @@ pub fn calculate_tnt_amount(
 
     let mut divider = 0.0;
     for tick in 1..=max_ticks {
-        divider += PEARL_DRAG_MULTIPLIER.powi((tick - 1) as i32);
+        let tick_exponent = match version {
+            PearlVersion::Post1212 => tick,
+            PearlVersion::Legacy => tick - 1,
+        };
+        divider += PEARL_DRAG_MULTIPLIER.powi(tick_exponent as i32);
 
         let ideal_red = (true_red / divider).round() as i32;
         let ideal_blue = (true_blue / divider).round() as i32;
@@ -58,7 +64,7 @@ pub fn calculate_tnt_amount(
                 }
 
                 let data = GeneralData {
-                    pearl_position: pearl_start_pos,
+                    pearl_position: cannon.pearl.position,
                     pearl_motion: {
                         let mut motion = cannon.pearl.motion;
                         motion += red_tnt_vec * (current_red as f64);
@@ -68,7 +74,14 @@ pub fn calculate_tnt_amount(
                     tnt_charges: vec![],
                 };
 
-                if let Some(sim_result) = simulation::run(&data, Some(destination), tick, &[]) {
+                if let Some(sim_result) = simulation::run(
+                    &data,
+                    Some(destination),
+                    tick,
+                    &[],
+                    Some(cannon.pearl.offset),
+                    version,
+                ) {
                     let landing_pos = sim_result.landing_position;
                     if (landing_pos.x - destination.x).abs() <= max_distance
                         && (landing_pos.z - destination.z).abs() <= max_distance
@@ -97,18 +110,26 @@ pub fn calculate_pearl_trace(
     direction: Direction,
     max_ticks: u32,
     world_collisions: &[crate::physics::aabb::aabb_box::AABBBox],
+    version: PearlVersion,
 ) -> Option<CalculationResult> {
     let (red_tnt_vec, blue_tnt_vec) = calculate_tnt_vectors(cannon, direction)?;
 
     let total_tnt_motion = (red_tnt_vec * red_tnt as f64) + (blue_tnt_vec * blue_tnt as f64);
 
     let general_data = GeneralData {
-        pearl_position: cannon.pearl.position + cannon.pearl.offset,
+        pearl_position: cannon.pearl.position,
         pearl_motion: cannon.pearl.motion + total_tnt_motion,
         tnt_charges: vec![],
     };
 
-    simulation::run(&general_data, None, max_ticks, world_collisions)
+    simulation::run(
+        &general_data,
+        None,
+        max_ticks,
+        world_collisions,
+        Some(cannon.pearl.offset),
+        version,
+    )
 }
 
 fn calculate_tnt_vectors(cannon: &Cannon, direction: Direction) -> Option<(Space3D, Space3D)> {
