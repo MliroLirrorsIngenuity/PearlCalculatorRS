@@ -83,9 +83,7 @@ pub fn calculate_tnt_amount(
                     version,
                 ) {
                     let landing_pos = sim_result.landing_position;
-                    if (landing_pos.x - destination.x).abs() <= max_distance
-                        && (landing_pos.z - destination.z).abs() <= max_distance
-                    {
+                    if landing_pos.distance_2d(&destination) <= max_distance {
                         results.push(TNTResult {
                             distance: sim_result.distance,
                             tick,
