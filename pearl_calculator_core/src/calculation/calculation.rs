@@ -92,6 +92,7 @@ pub fn calculate_tnt_amount(
                             total: (current_red + current_blue) as u32,
                             pearl_end_pos: sim_result.landing_position,
                             pearl_end_motion: sim_result.final_motion,
+                            direction: flight_direction,
                         });
                     }
                 }

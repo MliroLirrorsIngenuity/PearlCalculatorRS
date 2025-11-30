@@ -1,6 +1,7 @@
 use crate::physics::world::space::Space3D;
+use crate::physics::world::direction::Direction;
 
-#[derive(Debug, Clone, Copy, PartialEq, Default)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct TNTResult {
     pub distance: f64,
     pub tick: u32,
@@ -9,6 +10,7 @@ pub struct TNTResult {
     pub total: u32,
     pub pearl_end_pos: Space3D,
     pub pearl_end_motion: Space3D,
+    pub direction: Direction,
 }
 
 #[derive(Debug, Clone, PartialEq)]
