@@ -58,8 +58,8 @@ jobs:
       - name: Sync Version from Tag
         shell: bash
         run: |
-          VERSION=${GITHUB_REF#refs/tags/v}
-          echo "Syncing version to: $VERSION"
+          FULL_VERSION=${GITHUB_REF#refs/tags/v}
+          VERSION=${FULL_VERSION%%-*}
 
           cd pearl_calculator_ui
           pnpm version $VERSION --no-git-tag-version --allow-same-version
@@ -69,8 +69,14 @@ jobs:
           tmp=$(mktemp)
           jq --arg v "$VERSION" '.version = $v' "$TAURI_CONF" > "$tmp" && mv "$tmp" "$TAURI_CONF"
 
-          sed -i '0,/^version = .*/s//version = "'$VERSION'"/' Cargo.toml
-          sed -i '0,/^version = .*/s//version = "'$VERSION'"/' pearl_calculator_ui/src-tauri/Cargo.toml
+          if [ -f "Cargo.toml" ]; then
+            sed "s/^version = .*/version = \"$VERSION\"/" Cargo.toml > Cargo.toml.tmp && mv Cargo.toml.tmp Cargo.toml
+          fi
+
+          TARGET_TOML="pearl_calculator_ui/src-tauri/Cargo.toml"
+          if [ -f "$TARGET_TOML" ]; then
+            sed "s/^version = .*/version = \"$VERSION\"/" "$TARGET_TOML" > "$TARGET_TOML.tmp" && mv "$TARGET_TOML.tmp" "$TARGET_TOML"
+          fi
 
       - name: Generate Release Body
         shell: bash
