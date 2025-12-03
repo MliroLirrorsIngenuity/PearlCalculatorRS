@@ -1,6 +1,7 @@
 [workspace]
 members = [
     "pearl_calculator_core",
+    "pearl_calculator_ui/src-tauri"
 ]
 resolver = "3"
 
@@ -8,3 +9,13 @@ resolver = "3"
 version = "0.1.0"
 authors = ["MliroLirrorsIngenuity admin@lolicon.best"]
 edition = "2024"
+
+[workspace.dependencies]
+serde = { version = "1.0", features = ["derive"] }
+
+[profile.release]
+panic = "abort"
+codegen-units = 1
+lto = true
+opt-level = "z"
+strip = true

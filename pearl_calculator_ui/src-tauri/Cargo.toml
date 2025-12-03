@@ -1,0 +1,24 @@
+[package]
+name = "pearl-calculator-rs"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+
+[lib]
+name = "pearl_calculator_rs_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+tauri-plugin-opener = "2"
+tauri-plugin-dialog = "2.4.2"
+tauri-plugin-fs = "2"
+
+serde_json = "1"
+
+serde = { workspace = true }
+
+pearl_calculator_core = { path = "../../pearl_calculator_core", version = "0.1.0" }
