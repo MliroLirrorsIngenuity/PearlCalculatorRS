@@ -124,7 +124,7 @@ jobs:
           releaseName: 'Pearl Calculator RS ${{ github.ref_name }}'
           releaseBody: ${{ env.RELEASE_BODY }}
           releaseDraft: true
-          prerelease: false
+          prerelease: ${{ contains(github.ref_name, 'beta') }}
           projectPath: ./pearl_calculator_ui
           args: ${{ matrix.args }}
 
