@@ -46,6 +46,7 @@ jobs:
         with:
           node-version: 22
           cache: 'pnpm'
+          cache-dependency-path: pearl_calculator_ui/pnpm-lock.yaml
 
       - name: Install Frontend Dependencies
         working-directory: pearl_calculator_ui
