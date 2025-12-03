@@ -69,14 +69,20 @@ jobs:
           tmp=$(mktemp)
           jq --arg v "$VERSION" '.version = $v' "$TAURI_CONF" > "$tmp" && mv "$tmp" "$TAURI_CONF"
 
-          if [ -f "Cargo.toml" ]; then
-            sed "s/^version = .*/version = \"$VERSION\"/" Cargo.toml > Cargo.toml.tmp && mv Cargo.toml.tmp Cargo.toml
-          fi
+          update_cargo_toml() {
+            local file=$1
+            if [ -f "$file" ]; then
+              echo "Updating $file to version $VERSION"
+              sed "s/^version = .*/version = \"$VERSION\"/" "$file" > "$file.tmp" && mv "$file.tmp" "$file"
+            else
+              echo "$file not found"
+            fi
+          }
 
-          TARGET_TOML="pearl_calculator_ui/src-tauri/Cargo.toml"
-          if [ -f "$TARGET_TOML" ]; then
-            sed "s/^version = .*/version = \"$VERSION\"/" "$TARGET_TOML" > "$TARGET_TOML.tmp" && mv "$TARGET_TOML.tmp" "$TARGET_TOML"
-          fi
+          update_cargo_toml "Cargo.toml"
+          update_cargo_toml "pearl_calculator_ui/src-tauri/Cargo.toml"
+
+          update_cargo_toml "pearl_calculator_core/Cargo.toml"
 
       - name: Generate Release Body
         shell: bash
@@ -99,11 +105,6 @@ jobs:
             echo ""
             echo "$CHANGELOG"
             echo ""
-            echo "## Contributors"
-            echo ""
-            echo "$CONTRIBUTORS"
-            echo ""
-            echo "---"
             echo "EOF"
           } >> "$GITHUB_ENV"
 
@@ -143,7 +144,7 @@ jobs:
           TAG_NAME: ${{ github.ref_name }}
         run: |
           VERSION=${GITHUB_REF#refs/tags/v}
-          EXE_NAME="Pearl Calculator RS.exe"
+          EXE_NAME="pearl-calculator-rs.exe"
           UPLOAD_NAME="Pearl-Calculator-RS_${VERSION}_Portable.exe"
           TARGET_DIR="target/release"
           
