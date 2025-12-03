@@ -1,0 +1,150 @@
+name: Release
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  call-test-workflow:
+    name: Run Tests
+    uses: ./.github/workflows/build & test.yml
+
+  publish-tauri:
+    needs: call-test-workflow
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            args: ""
+          - os: macos-latest
+            args: ""
+          - os: windows-latest
+            args: ""
+
+    runs-on: ${{ matrix.os }}
+    name: Build & Release (${{ matrix.os }})
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install dependencies (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev build-essential curl wget file libssl-dev libgtk-3-dev libayatana-appindicator3-dev librsvg2-dev
+
+      - uses: pnpm/action-setup@v3
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+
+      - name: Install Frontend Dependencies
+        working-directory: pearl_calculator_ui
+        run: pnpm install
+
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Sync Version from Tag
+        shell: bash
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          echo "Syncing version to: $VERSION"
+
+          cd pearl_calculator_ui
+          pnpm version $VERSION --no-git-tag-version --allow-same-version
+          cd ..
+
+          TAURI_CONF="pearl_calculator_ui/src-tauri/tauri.conf.json"
+          tmp=$(mktemp)
+          jq --arg v "$VERSION" '.version = $v' "$TAURI_CONF" > "$tmp" && mv "$tmp" "$TAURI_CONF"
+
+          sed -i '0,/^version = .*/s//version = "'$VERSION'"/' Cargo.toml
+          sed -i '0,/^version = .*/s//version = "'$VERSION'"/' pearl_calculator_ui/src-tauri/Cargo.toml
+
+      - name: Generate Release Body
+        shell: bash
+        run: |
+          CURRENT_TAG=${GITHUB_REF#refs/tags/}
+          PREV_TAG=$(git describe --tags --abbrev=0 --exclude="$CURRENT_TAG" HEAD^ 2>/dev/null || echo "")
+
+          if [ -z "$PREV_TAG" ]; then
+            RANGE="HEAD"
+          else
+            RANGE="$PREV_TAG..HEAD"
+          fi
+
+          CHANGELOG=$(git log $RANGE --no-merges --pretty=format:"* [\`%h\`](http://github.com/${{ github.repository }}/commit/%H) - %s by @%an")
+          CONTRIBUTORS=$(git log $RANGE --pretty=format:"@%an" | sort -u | sed 's/^/* /')
+
+          {
+            echo "RELEASE_BODY<<EOF"
+            echo "## What's Changed"
+            echo ""
+            echo "$CHANGELOG"
+            echo ""
+            echo "## Contributors"
+            echo ""
+            echo "$CONTRIBUTORS"
+            echo ""
+            echo "---"
+            echo "EOF"
+          } >> "$GITHUB_ENV"
+
+      - name: Restore Icon
+        working-directory: pearl_calculator_ui
+        shell: bash
+        env:
+          ICON_URL: ${{ secrets.ICON_URL }}
+        run: |
+          curl -L "$ICON_URL" -o temp-icon.png --create-dirs --fail
+          
+          if [ -s temp-icon.png ]; then
+          echo "✅ Icon downloaded. Generating platform specific icons..."
+          pnpm tauri icon temp-icon.png
+          else
+          echo "⚠️ Icon download failed or file is empty. Skipping icon restoration."
+          fi
+
+      - uses: tauri-apps/tauri-action@v0
+        id: tauri-build
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: ${{ github.ref_name }}
+          releaseName: 'Pearl Calculator RS ${{ github.ref_name }}'
+          releaseBody: ${{ env.RELEASE_BODY }}
+          releaseDraft: true
+          prerelease: false
+          projectPath: ./pearl_calculator_ui
+          args: ${{ matrix.args }}
+
+      - name: Upload Windows Portable EXE
+        if: runner.os == 'Windows'
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG_NAME: ${{ github.ref_name }}
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          EXE_NAME="Pearl Calculator RS.exe"
+          UPLOAD_NAME="Pearl-Calculator-RS_${VERSION}_Portable.exe"
+          TARGET_DIR="target/release"
+          
+          if [ -f "$TARGET_DIR/$EXE_NAME" ]; then
+            cd "$TARGET_DIR"
+            mv "$EXE_NAME" "$UPLOAD_NAME"
+            gh release upload "$TAG_NAME" "$UPLOAD_NAME" --clobber
+          else
+            echo "❌ Error: Could not find executable!"
+            exit 1
+          fi
