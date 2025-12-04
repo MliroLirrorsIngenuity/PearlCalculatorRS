@@ -97,15 +97,36 @@ jobs:
             RANGE="$PREV_TAG..HEAD"
           fi
 
-          CHANGELOG=$(git log $RANGE --no-merges --pretty=format:"* [\`%h\`](http://github.com/${{ github.repository }}/commit/%H) - %s by @%an")
-          CONTRIBUTORS=$(git log $RANGE --pretty=format:"@%an" | sort -u | sed 's/^/* /')
+          LOG_FORMAT="* [\`%h\`](http://github.com/${{ github.repository }}/commit/%H) - %s by @%an"
+
+          FEAT_LOG=$(git log $RANGE --no-merges --grep="^feat" -i --pretty=format:"$LOG_FORMAT")
+
+          FIX_LOG=$(git log $RANGE --no-merges --grep="^fix" -i --pretty=format:"$LOG_FORMAT")
+
+          OTHER_LOG=$(git log $RANGE --no-merges --invert-grep --grep="^feat" --grep="^fix" -i --pretty=format:"$LOG_FORMAT")
 
           {
             echo "RELEASE_BODY<<EOF"
             echo "## What's Changed"
             echo ""
-            echo "$CHANGELOG"
-            echo ""
+          
+            if [ -n "$FEAT_LOG" ]; then
+              echo "### ✨ New Features"
+              echo "$FEAT_LOG"
+              echo ""
+            fi
+          
+            if [ -n "$FIX_LOG" ]; then
+              echo "### 🐛 Bug Fixes"
+              echo "$FIX_LOG"
+              echo ""
+            fi
+          
+            if [ -n "$OTHER_LOG" ]; then
+              echo "### 🛠 Other Changes"
+              echo "$OTHER_LOG"
+            fi
+          
             echo "EOF"
           } >> "$GITHUB_ENV"
 
