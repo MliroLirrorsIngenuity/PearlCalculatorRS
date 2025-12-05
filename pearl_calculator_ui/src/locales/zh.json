@@ -37,6 +37,7 @@
             "calculation_legend": "常规",
             "configuration_legend": "配置",
             "advanced_settings_legend": "高级设置",
+            "cannon_y_tooltip": "炮口 Y 坐标（整数部分）",
             "found_solutions": "{{count}} 个结果",
             "no_result": "无结果",
             "sr_view_trace": "查看珍珠轨迹",

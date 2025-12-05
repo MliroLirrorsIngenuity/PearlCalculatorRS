@@ -1,4 +1,12 @@
+import { Info } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Button } from "@/components/ui/button";
 import {
 	Field,
 	FieldGroup,
@@ -52,7 +60,26 @@ export default function TNTCalculationForm({
 					</FieldGroup>
 					<FieldGroup>
 						<Field>
-							<FieldLabel htmlFor="cannon-y">{t("calculator.label_cannon_y")}</FieldLabel>
+							<div className="flex items-center gap-2">
+								<FieldLabel htmlFor="cannon-y">{t("calculator.label_cannon_y")}</FieldLabel>
+								<TooltipProvider>
+									<Tooltip>
+										<TooltipTrigger asChild>
+											<Button
+												variant="ghost"
+												size="icon"
+												className="h-4 w-4 rounded-full p-0 -translate-y-0.5"
+											>
+												<Info className="h-3.5 w-3.5 text-muted-foreground" />
+												<span className="sr-only">Info</span>
+											</Button>
+										</TooltipTrigger>
+										<TooltipContent>
+											<p>{t("calculator.cannon_y_tooltip")}</p>
+										</TooltipContent>
+									</Tooltip>
+								</TooltipProvider>
+							</div>
 							<Input
 								id="cannon-y"
 								type="number"

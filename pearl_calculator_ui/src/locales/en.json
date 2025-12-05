@@ -60,6 +60,7 @@
             "label_distance_range": "Distance Range (blocks)",
             "suffix_ticks": "ticks",
             "suffix_blocks": "blocks",
+            "cannon_y_tooltip": "The integer part of the cannon muzzle Y coordinate.",
             "found_solutions": "Found {{count}} Solutions",
             "label_direction": "Direction: ",
             "no_result": "No result",
