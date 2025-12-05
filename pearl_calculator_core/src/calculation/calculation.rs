@@ -187,9 +187,55 @@ pub fn calculate_pearl_trace(
 
     let total_tnt_motion = (red_tnt_vec * red_tnt as f64) + (blue_tnt_vec * blue_tnt as f64);
 
+    let final_motion = cannon.pearl.motion + total_tnt_motion;
+
+    run_trace_internal(
+        cannon.pearl.position,
+        final_motion,
+        Some(cannon.pearl.offset),
+        max_ticks,
+        world_collisions,
+        version,
+    )
+}
+
+pub fn calculate_raw_trace(
+    pearl_position: Space3D,
+    pearl_motion: Space3D,
+    tnt_charges: Vec<(Space3D, u32)>,
+    max_ticks: u32,
+    world_collisions: &[crate::physics::aabb::aabb_box::AABBBox],
+    version: PearlVersion,
+) -> Option<CalculationResult> {
+    let total_explosion_motion = tnt_charges
+        .iter()
+        .filter(|(_, count)| *count > 0)
+        .map(|(tnt_pos, count)| {
+            simulation::calculate_tnt_motion(pearl_position, *tnt_pos) * (*count as f64)
+        })
+        .fold(Space3D::default(), |acc, x| acc + x);
+
+    run_trace_internal(
+        pearl_position,
+        pearl_motion + total_explosion_motion,
+        None,
+        max_ticks,
+        world_collisions,
+        version,
+    )
+}
+
+fn run_trace_internal(
+    position: Space3D,
+    motion: Space3D,
+    offset: Option<Space3D>,
+    max_ticks: u32,
+    world_collisions: &[crate::physics::aabb::aabb_box::AABBBox],
+    version: PearlVersion,
+) -> Option<CalculationResult> {
     let general_data = GeneralData {
-        pearl_position: cannon.pearl.position,
-        pearl_motion: cannon.pearl.motion + total_tnt_motion,
+        pearl_position: position,
+        pearl_motion: motion,
         tnt_charges: vec![],
     };
 
@@ -198,7 +244,7 @@ pub fn calculate_pearl_trace(
         None,
         max_ticks,
         world_collisions,
-        Some(cannon.pearl.offset),
+        offset,
         version,
     )
 }

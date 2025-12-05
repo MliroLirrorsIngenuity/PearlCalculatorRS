@@ -69,3 +69,25 @@ impl From<Space3DInput> for Space3D {
         Space3D::new(input.x, input.y, input.z)
     }
 }
+
+#[derive(serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TntGroupInput {
+    pub x: f64,
+    pub y: f64,
+    pub z: f64,
+    pub amount: u32,
+}
+
+#[derive(serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RawTraceInput {
+    pub pearl_x: f64,
+    pub pearl_y: f64,
+    pub pearl_z: f64,
+    pub pearl_motion_x: f64,
+    pub pearl_motion_y: f64,
+    pub pearl_motion_z: f64,
+    pub tnt_groups: Vec<TntGroupInput>,
+    pub version: String,
+}

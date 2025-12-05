@@ -2,8 +2,8 @@ mod commands;
 mod types;
 
 use commands::{
-    calculate_pearl_trace_command, calculate_tnt_amount_command, load_config,
-    load_config_from_content, verify_config,
+    calculate_pearl_trace_command, calculate_raw_trace_command, calculate_tnt_amount_command,
+    load_config, load_config_from_content, verify_config,
 };
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -17,7 +17,8 @@ pub fn run() {
             load_config,
             load_config_from_content,
             calculate_tnt_amount_command,
-            calculate_pearl_trace_command
+            calculate_pearl_trace_command,
+            calculate_raw_trace_command
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -1,9 +1,9 @@
 use crate::types::{
-    CalculationInput, ClosestApproachOutput, PearlTraceInput, PearlTraceOutput, Space3DOutput,
-    TNTResultOutput,
+    CalculationInput, ClosestApproachOutput, PearlTraceInput, PearlTraceOutput, RawTraceInput,
+    Space3DOutput, TNTResultOutput,
 };
 use pearl_calculator_core::calculation::calculation::{
-    calculate_pearl_trace, calculate_tnt_amount,
+    calculate_pearl_trace, calculate_raw_trace, calculate_tnt_amount,
 };
 use pearl_calculator_core::calculation::inputs::{Cannon, Pearl};
 use pearl_calculator_core::physics::entities::movement::PearlVersion;
@@ -256,6 +256,73 @@ pub fn calculate_pearl_trace_command(input: PearlTraceInput) -> Result<PearlTrac
             point: closest_point,
             distance: min_distance,
         }),
+    };
+
+    Ok(output)
+}
+
+#[tauri::command]
+pub fn calculate_raw_trace_command(input: RawTraceInput) -> Result<PearlTraceOutput, String> {
+    let version = match input.version.as_str() {
+        "Legacy" => PearlVersion::Legacy,
+        "Post1205" => PearlVersion::Post1205,
+        "Post1212" => PearlVersion::Post1212,
+        _ => return Err("Invalid pearl version".to_string()),
+    };
+
+    let pearl_pos = Space3D::new(input.pearl_x, input.pearl_y, input.pearl_z);
+    let pearl_motion = Space3D::new(
+        input.pearl_motion_x,
+        input.pearl_motion_y,
+        input.pearl_motion_z,
+    );
+
+    let tnt_charges: Vec<(Space3D, u32)> = input
+        .tnt_groups
+        .iter()
+        .map(|g| (Space3D::new(g.x, g.y, g.z), g.amount))
+        .collect();
+
+    let result = calculate_raw_trace(pearl_pos, pearl_motion, tnt_charges, 10000, &[], version)
+        .ok_or_else(|| "Raw trace calculation failed".to_string())?;
+
+    let pearl_trace_output: Vec<Space3DOutput> = result
+        .pearl_trace
+        .iter()
+        .map(|pos| Space3DOutput {
+            x: pos.x,
+            y: pos.y,
+            z: pos.z,
+        })
+        .collect();
+
+    let pearl_motion_trace_output: Vec<Space3DOutput> = result
+        .pearl_motion_trace
+        .iter()
+        .map(|pos| Space3DOutput {
+            x: pos.x,
+            y: pos.y,
+            z: pos.z,
+        })
+        .collect();
+
+    let output = PearlTraceOutput {
+        landing_position: Space3DOutput {
+            x: result.landing_position.x,
+            y: result.landing_position.y,
+            z: result.landing_position.z,
+        },
+        pearl_trace: pearl_trace_output,
+        pearl_motion_trace: pearl_motion_trace_output,
+        is_successful: result.is_successful,
+        tick: result.tick,
+        final_motion: Space3DOutput {
+            x: result.final_motion.x,
+            y: result.final_motion.y,
+            z: result.final_motion.z,
+        },
+        distance: 0.0,
+        closest_approach: None,
     };
 
     Ok(output)

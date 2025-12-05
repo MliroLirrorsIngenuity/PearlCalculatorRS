@@ -11,38 +11,35 @@ export function useSimulatorTrace() {
 	): Promise<PearlTraceResult | null> => {
 		try {
 			const input = {
-				redTnt: config.tntA.amount,
-				blueTnt: config.tntB.amount,
 				pearlX: config.pearl.pos.x,
 				pearlY: config.pearl.pos.y,
 				pearlZ: config.pearl.pos.z,
 				pearlMotionX: config.pearl.momentum.x,
 				pearlMotionY: config.pearl.momentum.y,
 				pearlMotionZ: config.pearl.momentum.z,
-				offsetX: 0,
-				offsetZ: 0,
-				cannonY: 0,
 
-				southEastTnt: config.tntA.pos,
+				tntGroups: [
+					{
+						x: config.tntA.pos.x,
+						y: config.tntA.pos.y,
+						z: config.tntA.pos.z,
+						amount: config.tntA.amount
+					},
+					{
+						x: config.tntB.pos.x,
+						y: config.tntB.pos.y,
+						z: config.tntB.pos.z,
+						amount: config.tntB.amount
+					}
+				],
 
-				northWestTnt: config.tntB.pos,
-
-				northEastTnt: { x: 0, y: 0, z: 0 },
-				southWestTnt: { x: 0, y: 0, z: 0 },
-
-				defaultRedDirection: "SouthEast",
-				defaultBlueDirection: "NorthWest",
-				direction: "SouthEast",
-				destinationX: 0,
-				destinationZ: 0,
 				version: version,
 			};
 
-			const result: PearlTraceResult = await invoke(
-				"calculate_pearl_trace_command",
-				{ input },
+			return await invoke(
+				"calculate_raw_trace_command",
+				{input},
 			);
-			return result;
 		} catch (error) {
 			console.error("Pearl trace calculation failed:", error);
 			showError("Pearl Trace Error", error);
