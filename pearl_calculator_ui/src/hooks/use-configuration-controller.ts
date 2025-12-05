@@ -4,6 +4,7 @@ import { revealItemInDir } from "@tauri-apps/plugin-opener";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import { useCalculatorState } from "@/context/CalculatorStateContext";
 import { useConfig } from "@/context/ConfigContext";
 import { useConfigurationState } from "@/context/ConfigurationStateContext";
@@ -11,6 +12,7 @@ import type { GeneralConfig } from "@/types/domain";
 
 export function useConfigurationController() {
 	const navigate = useNavigate();
+	const { t } = useTranslation();
 	const {
 		draftConfig,
 		cannonCenter,
@@ -34,18 +36,18 @@ export function useConfigurationController() {
 		let isValid = true;
 
 		if (step === 1) {
-			if (!cannonCenter.x) newErrors.cannon_x = "Required";
-			if (!cannonCenter.z) newErrors.cannon_z = "Required";
-			if (!draftConfig.pearl_x_position) newErrors.pearl_x = "Required";
-			if (!draftConfig.pearl_y_position) newErrors.pearl_y = "Required";
-			if (!draftConfig.pearl_z_position) newErrors.pearl_z = "Required";
-			if (!pearlMomentum.x) newErrors.momentum_x = "Required";
-			if (!draftConfig.pearl_y_motion) newErrors.momentum_y = "Required";
-			if (!pearlMomentum.z) newErrors.momentum_z = "Required";
+			if (!cannonCenter.x) newErrors.cannon_x = t("configuration_page.validation.required");
+			if (!cannonCenter.z) newErrors.cannon_z = t("configuration_page.validation.required");
+			if (!draftConfig.pearl_x_position) newErrors.pearl_x = t("configuration_page.validation.required");
+			if (!draftConfig.pearl_y_position) newErrors.pearl_y = t("configuration_page.validation.required");
+			if (!draftConfig.pearl_z_position) newErrors.pearl_z = t("configuration_page.validation.required");
+			if (!pearlMomentum.x) newErrors.momentum_x = t("configuration_page.validation.required");
+			if (!draftConfig.pearl_y_motion) newErrors.momentum_y = t("configuration_page.validation.required");
+			if (!pearlMomentum.z) newErrors.momentum_z = t("configuration_page.validation.required");
 
 			const maxTntVal = parseFloat(draftConfig.max_tnt);
 			if (!draftConfig.max_tnt || Number.isNaN(maxTntVal) || maxTntVal <= 0)
-				newErrors.max_tnt = "Positive integer required";
+				newErrors.max_tnt = t("configuration_page.validation.positive_integer");
 		} else if (step === 2) {
 			const blocks = [
 				"north_west_tnt",
@@ -54,9 +56,9 @@ export function useConfigurationController() {
 				"south_east_tnt",
 			] as const;
 			blocks.forEach((block) => {
-				if (!draftConfig[block].x) newErrors[`${block}_x`] = "Required";
-				if (!draftConfig[block].y) newErrors[`${block}_y`] = "Required";
-				if (!draftConfig[block].z) newErrors[`${block}_z`] = "Required";
+				if (!draftConfig[block].x) newErrors[`${block}_x`] = t("configuration_page.validation.required");
+				if (!draftConfig[block].y) newErrors[`${block}_y`] = t("configuration_page.validation.required");
+				if (!draftConfig[block].z) newErrors[`${block}_z`] = t("configuration_page.validation.required");
 			});
 			if (!redTNTLocation) {
 				newErrors.red_tnt_selection = "true";

@@ -85,7 +85,11 @@
             "calculated_offset": "计算偏移量",
             "tnt_config_title": "TNT 配置",
             "tnt_config_desc": "配置 TNT 坐标并使用徽章选择红色 TNT 组",
-            "red_tnt_error": "请选择一个红色 TNT 组"
+            "red_tnt_error": "请选择一个红色 TNT 组",
+            "validation": {
+                "required": "必填",
+                "positive_integer": "需要正整数"
+            }
         }
     }
 }

@@ -138,6 +138,10 @@
             "tnt_config_title": "TNT Configuration",
             "tnt_config_desc": "Configure TNT coordinates and select the Red TNT group using the badge.",
             "red_tnt_error": "Please select a Red TNT group.",
+            "validation": {
+                "required": "Required",
+                "positive_integer": "Positive integer required"
+            },
             "red_tnt_badge": "Red TNT",
             "set_red_badge": "Set Red",
             "label_x": "X",
