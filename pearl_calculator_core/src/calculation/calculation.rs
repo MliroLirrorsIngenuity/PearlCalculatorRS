@@ -6,7 +6,7 @@ use crate::physics::entities::movement::PearlVersion;
 use crate::physics::world::direction::Direction;
 use crate::physics::world::layout_direction::LayoutDirection;
 use crate::physics::world::space::Space3D;
-use rayon::prelude::*;
+use crate::utils::parallel::*;
 use std::collections::HashMap;
 
 pub fn calculate_tnt_amount(

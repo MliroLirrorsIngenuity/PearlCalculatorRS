@@ -1,5 +1,4 @@
 mod commands;
-mod types;
 
 use commands::{
     calculate_pearl_trace_command, calculate_raw_trace_command, calculate_tnt_amount_command,

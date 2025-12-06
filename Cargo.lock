@@ -1307,12 +1307,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "glam"
-version = "0.30.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "50a99dbe56b72736564cfa4b85bf9a33079f16ae8b74983ab06af3b1a3696b11"
-
-[[package]]
 name = "glib"
 version = "0.18.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2513,8 +2507,8 @@ checksum = "df94ce210e5bc13cb6651479fa48d14f601d9858cfe0467f43ae157023b938d3"
 name = "pearl-calculator-rs"
 version = "0.1.0"
 dependencies = [
+ "pearl_calculator_bridge",
  "pearl_calculator_core",
- "serde",
  "serde_json",
  "tauri",
  "tauri-build",
@@ -2524,13 +2518,30 @@ dependencies = [
 ]
 
 [[package]]
+name = "pearl_calculator_bridge"
+version = "0.1.0"
+dependencies = [
+ "pearl_calculator_core",
+ "serde",
+]
+
+[[package]]
 name = "pearl_calculator_core"
 version = "0.1.0"
 dependencies = [
- "glam",
  "rayon",
  "serde",
  "serde_json",
+]
+
+[[package]]
+name = "pearl_calculator_wasm"
+version = "0.1.0"
+dependencies = [
+ "pearl_calculator_bridge",
+ "pearl_calculator_core",
+ "serde-wasm-bindgen",
+ "wasm-bindgen",
 ]
 
 [[package]]
@@ -3292,6 +3303,17 @@ dependencies = [
  "serde",
  "serde_core",
  "typeid",
+]
+
+[[package]]
+name = "serde-wasm-bindgen"
+version = "0.6.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8302e169f0eddcc139c70f139d19d6467353af16f9fce27e8c30158036a1e16b"
+dependencies = [
+ "js-sys",
+ "serde",
+ "wasm-bindgen",
 ]
 
 [[package]]

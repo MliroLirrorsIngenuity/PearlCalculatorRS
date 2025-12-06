@@ -19,6 +19,5 @@ tauri-plugin-fs = "2"
 
 serde_json = "1"
 
-serde = { workspace = true }
-
 pearl_calculator_core = { path = "../../pearl_calculator_core", version = "0.1.0" }
+pearl_calculator_bridge = { path = "../../pearl_calculator_bridge" }

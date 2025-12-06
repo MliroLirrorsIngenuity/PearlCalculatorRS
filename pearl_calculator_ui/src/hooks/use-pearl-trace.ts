@@ -1,4 +1,4 @@
-import { invoke } from "@tauri-apps/api/core";
+import { calculatorService } from "@/services";
 import { useToastNotifications } from "@/hooks/use-toast-notifications";
 import type { GeneralConfig, PearlTraceResult } from "@/types/domain";
 
@@ -46,10 +46,7 @@ export function usePearlTrace() {
 				version: version,
 			};
 
-			const result: PearlTraceResult = await invoke(
-				"calculate_pearl_trace_command",
-				{ input },
-			);
+			const result = await calculatorService.calculatePearlTrace(input);
 			return result;
 		} catch (error) {
 			console.error("Pearl trace calculation failed:", error);

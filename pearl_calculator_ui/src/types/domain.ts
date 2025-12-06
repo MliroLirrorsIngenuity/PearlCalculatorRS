@@ -43,17 +43,17 @@ export interface GeneralConfig {
 	pearl_y_position: number;
 	pearl_z_position: number;
 	default_red_tnt_position:
-		| "SouthEast"
-		| "NorthWest"
-		| "SouthWest"
-		| "NorthEast";
+	| "SouthEast"
+	| "NorthWest"
+	| "SouthWest"
+	| "NorthEast";
 	default_blue_tnt_position:
-		| "SouthEast"
-		| "NorthWest"
-		| "SouthWest"
-		| "NorthEast";
-		offset_x?: number;
-		offset_z?: number;
+	| "SouthEast"
+	| "NorthWest"
+	| "SouthWest"
+	| "NorthEast";
+	offset_x?: number;
+	offset_z?: number;
 }
 
 export interface SimulatorConfig {

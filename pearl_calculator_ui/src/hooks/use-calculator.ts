@@ -1,4 +1,4 @@
-import { invoke } from "@tauri-apps/api/core";
+import { calculatorService } from "@/services";
 import { useState } from "react";
 import type {
 	CalculatorInputs,
@@ -94,10 +94,7 @@ export function useTNTCalculator() {
 
 			console.log("Sending calculation input:", calculationInput);
 
-			const results: TNTResult[] = await invoke(
-				"calculate_tnt_amount_command",
-				{ input: calculationInput },
-			);
+			const results = await calculatorService.calculateTNTAmount(calculationInput);
 
 			return { success: true, data: results };
 		} catch (error) {

@@ -1,6 +1,6 @@
-use crate::types::{
-    CalculationInput, ClosestApproachOutput, PearlTraceInput, PearlTraceOutput, RawTraceInput,
-    Space3DOutput, TNTResultOutput,
+use pearl_calculator_bridge::inputs::{CalculationInput, PearlTraceInput, RawTraceInput};
+use pearl_calculator_bridge::outputs::{
+    ClosestApproachOutput, PearlTraceOutput, Space3DOutput, TNTResultOutput,
 };
 use pearl_calculator_core::calculation::calculation::{
     calculate_pearl_trace, calculate_raw_trace, calculate_tnt_amount,

@@ -1,0 +1,10 @@
+[package]
+name = "pearl_calculator_bridge"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+
+pearl_calculator_core = { path = "../pearl_calculator_core" }
