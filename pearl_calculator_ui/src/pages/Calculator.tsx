@@ -96,11 +96,8 @@ export default function Calculator() {
 		const result = await calculate(inputs, configData, version);
 
 		if (result.success) {
-			const filteredResults = result.data.filter(
-				(r) => r.total <= configData.max_tnt,
-			);
-			setDefaultCalculator((prev) => ({ ...prev, results: filteredResults }));
-			showSuccess(t("calculator.toast_found_configs", { count: filteredResults.length }));
+			setDefaultCalculator((prev) => ({ ...prev, results: result.data }));
+			showSuccess(t("calculator.toast_found_configs", { count: result.data.length }));
 		} else {
 			showError(t("calculator.toast_calc_failed"), result.error);
 		}
