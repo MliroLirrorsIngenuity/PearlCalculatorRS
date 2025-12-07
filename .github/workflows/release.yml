@@ -53,7 +53,7 @@ jobs:
     name: Release (${{ matrix.platform_name }}-${{ matrix.arch_name }})
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
