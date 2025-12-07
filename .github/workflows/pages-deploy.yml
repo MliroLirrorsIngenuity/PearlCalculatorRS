@@ -55,6 +55,14 @@ jobs:
           cargo build -p pearl_calculator_wasm --target wasm32-unknown-unknown --release
           wasm-bindgen target/wasm32-unknown-unknown/release/pearl_calculator_wasm.wasm --out-dir pearl_calculator_wasm/pkg --target bundler
 
+      - name: Download Icon
+        env:
+          ICON_URL: ${{ secrets.ICON_URL }}
+        run: |
+          mkdir -p pearl_calculator_ui/public
+          curl -fsSL "$ICON_URL" -o pearl_calculator_ui/public/icon.png
+          echo "✅ Icon downloaded successfully"
+
       - name: Build Frontend (TS + Vite)
         working-directory: pearl_calculator_ui
         run: pnpm exec tsc && pnpm exec vite build
