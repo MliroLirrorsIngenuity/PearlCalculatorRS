@@ -200,7 +200,7 @@ fn direction_from_layout(layout: LayoutDirection) -> Direction {
         LayoutDirection::NorthEast => Direction::East,
         LayoutDirection::SouthWest => Direction::West,
         LayoutDirection::SouthEast => Direction::South,
-        _ => Direction::East,
+        _ => unreachable!(),
     }
 }
 
