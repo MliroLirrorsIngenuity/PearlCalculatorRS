@@ -1,6 +1,10 @@
+import { useRef } from "react";
 import { useTranslation } from "react-i18next";
+import { ArrowRight } from "lucide-react";
 import TraceDataPanel from "@/components/calculator/results/TraceDataPanel";
+import type { DataTableRef } from "@/components/calculator/results/data-table";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { PearlTraceResult, TraceTNT } from "@/types/domain";
 
@@ -21,6 +25,13 @@ export default function PearlTracePanel({
 }: PearlTracePanelProps) {
 	const { t } = useTranslation();
 	const closestApproach = pearlTraceData?.closest_approach;
+	const traceDataPanelRef = useRef<DataTableRef>(null);
+
+	const handleJumpToTick = () => {
+		if (closestApproach && traceDataPanelRef.current) {
+			traceDataPanelRef.current.scrollToRow(closestApproach.tick);
+		}
+	};
 
 	if (!pearlTraceData) {
 		return null;
@@ -70,7 +81,19 @@ export default function PearlTracePanel({
 									<span className="text-muted-foreground">
 										{t("calculator.trace_approach_tick")}
 									</span>
-									<span className="font-medium">{closestApproach.tick}</span>
+									<div className="grid grid-cols-3 gap-2 font-medium items-center">
+										<span>{closestApproach.tick}</span>
+										<span>
+											<Button
+												variant="outline"
+												className="h-auto rounded-full px-2.5 py-0.5 text-xs font-semibold"
+												onClick={handleJumpToTick}
+											>
+												<ArrowRight className="h-3 w-3" />
+											</Button>
+										</span>
+										<span />
+									</div>
 								</div>
 								<div className="flex flex-col gap-1">
 									<span className="text-muted-foreground">
@@ -86,8 +109,9 @@ export default function PearlTracePanel({
 				</Card>
 			</div>
 			<div className="flex-1 h-full overflow-hidden flex flex-col gap-2">
-				<TraceDataPanel data={pearlTraceData} />
+				<TraceDataPanel ref={traceDataPanelRef} data={pearlTraceData} />
 			</div>
 		</div>
 	);
 }
+

@@ -48,11 +48,11 @@ const MIN_COLUMN_SIZES: Record<string, number> = {
 };
 
 const DataTableRow = React.memo(
-	({ row }: { row: Row<any> }) => {
+	({ row, isHighlighted }: { row: Row<any>; isHighlighted?: boolean }) => {
 		return (
 			<TableRow
 				data-state={row.getIsSelected() && "selected"}
-				className="[&>td]:border-r last:border-r-0 odd:bg-muted/50 *:whitespace-nowrap h-[25px]"
+				className={`[&>td]:border-r last:border-r-0 odd:bg-muted/50 *:whitespace-nowrap h-[25px] transition-colors duration-500 ${isHighlighted ? "!bg-primary/20" : ""}`}
 				style={{
 					contain: "layout style paint",
 				}}
@@ -65,16 +65,20 @@ const DataTableRow = React.memo(
 			</TableRow>
 		);
 	},
-	(prev, next) => prev.row.original === next.row.original,
+	(prev, next) => prev.row.original === next.row.original && prev.isHighlighted === next.isHighlighted,
 );
 
-export function DataTable<TData, TValue>({
+export interface DataTableRef {
+	scrollToRow: (rowIndex: number) => void;
+}
+
+export const DataTable = React.forwardRef<DataTableRef, DataTableProps<any, any>>(function DataTable({
 	columns,
 	data,
 	defaultColumnSizing = DEFAULT_COLUMN_SIZES,
 	minColumnSizes = MIN_COLUMN_SIZES,
 	onTrace,
-}: DataTableProps<TData, TValue>) {
+}, ref) {
 	const { t } = useTranslation();
 	const [sorting, setSorting] = React.useState<SortingState>([
 		{
@@ -89,9 +93,30 @@ export function DataTable<TData, TValue>({
 	const [scrollTop, setScrollTop] = React.useState(0);
 	const [viewportHeight, setViewportHeight] = React.useState(600);
 	const scrollRequestRef = React.useRef<number | null>(null);
+	const [highlightedRowIndex, setHighlightedRowIndex] = React.useState<number | null>(null);
+	const highlightTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
 
 	const ROW_HEIGHT = 25;
 	const BUFFER_ROWS = 5;
+
+	React.useImperativeHandle(ref, () => ({
+		scrollToRow: (rowIndex: number) => {
+			if (viewportRef.current) {
+				const targetScrollTop = rowIndex * ROW_HEIGHT - viewportHeight / 3;
+				const clampedScrollTop = Math.max(0, targetScrollTop);
+				viewportRef.current.scrollTop = clampedScrollTop;
+				setScrollTop(clampedScrollTop);
+
+				if (highlightTimeoutRef.current) {
+					clearTimeout(highlightTimeoutRef.current);
+				}
+				setHighlightedRowIndex(rowIndex);
+				highlightTimeoutRef.current = setTimeout(() => {
+					setHighlightedRowIndex(null);
+				}, 2000);
+			}
+		},
+	}), [viewportHeight]);
 
 	React.useEffect(() => {
 		if (viewportRef.current) {
@@ -302,7 +327,13 @@ export function DataTable<TData, TValue>({
 						</tr>
 					)}
 					{visibleRows.length ? (
-						visibleRows.map((row) => <DataTableRow key={row.id} row={row} />)
+						visibleRows.map((row) => (
+							<DataTableRow
+								key={row.id}
+								row={row}
+								isHighlighted={highlightedRowIndex === row.index}
+							/>
+						))
 					) : (
 						<TableRow>
 							<TableCell colSpan={columns.length} className="h-24 text-center">
@@ -322,10 +353,6 @@ export function DataTable<TData, TValue>({
 			</table>
 		</ScrollArea>
 	);
-}
-
-export default React.memo(DataTable, (prevProps, nextProps) => {
-	return (
-		prevProps.data === nextProps.data && prevProps.columns === nextProps.columns
-	);
 });
+
+export default DataTable;

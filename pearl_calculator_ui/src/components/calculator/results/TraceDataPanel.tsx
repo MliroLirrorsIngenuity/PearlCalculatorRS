@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
-import { useMemo } from "react";
-import { DataTable } from "@/components/calculator/results/data-table";
+import { useMemo, forwardRef } from "react";
+import { DataTable, type DataTableRef } from "@/components/calculator/results/data-table";
 import {
 	type PearlMomentumPoint,
 	pearlMomentumColumns,
@@ -16,7 +16,7 @@ interface TraceDataPanelProps {
 	data: PearlTraceResult | null;
 }
 
-export default function TraceDataPanel({ data }: TraceDataPanelProps) {
+const TraceDataPanel = forwardRef<DataTableRef, TraceDataPanelProps>(function TraceDataPanel({ data }, ref) {
 	const { t } = useTranslation();
 	const tableData: PearlTracePoint[] = useMemo(() => {
 		if (!data) return [];
@@ -56,6 +56,7 @@ export default function TraceDataPanel({ data }: TraceDataPanelProps) {
 				className="flex-1 overflow-hidden min-h-0 mt-2"
 			>
 				<DataTable
+					ref={ref}
 					columns={pearlTraceColumns}
 					data={tableData}
 					defaultColumnSizing={{
@@ -96,4 +97,7 @@ export default function TraceDataPanel({ data }: TraceDataPanelProps) {
 			</TabsContent>
 		</Tabs>
 	);
-}
+});
+
+export default TraceDataPanel;
+
