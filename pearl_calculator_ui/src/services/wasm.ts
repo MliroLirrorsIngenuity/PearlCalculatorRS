@@ -26,6 +26,6 @@ export class WebCalculatorService implements ICalculatorService {
 
     async calculateRawTrace(input: RawTraceInput): Promise<PearlTraceResult> {
         const wasm = await import("pearl_calculator_wasm");
-        return wasm.calculate_raw_trace(input) as unknown as PearlTraceResult;
+        return wasm.calculate_raw_trace(input) as PearlTraceResult;
     }
 }
