@@ -57,6 +57,10 @@ jobs:
       - name: Rust Cache
         uses: Swatinem/rust-cache@v2
 
+      - name: Frontend Check (WASM + TS + Vite)
+        working-directory: pearl_calculator_ui
+        run: pnpm build
+
       - name: Run tests
         run: cargo test --verbose
 
