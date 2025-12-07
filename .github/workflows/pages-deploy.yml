@@ -66,4 +66,5 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           projectName: pearlcalculatorrs
           directory: pearl_calculator_ui/dist
+          branch: main
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
