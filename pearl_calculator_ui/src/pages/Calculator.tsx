@@ -187,7 +187,7 @@ export default function Calculator() {
 						</AnimatePresence>
 
 						<CardContent className="flex h-full w-full p-0">
-							<div className="h-full w-[46.7%] pt-2 px-6 pb-2 flex flex-col">
+							<div className="h-full w-[46.7%] pt-2 px-6 pb-2 flex flex-col isolate">
 								<Tabs
 									defaultValue="general"
 									className="flex-1 flex flex-col min-h-0"
