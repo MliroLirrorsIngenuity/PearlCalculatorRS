@@ -6,6 +6,7 @@ import type { DataTableRef } from "@/components/calculator/results/data-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useDirectionLabel } from "@/hooks/use-direction-label";
 import type { PearlTraceResult, TraceTNT } from "@/types/domain";
 
 interface PearlTracePanelProps {
@@ -24,6 +25,7 @@ export default function PearlTracePanel({
 	traceTNT,
 }: PearlTracePanelProps) {
 	const { t } = useTranslation();
+	const { getCardinalLabel } = useDirectionLabel();
 	const closestApproach = pearlTraceData?.closest_approach;
 	const traceDataPanelRef = useRef<DataTableRef>(null);
 
@@ -52,7 +54,7 @@ export default function PearlTracePanel({
 								<span>{t("calculator.trace_z", { value: destZ || "N/A" })}</span>
 								<span>
 									<Badge className="rounded-full">
-										{traceDirection || "N/A"}
+										{getCardinalLabel(traceDirection) || "N/A"}
 									</Badge>
 								</span>
 							</div>

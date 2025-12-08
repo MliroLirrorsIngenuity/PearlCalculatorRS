@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
+import { useDirectionLabel } from "@/hooks/use-direction-label";
 import type { TNTResult } from "@/types/domain";
 import { type CalculationResult, columns } from "./results/columns";
 import { DataTable } from "./results/data-table";
@@ -19,6 +20,7 @@ export default function RightPanel({
 	onTrace,
 }: RightPanelProps) {
 	const { t } = useTranslation();
+	const { getCardinalLabel } = useDirectionLabel();
 	const filteredResults = useMemo(() => {
 		return results.filter(
 			(result) =>
@@ -56,7 +58,7 @@ export default function RightPanel({
 						<div>{t("calculator.found_solutions", { count: foundSolutions })}</div>
 						<div className="flex items-center gap-2">
 							{t("calculator.label_direction")}
-							<Badge className="rounded-full px-2 py-0 h-5">{direction}</Badge>
+							<Badge className="rounded-full px-2 py-0 h-5">{getCardinalLabel(direction)}</Badge>
 						</div>
 					</>
 				) : (
