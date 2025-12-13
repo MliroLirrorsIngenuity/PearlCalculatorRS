@@ -39,11 +39,10 @@ function DirectionDisplay({ direction, label }: DirectionDisplayProps) {
 					{direction.map((isActive, idx) => (
 						<div
 							key={idx}
-							className={`w-8 h-8 flex items-center justify-center text-xs font-mono rounded-lg border transition-all duration-300 ${
-								isActive
+							className={`w-8 h-8 flex items-center justify-center text-xs font-mono rounded-lg border transition-all duration-300 ${isActive
 									? "bg-slate-900 border-slate-900 shadow-md text-white font-bold scale-110 z-10"
 									: "bg-white border-slate-200 text-slate-300"
-							}`}
+								}`}
 						>
 							{isActive ? "1" : "0"}
 						</div>
@@ -73,9 +72,8 @@ function BitCell({ value, isActive, theme, elevated = false }: BitCellProps) {
 
 	return (
 		<div
-			className={`w-12 h-8 flex items-center justify-center text-xs font-mono rounded-lg border transition-all duration-300 ${
-				isActive ? `${activeClass} ${elevatedClass}` : inactiveClass
-			}`}
+			className={`w-12 h-8 flex items-center justify-center text-xs font-mono rounded-lg border transition-all duration-300 ${isActive ? `${activeClass} ${elevatedClass}` : inactiveClass
+				}`}
 		>
 			{value}
 		</div>

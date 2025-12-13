@@ -33,19 +33,6 @@ const defaultConfig: GeneralConfig = {
 	default_blue_tnt_position: "SouthEast",
 };
 
-export const emptyConfig: GeneralConfig = {
-	max_tnt: 0,
-	north_west_tnt: { x: 0, y: 0, z: 0 },
-	north_east_tnt: { x: 0, y: 0, z: 0 },
-	south_west_tnt: { x: 0, y: 0, z: 0 },
-	south_east_tnt: { x: 0, y: 0, z: 0 },
-	pearl_x_position: 0,
-	pearl_y_motion: 0,
-	pearl_y_position: 0,
-	pearl_z_position: 0,
-	default_red_tnt_position: "SouthEast",
-	default_blue_tnt_position: "SouthEast",
-};
 const ConfigContext = createContext<ConfigContextType | undefined>(undefined);
 export function ConfigProvider({ children }: { children: ReactNode }) {
 	const [hasConfig, setHasConfig] = useState(false);
@@ -56,7 +43,7 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
 		useState<BitTemplateConfig | null>(null);
 
 	const resetConfig = () => {
-		setConfigData(emptyConfig);
+		setConfigData(defaultConfig);
 		setConfigPath("");
 		setBitTemplateConfig(null);
 	};
