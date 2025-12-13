@@ -25,6 +25,8 @@ export function AppBreadcrumb() {
 	const { isWizardActive, isFinished, setIsFinished, setIsWizardActive } =
 		useConfigurationState();
 	const showPearlTrace = defaultCalculator.trace.show;
+	const showBitCalculation = defaultCalculator.trace.bitCalculation?.show;
+	const { updateBitCalculation } = useCalculatorState();
 
 	const getBreadcrumbs = () => {
 		const path = location.pathname;
@@ -33,29 +35,52 @@ export function AppBreadcrumb() {
 			if (hasConfig) {
 				breadcrumbs.push({
 					label: t("breadcrumb.select_config"),
-					onClick: () => setHasConfig(false),
+					onClick: () => {
+						updateBitCalculation({ show: false });
+						updateDefaultTrace({ show: false });
+						setHasConfig(false);
+					},
 				});
 				breadcrumbs.push({
 					label: t("breadcrumb.calculator"),
 					href: "/",
 					active: !showPearlTrace,
 					onClick: showPearlTrace
-						? () => updateDefaultTrace({ show: false })
+						? () => {
+								updateBitCalculation({ show: false });
+								updateDefaultTrace({ show: false });
+							}
 						: undefined,
 				});
 				if (showPearlTrace) {
 					breadcrumbs.push({
 						label: t("breadcrumb.pearl_trace"),
-						active: true,
+						active: !showBitCalculation,
+						onClick: showBitCalculation
+							? () => updateBitCalculation({ show: false })
+							: undefined,
 					});
+
+					if (showBitCalculation) {
+						breadcrumbs.push({
+							label: t("breadcrumb.bit_calculation"),
+							active: true,
+						});
+					}
 				}
 			} else {
-				breadcrumbs.push({ label: t("breadcrumb.select_config"), href: "/", active: true });
+				breadcrumbs.push({
+					label: t("breadcrumb.select_config"),
+					href: "/",
+					active: true,
+				});
 			}
 			return breadcrumbs;
 		}
 		if (path === "/simulator") {
-			return [{ label: t("breadcrumb.simulator"), href: "/simulator", active: true }];
+			return [
+				{ label: t("breadcrumb.simulator"), href: "/simulator", active: true },
+			];
 		}
 		if (path === "/configuration") {
 			const crumbs: any[] = [
@@ -87,7 +112,9 @@ export function AppBreadcrumb() {
 			return crumbs;
 		}
 		if (path === "/settings") {
-			return [{ label: t("breadcrumb.settings"), href: "/settings", active: true }];
+			return [
+				{ label: t("breadcrumb.settings"), href: "/settings", active: true },
+			];
 		}
 		return [];
 	};

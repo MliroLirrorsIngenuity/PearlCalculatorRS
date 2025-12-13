@@ -1,6 +1,10 @@
 import { open } from "@tauri-apps/plugin-dialog";
 import { readTextFile } from "@tauri-apps/plugin-fs";
-import type { GeneralConfig } from "@/types/domain";
+import type {
+	BitDirection,
+	BitTemplateConfig,
+	GeneralConfig,
+} from "@/types/domain";
 
 interface DirtyConfig {
 	Version?: string;
@@ -23,6 +27,16 @@ interface DirtyConfig {
 	};
 
 	Offset?: { X: number; Z: number };
+
+	SideMode?: number;
+	DirectionMasks?: {
+		"00"?: string;
+		"01"?: string;
+		"10"?: string;
+		"11"?: string;
+	};
+	RedValues?: number[];
+	IsRedArrowCenter?: boolean;
 }
 
 function normalizeConfig(dirty: DirtyConfig): GeneralConfig {
@@ -77,8 +91,54 @@ function validateDirection(
 	return "SouthEast";
 }
 
+function validateBitDirection(
+	dir: string | undefined,
+): BitDirection | undefined {
+	if (dir === "North" || dir === "East" || dir === "West" || dir === "South") {
+		return dir;
+	}
+	return undefined;
+}
+
+function extractBitTemplateConfig(
+	dirty: DirtyConfig,
+): BitTemplateConfig | null {
+	let root = dirty;
+	if (
+		dirty.CannonSettings &&
+		Array.isArray(dirty.CannonSettings) &&
+		dirty.CannonSettings.length > 0
+	) {
+		root = dirty.CannonSettings[0];
+	}
+
+	if (!root.SideMode || !root.RedValues || !Array.isArray(root.RedValues)) {
+		return null;
+	}
+
+	const directionMasks: BitTemplateConfig["DirectionMasks"] = {};
+	if (root.DirectionMasks) {
+		const d00 = validateBitDirection(root.DirectionMasks["00"]);
+		const d01 = validateBitDirection(root.DirectionMasks["01"]);
+		const d10 = validateBitDirection(root.DirectionMasks["10"]);
+		const d11 = validateBitDirection(root.DirectionMasks["11"]);
+		if (d00) directionMasks["00"] = d00;
+		if (d01) directionMasks["01"] = d01;
+		if (d10) directionMasks["10"] = d10;
+		if (d11) directionMasks["11"] = d11;
+	}
+
+	return {
+		SideMode: root.SideMode,
+		DirectionMasks: directionMasks,
+		RedValues: root.RedValues.map((v) => Number(v) || 0),
+		IsRedArrowCenter: root.IsRedArrowCenter ?? false,
+	};
+}
+
 export async function loadConfiguration(): Promise<{
 	config: GeneralConfig;
+	bitTemplate: BitTemplateConfig | null;
 	path: string;
 } | null> {
 	const isTauri = typeof window !== "undefined" && "__TAURI__" in window;
@@ -95,8 +155,9 @@ export async function loadConfiguration(): Promise<{
 				const json = JSON.parse(content);
 
 				const cleanConfig = normalizeConfig(json);
+				const bitTemplate = extractBitTemplateConfig(json);
 
-				return { config: cleanConfig, path: selected };
+				return { config: cleanConfig, bitTemplate, path: selected };
 			}
 		} else {
 			return new Promise((resolve, reject) => {
@@ -110,7 +171,8 @@ export async function loadConfiguration(): Promise<{
 							const content = await file.text();
 							const json = JSON.parse(content);
 							const cleanConfig = normalizeConfig(json);
-							resolve({ config: cleanConfig, path: file.name });
+							const bitTemplate = extractBitTemplateConfig(json);
+							resolve({ config: cleanConfig, bitTemplate, path: file.name });
 						} else {
 							resolve(null);
 						}

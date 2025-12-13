@@ -12,6 +12,7 @@ import * as React from "react";
 import { useTranslation } from "react-i18next";
 import { OnboardingPanel } from "@/components/common/OnboardingPanel";
 import { BasicInfoStep } from "@/components/configuration/BasicInfoStep";
+import { BitConfigurationStep } from "@/components/configuration/BitConfigurationStep";
 import { PreviewStep } from "@/components/configuration/PreviewStep";
 import { TNTConfigurationStep } from "@/components/configuration/TNTConfigurationStep";
 import {
@@ -171,6 +172,11 @@ export default function Configuration() {
 							</CarouselItem>
 							<CarouselItem className="h-full">
 								<ScrollArea className="h-full">
+									<BitConfigurationStep errors={errors} />
+								</ScrollArea>
+							</CarouselItem>
+							<CarouselItem className="h-full">
+								<ScrollArea className="h-full">
 									<PreviewStep />
 								</ScrollArea>
 							</CarouselItem>
@@ -188,7 +194,9 @@ export default function Configuration() {
 								{current === 1 && (
 									<AlertDialog>
 										<AlertDialogTrigger asChild>
-											<Button variant="destructive">{t("configuration_page.reset_btn")}</Button>
+											<Button variant="destructive">
+												{t("configuration_page.reset_btn")}
+											</Button>
 										</AlertDialogTrigger>
 										<AlertDialogContent>
 											<AlertDialogHeader className="items-center">
@@ -203,7 +211,9 @@ export default function Configuration() {
 												</AlertDialogDescription>
 											</AlertDialogHeader>
 											<AlertDialogFooter className="mt-2 sm:justify-center">
-												<AlertDialogCancel>{t("configuration_page.cancel_btn")}</AlertDialogCancel>
+												<AlertDialogCancel>
+													{t("configuration_page.cancel_btn")}
+												</AlertDialogCancel>
 												<AlertDialogAction
 													className={buttonVariants({ variant: "destructive" })}
 													onClick={handleReset}
@@ -220,7 +230,9 @@ export default function Configuration() {
 							</div>
 							<div className="flex justify-end">
 								{current === count ? (
-									<Button onClick={handleFinish}>{t("configuration_page.finish_btn")}</Button>
+									<Button onClick={handleFinish}>
+										{t("configuration_page.finish_btn")}
+									</Button>
 								) : (
 									<Button
 										onClick={() => {

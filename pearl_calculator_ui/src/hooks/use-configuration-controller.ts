@@ -2,13 +2,14 @@ import { save } from "@tauri-apps/plugin-dialog";
 import { writeTextFile } from "@tauri-apps/plugin-fs";
 import { revealItemInDir } from "@tauri-apps/plugin-opener";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { useTranslation } from "react-i18next";
 import { useCalculatorState } from "@/context/CalculatorStateContext";
 import { useConfig } from "@/context/ConfigContext";
 import { useConfigurationState } from "@/context/ConfigurationStateContext";
-import type { GeneralConfig } from "@/types/domain";
+import { inputStateToConfig } from "@/lib/bit-template-utils";
+import type { BitDirection, GeneralConfig } from "@/types/domain";
 
 export function useConfigurationController() {
 	const navigate = useNavigate();
@@ -18,13 +19,14 @@ export function useConfigurationController() {
 		cannonCenter,
 		pearlMomentum,
 		redTNTLocation,
+		bitTemplateState,
 		resetDraft,
 		isWizardActive,
 		setIsWizardActive,
 		isFinished,
 		setIsFinished,
 	} = useConfigurationState();
-	const { setConfigData, setHasConfig } = useConfig();
+	const { setConfigData, setHasConfig, setBitTemplateConfig } = useConfig();
 	const { updateDefaultInput } = useCalculatorState();
 
 	const [savedPath, setSavedPath] = useState<string | null>(null);
@@ -36,14 +38,22 @@ export function useConfigurationController() {
 		let isValid = true;
 
 		if (step === 1) {
-			if (!cannonCenter.x) newErrors.cannon_x = t("configuration_page.validation.required");
-			if (!cannonCenter.z) newErrors.cannon_z = t("configuration_page.validation.required");
-			if (!draftConfig.pearl_x_position) newErrors.pearl_x = t("configuration_page.validation.required");
-			if (!draftConfig.pearl_y_position) newErrors.pearl_y = t("configuration_page.validation.required");
-			if (!draftConfig.pearl_z_position) newErrors.pearl_z = t("configuration_page.validation.required");
-			if (!pearlMomentum.x) newErrors.momentum_x = t("configuration_page.validation.required");
-			if (!draftConfig.pearl_y_motion) newErrors.momentum_y = t("configuration_page.validation.required");
-			if (!pearlMomentum.z) newErrors.momentum_z = t("configuration_page.validation.required");
+			if (!cannonCenter.x)
+				newErrors.cannon_x = t("configuration_page.validation.required");
+			if (!cannonCenter.z)
+				newErrors.cannon_z = t("configuration_page.validation.required");
+			if (!draftConfig.pearl_x_position)
+				newErrors.pearl_x = t("configuration_page.validation.required");
+			if (!draftConfig.pearl_y_position)
+				newErrors.pearl_y = t("configuration_page.validation.required");
+			if (!draftConfig.pearl_z_position)
+				newErrors.pearl_z = t("configuration_page.validation.required");
+			if (!pearlMomentum.x)
+				newErrors.momentum_x = t("configuration_page.validation.required");
+			if (!draftConfig.pearl_y_motion)
+				newErrors.momentum_y = t("configuration_page.validation.required");
+			if (!pearlMomentum.z)
+				newErrors.momentum_z = t("configuration_page.validation.required");
 
 			const maxTntVal = parseFloat(draftConfig.max_tnt);
 			if (!draftConfig.max_tnt || Number.isNaN(maxTntVal) || maxTntVal <= 0)
@@ -56,13 +66,40 @@ export function useConfigurationController() {
 				"south_east_tnt",
 			] as const;
 			blocks.forEach((block) => {
-				if (!draftConfig[block].x) newErrors[`${block}_x`] = t("configuration_page.validation.required");
-				if (!draftConfig[block].y) newErrors[`${block}_y`] = t("configuration_page.validation.required");
-				if (!draftConfig[block].z) newErrors[`${block}_z`] = t("configuration_page.validation.required");
+				if (!draftConfig[block].x)
+					newErrors[`${block}_x`] = t("configuration_page.validation.required");
+				if (!draftConfig[block].y)
+					newErrors[`${block}_y`] = t("configuration_page.validation.required");
+				if (!draftConfig[block].z)
+					newErrors[`${block}_z`] = t("configuration_page.validation.required");
 			});
 			if (!redTNTLocation) {
 				newErrors.red_tnt_selection = "true";
 				isValid = false;
+			}
+		} else if (step === 3) {
+			if (!bitTemplateState) {
+				newErrors.bit_template_empty = t(
+					"configuration_page.validation.required",
+				);
+				isValid = false;
+			} else {
+				const hasEmptyValue = bitTemplateState.sideValues.some(
+					(v) => !v || v.trim() === "",
+				);
+				if (hasEmptyValue) {
+					newErrors.bit_values_incomplete = t(
+						"configuration_page.validation.required",
+					);
+					isValid = false;
+				}
+				const hasEmptyMask = bitTemplateState.masks.some((m) => !m.direction);
+				if (hasEmptyMask) {
+					newErrors.bit_masks_incomplete = t(
+						"configuration_page.validation.required",
+					);
+					isValid = false;
+				}
 			}
 		}
 
@@ -91,7 +128,7 @@ export function useConfigurationController() {
 	};
 
 	const handleFinish = () => {
-		if (validateStep(2)) {
+		if (validateStep(3)) {
 			setIsFinished(true);
 			setShouldRestoreLastPage(true);
 		}
@@ -160,6 +197,11 @@ export function useConfigurationController() {
 
 		setConfigData(config);
 		setHasConfig(true);
+
+		if (bitTemplateState) {
+			setBitTemplateConfig(inputStateToConfig(bitTemplateState));
+		}
+
 		navigate("/");
 	};
 
@@ -202,7 +244,7 @@ export function useConfigurationController() {
 					}
 				};
 
-				const config = {
+				const config: Record<string, unknown> = {
 					NorthEastTNT: getRelativeTNT(draftConfig.north_east_tnt),
 					NorthWestTNT: getRelativeTNT(draftConfig.north_west_tnt),
 					SouthEastTNT: getRelativeTNT(draftConfig.south_east_tnt),
@@ -227,6 +269,22 @@ export function useConfigurationController() {
 					DefaultRedTNTDirection: redTNTLocation,
 					DefaultBlueTNTDirection: getOppositeDirection(redTNTLocation),
 				};
+
+				if (bitTemplateState) {
+					config.SideMode = bitTemplateState.sideCount;
+					const directionMasks: Record<string, BitDirection> = {};
+					for (const mask of bitTemplateState.masks) {
+						const key = mask.bits.join("");
+						if (mask.direction) {
+							directionMasks[key] = mask.direction as BitDirection;
+						}
+					}
+					config.DirectionMasks = directionMasks;
+					config.RedValues = bitTemplateState.sideValues
+						.map((v) => parseInt(v, 10) || 0)
+						.reverse();
+					config.IsRedArrowCenter = bitTemplateState.isSwapped;
+				}
 
 				await writeTextFile(path, JSON.stringify(config, null, 2));
 				setSavedPath(path);

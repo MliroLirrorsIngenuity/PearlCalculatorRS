@@ -15,6 +15,9 @@ interface CalculatorState {
 		direction: string;
 		tnt: TraceTNT | null;
 		show: boolean;
+		bitCalculation: {
+			show: boolean;
+		};
 	};
 }
 
@@ -37,7 +40,11 @@ interface CalculatorStateContextType {
 	setSimulator: React.Dispatch<React.SetStateAction<SimulatorState>>;
 
 	updateDefaultInput: (field: keyof CalculatorInputs, value: any) => void;
+
 	updateDefaultTrace: (data: Partial<CalculatorState["trace"]>) => void;
+	updateBitCalculation: (
+		data: Partial<CalculatorState["trace"]["bitCalculation"]>,
+	) => void;
 	resetDefaultCalculator: () => void;
 
 	updateSimulatorInput: (field: keyof CalculatorInputs, value: any) => void;
@@ -110,6 +117,9 @@ export function CalculatorStateProvider({ children }: { children: ReactNode }) {
 			direction: "",
 			tnt: null,
 			show: false,
+			bitCalculation: {
+				show: false,
+			},
 		},
 	});
 
@@ -144,6 +154,21 @@ export function CalculatorStateProvider({ children }: { children: ReactNode }) {
 		}));
 	};
 
+	const updateBitCalculation = (
+		data: Partial<CalculatorState["trace"]["bitCalculation"]>,
+	) => {
+		setDefaultCalculator((prev) => ({
+			...prev,
+			trace: {
+				...prev.trace,
+				bitCalculation: {
+					...prev.trace.bitCalculation,
+					...data,
+				},
+			},
+		}));
+	};
+
 	const resetDefaultCalculator = () => {
 		setDefaultCalculator({
 			inputs: emptyCalculatorInputs,
@@ -153,6 +178,9 @@ export function CalculatorStateProvider({ children }: { children: ReactNode }) {
 				direction: "",
 				tnt: null,
 				show: false,
+				bitCalculation: {
+					show: false,
+				},
 			},
 		});
 	};
@@ -205,6 +233,7 @@ export function CalculatorStateProvider({ children }: { children: ReactNode }) {
 				setSimulator,
 				updateDefaultInput,
 				updateDefaultTrace,
+				updateBitCalculation,
 				resetDefaultCalculator,
 				updateSimulatorInput,
 				updateSimulatorConfig,

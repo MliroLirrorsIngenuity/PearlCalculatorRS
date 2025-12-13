@@ -1,4 +1,5 @@
 import { createContext, type ReactNode, useContext, useState } from "react";
+import type { BitInputState } from "@/types/domain";
 
 export interface DraftConfig {
 	max_tnt: string;
@@ -33,6 +34,8 @@ interface ConfigurationStateContextType {
 	setPearlMomentum: (momentum: { x: string; y: string; z: string }) => void;
 	redTNTLocation: string | undefined;
 	setRedTNTLocation: (location: string | undefined) => void;
+	bitTemplateState: BitInputState | undefined;
+	setBitTemplateState: (state: BitInputState | undefined) => void;
 	isWizardActive: boolean;
 	setIsWizardActive: (active: boolean) => void;
 	isFinished: boolean;
@@ -55,6 +58,9 @@ export function ConfigurationStateProvider({
 	const [redTNTLocation, setRedTNTLocation] = useState<string | undefined>(
 		undefined,
 	);
+	const [bitTemplateState, setBitTemplateState] = useState<
+		BitInputState | undefined
+	>(undefined);
 
 	const [isWizardActive, setIsWizardActive] = useState(false);
 	const [isFinished, setIsFinished] = useState(false);
@@ -64,6 +70,7 @@ export function ConfigurationStateProvider({
 		setCannonCenter({ x: "", z: "" });
 		setPearlMomentum({ x: "", y: "", z: "" });
 		setRedTNTLocation(undefined);
+		setBitTemplateState(undefined);
 		setIsWizardActive(false);
 		setIsFinished(false);
 	};
@@ -79,6 +86,8 @@ export function ConfigurationStateProvider({
 				setPearlMomentum,
 				redTNTLocation,
 				setRedTNTLocation,
+				bitTemplateState,
+				setBitTemplateState,
 				isWizardActive,
 				setIsWizardActive,
 				isFinished,

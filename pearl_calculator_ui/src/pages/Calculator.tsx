@@ -1,8 +1,9 @@
 import { FileJson } from "lucide-react";
-import { useTranslation } from "react-i18next";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import AdvancedSettingsForm from "@/components/calculator/AdvancedSettingsForm";
+import BitCalculationPanel from "@/components/calculator/BitCalculationPanel";
 import ConfigurationDataForm from "@/components/calculator/ConfigurationDataForm";
 import PearlTracePanel from "@/components/calculator/PearlTracePanel";
 import RightPanel from "@/components/calculator/RightPanel";
@@ -27,6 +28,7 @@ export default function Calculator() {
 		configData,
 		setConfigData,
 		setConfigPath,
+		setBitTemplateConfig,
 		version,
 		resetConfig,
 	} = useConfig();
@@ -47,6 +49,7 @@ export default function Calculator() {
 	const showPearlTrace = defaultCalculator.trace.show;
 	const traceDirection = defaultCalculator.trace.direction;
 	const traceTNT = defaultCalculator.trace.tnt;
+	const showBitCalculation = defaultCalculator.trace.bitCalculation?.show;
 
 	const updateInput = (field: keyof CalculatorInputs, value: any) => {
 		updateDefaultInput(field, value);
@@ -67,6 +70,7 @@ export default function Calculator() {
 			if (result) {
 				setConfigData(result.config);
 				setConfigPath(result.path);
+				setBitTemplateConfig(result.bitTemplate);
 				setHasConfig(true);
 
 				updateDefaultInput("pearlX", result.config.pearl_x_position.toString());
@@ -75,14 +79,8 @@ export default function Calculator() {
 					"cannonY",
 					Math.floor(result.config.pearl_y_position).toString(),
 				);
-				updateDefaultInput(
-					"offsetX",
-					(result.config.offset_x ?? 0).toString(),
-				);
-				updateDefaultInput(
-					"offsetZ",
-					(result.config.offset_z ?? 0).toString(),
-				);
+				updateDefaultInput("offsetX", (result.config.offset_x ?? 0).toString());
+				updateDefaultInput("offsetZ", (result.config.offset_z ?? 0).toString());
 
 				showSuccess(t("calculator.toast_config_loaded"));
 			}
@@ -97,7 +95,9 @@ export default function Calculator() {
 
 		if (result.success) {
 			setDefaultCalculator((prev) => ({ ...prev, results: result.data }));
-			showSuccess(t("calculator.toast_found_configs", { count: result.data.length }));
+			showSuccess(
+				t("calculator.toast_found_configs", { count: result.data.length }),
+			);
 		} else {
 			showError(t("calculator.toast_calc_failed"), result.error);
 		}
@@ -164,8 +164,8 @@ export default function Calculator() {
 					transition={{ duration: 0.25, ease: "easeOut" }}
 					className="h-full w-full"
 				>
-					<Card className="h-full w-full relative">
-						<AnimatePresence mode="wait">
+					<Card className="h-full w-full relative overflow-hidden">
+						<AnimatePresence>
 							{showPearlTrace && (
 								<motion.div
 									key="pearl-trace"
@@ -184,6 +184,18 @@ export default function Calculator() {
 									/>
 								</motion.div>
 							)}
+							{showPearlTrace && showBitCalculation && (
+								<motion.div
+									key="bit-calculation"
+									initial={{ opacity: 0, scale: 0.98 }}
+									animate={{ opacity: 1, scale: 1 }}
+									exit={{ opacity: 0, scale: 0.98 }}
+									transition={{ duration: 0.2 }}
+									className="absolute inset-0 z-20"
+								>
+									<BitCalculationPanel />
+								</motion.div>
+							)}
 						</AnimatePresence>
 
 						<CardContent className="flex h-full w-full p-0">
@@ -193,9 +205,15 @@ export default function Calculator() {
 									className="flex-1 flex flex-col min-h-0"
 								>
 									<TabsList className="grid w-full grid-cols-3">
-										<TabsTrigger value="general">{t("calculator.tab_general")}</TabsTrigger>
-										<TabsTrigger value="config">{t("calculator.tab_configuration")}</TabsTrigger>
-										<TabsTrigger value="advanced">{t("calculator.tab_advanced")}</TabsTrigger>
+										<TabsTrigger value="general">
+											{t("calculator.tab_general")}
+										</TabsTrigger>
+										<TabsTrigger value="config">
+											{t("calculator.tab_configuration")}
+										</TabsTrigger>
+										<TabsTrigger value="advanced">
+											{t("calculator.tab_advanced")}
+										</TabsTrigger>
 									</TabsList>
 
 									<TabsContent
@@ -236,7 +254,11 @@ export default function Calculator() {
 									onClick={handleRunCalculation}
 									disabled={isCalculating}
 								>
-									{isCalculating ? <SpinnerCircle1 /> : t("calculator.calculate_btn")}
+									{isCalculating ? (
+										<SpinnerCircle1 />
+									) : (
+										t("calculator.calculate_btn")
+									)}
 								</Button>
 							</div>
 

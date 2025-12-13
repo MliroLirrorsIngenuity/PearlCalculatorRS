@@ -43,15 +43,15 @@ export interface GeneralConfig {
 	pearl_y_position: number;
 	pearl_z_position: number;
 	default_red_tnt_position:
-	| "SouthEast"
-	| "NorthWest"
-	| "SouthWest"
-	| "NorthEast";
+		| "SouthEast"
+		| "NorthWest"
+		| "SouthWest"
+		| "NorthEast";
 	default_blue_tnt_position:
-	| "SouthEast"
-	| "NorthWest"
-	| "SouthWest"
-	| "NorthEast";
+		| "SouthEast"
+		| "NorthWest"
+		| "SouthWest"
+		| "NorthEast";
 	offset_x?: number;
 	offset_z?: number;
 }
@@ -81,4 +81,36 @@ export interface CalculatorInputs {
 	offsetZ: string;
 	tickRange: number[];
 	distanceRange: number[];
+}
+
+export interface MaskGroup {
+	bits: [string, string];
+	direction: string;
+}
+
+export interface BitCalculationResult {
+	blue: number[];
+	red: number[];
+	direction: [boolean, boolean];
+}
+
+export type BitDirection = "North" | "East" | "West" | "South";
+
+export interface BitTemplateConfig {
+	SideMode: number;
+	DirectionMasks: {
+		"00"?: BitDirection;
+		"01"?: BitDirection;
+		"10"?: BitDirection;
+		"11"?: BitDirection;
+	};
+	RedValues: number[];
+	IsRedArrowCenter: boolean;
+}
+
+export interface BitInputState {
+	sideCount: number;
+	masks: MaskGroup[];
+	sideValues: string[];
+	isSwapped: boolean;
 }
