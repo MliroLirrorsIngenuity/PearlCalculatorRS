@@ -136,9 +136,9 @@ export function BitInputSection({
 			const newValues =
 				state.sideValues.length < state.sideCount
 					? [
-						...state.sideValues,
-						...Array(state.sideCount - state.sideValues.length).fill(""),
-					]
+							...state.sideValues,
+							...Array(state.sideCount - state.sideValues.length).fill(""),
+						]
 					: state.sideValues.slice(0, state.sideCount);
 			setState({ ...state, sideValues: newValues });
 		}
@@ -180,7 +180,7 @@ export function BitInputSection({
 		} else if (
 			e.key === "Backspace" &&
 			state.sideValues[
-			source === "blue" ? index : state.sideCount - 1 - index
+				source === "blue" ? index : state.sideCount - 1 - index
 			] === ""
 		) {
 			if (index > 0) {
