@@ -9,7 +9,7 @@ resolver = "3"
 
 [workspace.package]
 version = "0.1.0"
-authors = ["MliroLirrorsIngenuity admin@lolicon.best"]
+authors = ["MliroLirrorsIngenuity <admin@lolicon.best>", "Lemon_miaow <admin@lemonmiaow.xyz>", "Minseong \"FLYEMOJI\" Choi <me@flyemoji.moe>"]
 edition = "2024"
 
 [workspace.dependencies]

@@ -1,5 +1,7 @@
+# Fuck macOS
 .DS_Store
 
+# Fuck VSCode
 .vscode/*
 !.vscode/extensions.json
 .idea/
@@ -9,6 +11,7 @@
 *.sln
 *.sw?
 
+# Fuck NodeJS
 node_modules/
 
 dist/
@@ -16,6 +19,7 @@ dist-ssr/
 
 *.local
 
+# Fuck the logs
 logs
 *.log
 npm-debug.log*
@@ -24,6 +28,7 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Fuck cargo
 target/
 debug/
 
@@ -33,8 +38,8 @@ debug/
 
 **/mutants.out*/
 
-src-tauri/gen/
-
-src-tauri/target/
+# Fuck Tauri
+*/src-tauri/gen/
+*/src-tauri/target/
 
 .env

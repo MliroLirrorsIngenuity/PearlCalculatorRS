@@ -1,7 +1,7 @@
 [package]
 name = "pearl_calculator_core"
 version = "0.1.0"
-authors = ["MliroLirrorsIngenuity admin@lolicon.best"]
+authors = ["MliroLirrorsIngenuity <admin@lolicon.best>", "Lemon_miaow <admin@lemonmiaow.xyz>"]
 edition = "2024"
 
 [dependencies]
