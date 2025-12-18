@@ -31,7 +31,7 @@ jobs:
             target: aarch64-pc-windows-msvc
             args: "--target aarch64-pc-windows-msvc"
           # macOS Intel
-          - os: macos-13
+          - os: macos-15-intel
             platform_name: macos
             arch_name: x86_64
             target: x86_64-apple-darwin
