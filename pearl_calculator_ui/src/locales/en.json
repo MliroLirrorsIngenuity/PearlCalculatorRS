@@ -168,6 +168,9 @@
 			"bit_config_desc": "Configure the bit template.",
 			"bit_values_error": "Please fill in all bit values.",
 			"bit_masks_error": "Please select all direction masks.",
+			"skip_btn": "Skip",
+			"skip_warning_title": "Skip Bit Configuration?",
+			"skip_warning_desc": "Skipping this step will prevent automatic Bit encoding calculations, requiring manual entry later. Are you sure?",
 			"red_tnt_error": "Please select a Red TNT group.",
 			"validation": {
 				"required": "Required",

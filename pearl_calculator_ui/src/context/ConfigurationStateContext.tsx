@@ -40,6 +40,8 @@ interface ConfigurationStateContextType {
 	setIsWizardActive: (active: boolean) => void;
 	isFinished: boolean;
 	setIsFinished: (finished: boolean) => void;
+	isBitConfigSkipped: boolean;
+	setIsBitConfigSkipped: (skipped: boolean) => void;
 	resetDraft: () => void;
 }
 
@@ -64,6 +66,7 @@ export function ConfigurationStateProvider({
 
 	const [isWizardActive, setIsWizardActive] = useState(false);
 	const [isFinished, setIsFinished] = useState(false);
+	const [isBitConfigSkipped, setIsBitConfigSkipped] = useState(false);
 
 	const resetDraft = () => {
 		setDraftConfig(emptyDraftConfig);
@@ -71,6 +74,7 @@ export function ConfigurationStateProvider({
 		setPearlMomentum({ x: "", y: "", z: "" });
 		setRedTNTLocation(undefined);
 		setBitTemplateState(undefined);
+		setIsBitConfigSkipped(false);
 		setIsWizardActive(false);
 		setIsFinished(false);
 	};
@@ -92,6 +96,8 @@ export function ConfigurationStateProvider({
 				setIsWizardActive,
 				isFinished,
 				setIsFinished,
+				isBitConfigSkipped,
+				setIsBitConfigSkipped,
 				resetDraft,
 			}}
 		>

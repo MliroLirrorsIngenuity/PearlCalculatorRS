@@ -32,6 +32,8 @@ export function useConfigurationController() {
 		setPearlMomentum,
 		setRedTNTLocation,
 		setBitTemplateState,
+		isBitConfigSkipped,
+		setIsBitConfigSkipped,
 	} = useConfigurationState();
 	const { setConfigData, setHasConfig, setBitTemplateConfig } = useConfig();
 	const { updateDefaultInput } = useCalculatorState();
@@ -86,6 +88,9 @@ export function useConfigurationController() {
 				isValid = false;
 			}
 		} else if (step === 3) {
+			if (isBitConfigSkipped) {
+				return true;
+			}
 			if (!bitTemplateState) {
 				newErrors.bit_template_empty = t(
 					"configuration_page.validation.required",
@@ -270,6 +275,10 @@ export function useConfigurationController() {
 		}
 	};
 
+	const handleSkipBitConfiguration = () => {
+		setIsBitConfigSkipped(true);
+	};
+
 	return {
 		isConfiguring: isWizardActive,
 		isFinished,
@@ -287,5 +296,6 @@ export function useConfigurationController() {
 		handleCopyEncodedConfig,
 		handleImportFromClipboard,
 		handleImportFromFile,
+		handleSkipBitConfiguration,
 	};
 }

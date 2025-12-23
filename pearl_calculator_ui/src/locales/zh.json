@@ -168,6 +168,9 @@
 			"bit_config_desc": "配置 Bit 样板",
 			"bit_values_error": "请填写所有 Bit 值",
 			"bit_masks_error": "请填写所有方向掩码",
+			"skip_btn": "跳过",
+			"skip_warning_title": "确定要跳过吗？",
+			"skip_warning_desc": "未配置 Bit 模板将导致无法使用自动 Bit 编码计算，需后续手动录入进行计算。是否确认跳过？",
 			"red_tnt_error": "请选择一个红色 TNT 组",
 			"validation": {
 				"required": "必填",

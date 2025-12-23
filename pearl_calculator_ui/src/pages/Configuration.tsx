@@ -62,6 +62,7 @@ export default function Configuration() {
 		handleCopyEncodedConfig,
 		handleImportFromClipboard,
 		handleImportFromFile,
+		handleSkipBitConfiguration,
 	} = useConfigurationController();
 
 	React.useEffect(() => {
@@ -263,17 +264,51 @@ export default function Configuration() {
 										{t("configuration_page.finish_btn")}
 									</Button>
 								) : (
-									<Button
-										onClick={() => {
-											if (validateStep(current)) {
-												api?.scrollNext();
-											}
-										}}
-										disabled={!api?.canScrollNext()}
-									>
-										{t("configuration_page.next_btn")}
-										<ChevronRight className="h-4 w-4" />
-									</Button>
+									<div className="flex items-center gap-2">
+										{current === 3 && (
+											<AlertDialog>
+												<AlertDialogTrigger asChild>
+													<Button variant="outline">
+														{t("configuration_page.skip_btn")}
+													</Button>
+												</AlertDialogTrigger>
+												<AlertDialogContent>
+													<AlertDialogHeader>
+														<AlertDialogTitle>
+															{t("configuration_page.skip_warning_title")}
+														</AlertDialogTitle>
+														<AlertDialogDescription>
+															{t("configuration_page.skip_warning_desc")}
+														</AlertDialogDescription>
+													</AlertDialogHeader>
+													<AlertDialogFooter>
+														<AlertDialogCancel>
+															{t("configuration_page.cancel_btn")}
+														</AlertDialogCancel>
+														<AlertDialogAction
+															onClick={() => {
+																handleSkipBitConfiguration();
+																api?.scrollNext();
+															}}
+														>
+															{t("configuration_page.continue_btn")}
+														</AlertDialogAction>
+													</AlertDialogFooter>
+												</AlertDialogContent>
+											</AlertDialog>
+										)}
+										<Button
+											onClick={() => {
+												if (validateStep(current)) {
+													api?.scrollNext();
+												}
+											}}
+											disabled={!api?.canScrollNext()}
+										>
+											{t("configuration_page.next_btn")}
+											<ChevronRight className="h-4 w-4" />
+										</Button>
+									</div>
 								)}
 							</div>
 						</div>
