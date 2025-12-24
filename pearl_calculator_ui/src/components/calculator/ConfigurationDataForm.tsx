@@ -21,6 +21,7 @@ import {
 import { useConfig } from "@/context/ConfigContext";
 import { useToastNotifications } from "@/hooks/use-toast-notifications";
 import { buildEncodableConfig, encodeConfig } from "@/lib/config-codec";
+import { getOppositeDirection } from "@/lib/config-utils";
 import { exportConfiguration } from "@/lib/config-service";
 import { cn } from "@/lib/utils";
 import type { GeneralConfig } from "@/types/domain";
@@ -104,23 +105,6 @@ export default function ConfigurationDataForm({
 		} catch (error) {
 			console.error(error);
 			showError(t("error.configuration_page.export_failed"));
-		}
-	};
-
-	const getOppositeDirection = (
-		dir: string,
-	): "SouthEast" | "NorthWest" | "SouthWest" | "NorthEast" => {
-		switch (dir) {
-			case "NorthWest":
-				return "SouthEast";
-			case "SouthEast":
-				return "NorthWest";
-			case "NorthEast":
-				return "SouthWest";
-			case "SouthWest":
-				return "NorthEast";
-			default:
-				return "SouthEast";
 		}
 	};
 

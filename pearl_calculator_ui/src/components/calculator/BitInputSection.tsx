@@ -1,3 +1,4 @@
+import { match, P } from "ts-pattern";
 import { ArrowUpDown } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -136,9 +137,9 @@ export function BitInputSection({
 			const newValues =
 				state.sideValues.length < state.sideCount
 					? [
-							...state.sideValues,
-							...Array(state.sideCount - state.sideValues.length).fill(""),
-						]
+						...state.sideValues,
+						...Array(state.sideCount - state.sideValues.length).fill(""),
+					]
 					: state.sideValues.slice(0, state.sideCount);
 			setState({ ...state, sideValues: newValues });
 		}
@@ -172,22 +173,21 @@ export function BitInputSection({
 		source: "blue" | "red",
 	) => {
 		const refs = source === "blue" ? blueRefs : redRefs;
-		if (e.key === "Enter" || e.key === " ") {
-			e.preventDefault();
-			if (index < state.sideCount - 1) {
-				refs.current[index + 1]?.focus();
-			}
-		} else if (
-			e.key === "Backspace" &&
-			state.sideValues[
-				source === "blue" ? index : state.sideCount - 1 - index
-			] === ""
-		) {
-			if (index > 0) {
+		match(e.key)
+			.with(P.union("Enter", " "), () => {
 				e.preventDefault();
-				refs.current[index - 1]?.focus();
-			}
-		}
+				if (index < state.sideCount - 1) {
+					refs.current[index + 1]?.focus();
+				}
+			})
+			.with("Backspace", () => {
+				const actualIndex = source === "blue" ? index : state.sideCount - 1 - index;
+				if (state.sideValues[actualIndex] === "" && index > 0) {
+					e.preventDefault();
+					refs.current[index - 1]?.focus();
+				}
+			})
+			.otherwise(() => { });
 	};
 
 	const handleDirectionChange = (groupIndex: number, value: string) => {

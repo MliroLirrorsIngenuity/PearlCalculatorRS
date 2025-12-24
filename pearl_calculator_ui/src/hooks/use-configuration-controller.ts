@@ -1,3 +1,4 @@
+import { match, P } from "ts-pattern";
 import { revealItemInDir } from "@tauri-apps/plugin-opener";
 import { WizardBasicInfoSchema, WizardBitConfigSchema, WizardTNTConfigSchema } from "@/lib/schemas";
 import { z } from "zod";
@@ -8,12 +9,37 @@ import { useCalculatorState } from "@/context/CalculatorStateContext";
 import { useConfig } from "@/context/ConfigContext";
 import { useConfigurationState } from "@/context/ConfigurationStateContext";
 import { useToastNotifications } from "@/hooks/use-toast-notifications";
-import { inputStateToConfig, configToInputState } from "@/lib/bit-template-utils";
-import { buildExportConfig, convertDraftToConfig, convertConfigToDraft } from "@/lib/config-utils";
+import { configToInputState, inputStateToConfig } from "@/lib/bit-template-utils";
+import { buildExportConfig, convertConfigToDraft, convertDraftToConfig } from "@/lib/config-utils";
 import { exportConfiguration, loadConfiguration } from "@/lib/config-service";
-import { decodeConfig, encodeConfig, type EncodableConfig } from "@/lib/config-codec";
+import { decodeConfig, type EncodableConfig, encodeConfig } from "@/lib/config-codec";
 import { isTauri } from "@/services";
 import type { BitTemplateConfig, GeneralConfig } from "@/types/domain";
+
+export const ERROR_MAPPINGS = [
+	["cannonCenter.x", "cannon_x"],
+	["cannonCenter.z", "cannon_z"],
+	["pearlPosition.x", "pearl_x"],
+	["pearlPosition.y", "pearl_y"],
+	["pearlPosition.z", "pearl_z"],
+	["pearlMomentum.x", "momentum_x"],
+	["pearlMomentum.y", "momentum_y"],
+	["pearlMomentum.z", "momentum_z"],
+	["maxTNT", "max_tnt"],
+	["northWest.x", "north_west_tnt_x"],
+	["northWest.y", "north_west_tnt_y"],
+	["northWest.z", "north_west_tnt_z"],
+	["northEast.x", "north_east_tnt_x"],
+	["northEast.y", "north_east_tnt_y"],
+	["northEast.z", "north_east_tnt_z"],
+	["southWest.x", "south_west_tnt_x"],
+	["southWest.y", "south_west_tnt_y"],
+	["southWest.z", "south_west_tnt_z"],
+	["southEast.x", "south_east_tnt_x"],
+	["southEast.y", "south_east_tnt_y"],
+	["southEast.z", "south_east_tnt_z"],
+	["redTNTLocation", "red_tnt_selection"],
+] as const;
 
 export function useConfigurationController() {
 	const navigate = useNavigate();
@@ -48,8 +74,8 @@ export function useConfigurationController() {
 	const validateStep = (step: number) => {
 		let zodErrors: z.ZodIssue[] = [];
 
-		if (step === 1) {
-			const result = WizardBasicInfoSchema.safeParse({
+		const result = match(step)
+			.with(1, () => WizardBasicInfoSchema.safeParse({
 				cannonCenter,
 				pearlPosition: {
 					x: draftConfig.pearl_x_position,
@@ -62,61 +88,45 @@ export function useConfigurationController() {
 					z: pearlMomentum.z,
 				},
 				maxTNT: draftConfig.max_tnt,
-			});
-			if (!result.success) zodErrors = result.error.issues;
-		} else if (step === 2) {
-			const result = WizardTNTConfigSchema.safeParse({
+			}))
+			.with(2, () => WizardTNTConfigSchema.safeParse({
 				northWest: draftConfig.north_west_tnt,
 				northEast: draftConfig.north_east_tnt,
 				southWest: draftConfig.south_west_tnt,
 				southEast: draftConfig.south_east_tnt,
 				redTNTLocation,
-			});
-			if (!result.success) zodErrors = result.error.issues;
-		} else if (step === 3) {
-			const result = WizardBitConfigSchema.safeParse({
+			}))
+			.with(3, () => WizardBitConfigSchema.safeParse({
 				state: bitTemplateState,
 				skipped: isBitConfigSkipped,
-			});
-			if (!result.success) zodErrors = result.error.issues;
+			}))
+			.otherwise(() => ({ success: true, error: null }));
+
+		if (!result.success && result.error) {
+			zodErrors = result.error.issues;
 		}
 
 		if (zodErrors.length > 0) {
 			const newErrors: Record<string, string> = {};
 			zodErrors.forEach((issue) => {
 				const path = issue.path.join(".");
-				const msg = t("error.configuration_page.validation.required");
 
-				if (path.includes("cannonCenter.x")) newErrors.cannon_x = msg;
-				else if (path.includes("cannonCenter.z")) newErrors.cannon_z = msg;
-				else if (path.includes("pearlPosition.x")) newErrors.pearl_x = msg;
-				else if (path.includes("pearlPosition.y")) newErrors.pearl_y = msg;
-				else if (path.includes("pearlPosition.z")) newErrors.pearl_z = msg;
-				else if (path.includes("pearlMomentum.x")) newErrors.momentum_x = msg;
-				else if (path.includes("pearlMomentum.y")) newErrors.momentum_y = msg;
-				else if (path.includes("pearlMomentum.z")) newErrors.momentum_z = msg;
-				else if (path.includes("maxTNT")) newErrors.max_tnt = t("error.configuration_page.validation.positive_integer");
+				if (issue.message === "incomplete") {
+					match(bitTemplateState)
+						.with(P.nullish, () => newErrors.bit_template_empty = t("error.configuration_page.validation.required"))
+						.with({ sideValues: P.when(v => v.some(val => !val || val.trim() === "")) }, () => newErrors.bit_values_incomplete = t("error.configuration_page.validation.required"))
+						.with({ masks: P.when(m => m.some(mask => !mask.direction)) }, () => newErrors.bit_masks_incomplete = t("error.configuration_page.validation.required"))
+						.otherwise(() => newErrors.bit_template_empty = t("error.configuration_page.validation.required"));
+					return;
+				}
 
-				else if (path.includes("northWest.x")) newErrors.north_west_tnt_x = msg;
-				else if (path.includes("northWest.y")) newErrors.north_west_tnt_y = msg;
-				else if (path.includes("northWest.z")) newErrors.north_west_tnt_z = msg;
-				else if (path.includes("northEast.x")) newErrors.north_east_tnt_x = msg;
-				else if (path.includes("northEast.y")) newErrors.north_east_tnt_y = msg;
-				else if (path.includes("northEast.z")) newErrors.north_east_tnt_z = msg;
-				else if (path.includes("southWest.x")) newErrors.south_west_tnt_x = msg;
-				else if (path.includes("southWest.y")) newErrors.south_west_tnt_y = msg;
-				else if (path.includes("southWest.z")) newErrors.south_west_tnt_z = msg;
-				else if (path.includes("southEast.x")) newErrors.south_east_tnt_x = msg;
-				else if (path.includes("southEast.y")) newErrors.south_east_tnt_y = msg;
-				else if (path.includes("southEast.z")) newErrors.south_east_tnt_z = msg;
-				else if (path.includes("redTNTLocation")) newErrors.red_tnt_selection = "true";
-
-				else if (issue.message === "incomplete") {
-					const state = bitTemplateState;
-					if (!state) newErrors.bit_template_empty = msg;
-					else if (state.sideValues.some(v => !v || v.trim() === "")) newErrors.bit_values_incomplete = msg;
-					else if (state.masks.some(m => !m.direction)) newErrors.bit_masks_incomplete = msg;
-					else newErrors.bit_template_empty = msg;
+				const mapping = ERROR_MAPPINGS.find(([sub]) => path.includes(sub));
+				if (mapping) {
+					const [sub, errorKey] = mapping;
+					newErrors[errorKey] = match(sub)
+						.with("maxTNT", () => t("error.configuration_page.validation.positive_integer"))
+						.with("redTNTLocation", () => "true")
+						.otherwise(() => t("error.configuration_page.validation.required"));
 				}
 			});
 			setErrors(newErrors);

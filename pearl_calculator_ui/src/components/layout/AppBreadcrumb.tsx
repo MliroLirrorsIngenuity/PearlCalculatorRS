@@ -1,4 +1,5 @@
 
+import { match, P } from "ts-pattern";
 import { ChevronLeft, ChevronsRight } from "lucide-react";
 import { Fragment } from "react";
 import { useTranslation } from "react-i18next";
@@ -21,13 +22,11 @@ export function AppBreadcrumb() {
 	const items = useBreadcrumbItems();
 
 	const handleBack = () => {
-		if (items.length < 2) return;
 		const prev = items[items.length - 2];
-		if (prev.onClick) {
-			prev.onClick();
-		} else if (prev.href) {
-			navigate(prev.href);
-		}
+		match(prev)
+			.with({ onClick: P.nonNullable }, (item) => item.onClick())
+			.with({ href: P.string }, (item) => navigate(item.href))
+			.otherwise(() => { });
 	};
 
 	return (

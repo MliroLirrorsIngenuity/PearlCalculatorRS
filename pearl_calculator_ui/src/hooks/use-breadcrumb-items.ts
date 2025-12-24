@@ -1,4 +1,4 @@
-
+import { match } from "ts-pattern";
 import { useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useCalculatorState } from "@/context/CalculatorStateContext";
@@ -12,9 +12,6 @@ export interface BreadcrumbItemType {
     onClick?: () => void;
 }
 
-const isBreadcrumb = (item: BreadcrumbItemType | boolean | undefined | null): item is BreadcrumbItemType => {
-    return !!item;
-};
 
 export function useBreadcrumbItems() {
     const location = useLocation();
@@ -47,59 +44,47 @@ export function useBreadcrumbItems() {
     const resetFinished = () => setIsFinished(false);
 
     const getHomeBreadcrumbs = (): BreadcrumbItemType[] => {
-        if (!hasConfig) {
-            return [{ label: t("breadcrumb.select_config"), href: "/", active: true }];
-        }
-
-        return ([
-            {
-                label: t("breadcrumb.select_config"),
-                onClick: resetConfig,
-            },
-            {
-                label: t("breadcrumb.calculator"),
-                href: "/",
-                active: !showPearlTrace,
-                onClick: showPearlTrace ? resetTrace : undefined,
-            },
-            showPearlTrace && {
-                label: t("breadcrumb.pearl_trace"),
-                active: !showBitCalculation,
-                onClick: showBitCalculation ? resetBit : undefined,
-            },
-            (showPearlTrace && showBitCalculation) && {
-                label: t("breadcrumb.bit_calculation"),
-                active: true,
-            },
-        ] as (BreadcrumbItemType | boolean | undefined | null)[]).filter(isBreadcrumb);
+        return match({ hasConfig, showPearlTrace, showBitCalculation })
+            .with({ hasConfig: false }, () => [
+                { label: t("breadcrumb.select_config"), href: "/", active: true },
+            ])
+            .with({ showPearlTrace: false }, () => [
+                { label: t("breadcrumb.select_config"), onClick: resetConfig },
+                { label: t("breadcrumb.calculator"), href: "/", active: true },
+            ])
+            .with({ showBitCalculation: false }, () => [
+                { label: t("breadcrumb.select_config"), onClick: resetConfig },
+                { label: t("breadcrumb.calculator"), href: "/", onClick: resetTrace },
+                { label: t("breadcrumb.pearl_trace"), active: true },
+            ])
+            .otherwise(() => [
+                { label: t("breadcrumb.select_config"), onClick: resetConfig },
+                { label: t("breadcrumb.calculator"), href: "/", onClick: resetTrace },
+                { label: t("breadcrumb.pearl_trace"), onClick: resetBit },
+                { label: t("breadcrumb.bit_calculation"), active: true },
+            ]);
     };
 
     const getConfigBreadcrumbs = (): BreadcrumbItemType[] => {
-        return ([
-            {
-                label: t("breadcrumb.configuration"),
-                href: "/configuration",
-                active: !isWizardActive,
-                onClick: isWizardActive ? resetWizard : undefined,
-            },
-            isWizardActive && {
-                label: t("breadcrumb.new_config"),
-                active: !isFinished,
-                onClick: isFinished ? resetFinished : undefined,
-            },
-            (isWizardActive && isFinished) && {
-                label: t("breadcrumb.completed"),
-                active: true,
-            },
-        ] as (BreadcrumbItemType | boolean | undefined | null)[]).filter(isBreadcrumb);
+        return match({ isWizardActive, isFinished })
+            .with({ isWizardActive: false }, () => [
+                { label: t("breadcrumb.configuration"), href: "/configuration", active: true },
+            ])
+            .with({ isFinished: false }, () => [
+                { label: t("breadcrumb.configuration"), href: "/configuration", onClick: resetWizard },
+                { label: t("breadcrumb.new_config"), active: true },
+            ])
+            .otherwise(() => [
+                { label: t("breadcrumb.configuration"), href: "/configuration", onClick: resetWizard },
+                { label: t("breadcrumb.new_config"), onClick: resetFinished },
+                { label: t("breadcrumb.completed"), active: true },
+            ]);
     };
 
-    const breadcrumbRoutes: Record<string, () => BreadcrumbItemType[]> = {
-        "/": getHomeBreadcrumbs,
-        "/simulator": () => [{ label: t("breadcrumb.simulator"), href: "/simulator", active: true }],
-        "/configuration": getConfigBreadcrumbs,
-        "/settings": () => [{ label: t("breadcrumb.settings"), href: "/settings", active: true }],
-    };
-
-    return breadcrumbRoutes[location.pathname]?.() || [];
+    return match(location.pathname)
+        .with("/", () => getHomeBreadcrumbs())
+        .with("/simulator", () => [{ label: t("breadcrumb.simulator"), href: "/simulator", active: true }])
+        .with("/configuration", () => getConfigBreadcrumbs())
+        .with("/settings", () => [{ label: t("breadcrumb.settings"), href: "/settings", active: true }])
+        .otherwise(() => []);
 }

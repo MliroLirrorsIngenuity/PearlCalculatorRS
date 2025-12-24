@@ -31,19 +31,18 @@ export interface PearlMomentum {
 	z: string;
 }
 
+const OPPOSITE_PAIRS: Record<TNTDirection, TNTDirection> = {
+	NorthWest: "SouthEast",
+	SouthEast: "NorthWest",
+	NorthEast: "SouthWest",
+	SouthWest: "NorthEast",
+};
+
 export function getOppositeDirection(dir: string | undefined): TNTDirection {
-	switch (dir) {
-		case "NorthWest":
-			return "SouthEast";
-		case "SouthEast":
-			return "NorthWest";
-		case "NorthEast":
-			return "SouthWest";
-		case "SouthWest":
-			return "NorthEast";
-		default:
-			return "SouthEast";
+	if (dir && dir in OPPOSITE_PAIRS) {
+		return OPPOSITE_PAIRS[dir as TNTDirection];
 	}
+	return "SouthEast";
 }
 
 function parseNumber(val: any): number {
@@ -114,7 +113,7 @@ export function buildExportConfig(
 	const pearlX = parseNumber(draftConfig.pearl_x_position);
 	const pearlZ = parseNumber(draftConfig.pearl_z_position);
 
-	const config: Record<string, unknown> = {
+	const baseConfig = {
 		NorthEastTNT: getRelativeTNTUppercase(draftConfig.north_east_tnt, cx, cz),
 		NorthWestTNT: getRelativeTNTUppercase(draftConfig.north_west_tnt, cx, cz),
 		SouthEastTNT: getRelativeTNTUppercase(draftConfig.south_east_tnt, cx, cz),
@@ -137,23 +136,26 @@ export function buildExportConfig(
 		DefaultBlueTNTDirection: getOppositeDirection(redTNTLocation),
 	};
 
-	if (bitTemplateState) {
-		config.SideMode = bitTemplateState.sideCount;
-		const directionMasks: Record<string, BitDirection> = {};
-		for (const mask of bitTemplateState.masks) {
-			const key = mask.bits.join("");
-			if (mask.direction) {
-				directionMasks[key] = mask.direction as BitDirection;
-			}
-		}
-		config.DirectionMasks = directionMasks;
-		config.RedValues = bitTemplateState.sideValues
-			.map((v) => parseInt(v, 10) || 0)
-			.reverse();
-		config.IsRedArrowCenter = bitTemplateState.isSwapped;
+	if (!bitTemplateState) {
+		return baseConfig;
 	}
 
-	return config;
+	const directionMasks = bitTemplateState.masks.reduce((acc, mask) => {
+		if (mask.direction) {
+			acc[mask.bits.join("")] = mask.direction as BitDirection;
+		}
+		return acc;
+	}, {} as Record<string, BitDirection>);
+
+	return {
+		...baseConfig,
+		SideMode: bitTemplateState.sideCount,
+		DirectionMasks: directionMasks,
+		RedValues: bitTemplateState.sideValues
+			.map((v) => parseInt(v, 10) || 0)
+			.reverse(),
+		IsRedArrowCenter: bitTemplateState.isSwapped,
+	};
 }
 
 export function convertConfigToDraft(config: GeneralConfig): {
