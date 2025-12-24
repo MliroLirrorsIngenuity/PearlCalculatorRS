@@ -169,7 +169,7 @@ export default function SimulatorInputForm({
 	return (
 		<div className="flex flex-col h-full">
 			<ScrollArea className="flex-1 pr-3 pl-1">
-				<FieldSet className="w-full space-y-3 pb-4">
+				<FieldSet className="w-full pb-4">
 					<div className="flex items-center justify-between">
 						<FieldLegend className="text-lg font-semibold flex items-center gap-2">
 							{t("simulator.configuration_title")}
