@@ -97,7 +97,7 @@ export function convertDraftToConfig(
 		default_red_tnt_position: redDir,
 		default_blue_tnt_position: getOppositeDirection(redDir),
 		offset_x: 0,
-		offset_z: 0
+		offset_z: 0,
 	};
 }
 
@@ -140,12 +140,15 @@ export function buildExportConfig(
 		return baseConfig;
 	}
 
-	const directionMasks = bitTemplateState.masks.reduce((acc, mask) => {
-		if (mask.direction) {
-			acc[mask.bits.join("")] = mask.direction as BitDirection;
-		}
-		return acc;
-	}, {} as Record<string, BitDirection>);
+	const directionMasks = bitTemplateState.masks.reduce(
+		(acc, mask) => {
+			if (mask.direction) {
+				acc[mask.bits.join("")] = mask.direction as BitDirection;
+			}
+			return acc;
+		},
+		{} as Record<string, BitDirection>,
+	);
 
 	return {
 		...baseConfig,

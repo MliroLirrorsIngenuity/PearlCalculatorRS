@@ -1,6 +1,10 @@
 import { match, P } from "ts-pattern";
 import { revealItemInDir } from "@tauri-apps/plugin-opener";
-import { WizardBasicInfoSchema, WizardBitConfigSchema, WizardTNTConfigSchema } from "@/lib/schemas";
+import {
+	WizardBasicInfoSchema,
+	WizardBitConfigSchema,
+	WizardTNTConfigSchema,
+} from "@/lib/schemas";
 import { z } from "zod";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -9,10 +13,21 @@ import { useCalculatorState } from "@/context/CalculatorStateContext";
 import { useConfig } from "@/context/ConfigContext";
 import { useConfigurationState } from "@/context/ConfigurationStateContext";
 import { useToastNotifications } from "@/hooks/use-toast-notifications";
-import { configToInputState, inputStateToConfig } from "@/lib/bit-template-utils";
-import { buildExportConfig, convertConfigToDraft, convertDraftToConfig } from "@/lib/config-utils";
+import {
+	configToInputState,
+	inputStateToConfig,
+} from "@/lib/bit-template-utils";
+import {
+	buildExportConfig,
+	convertConfigToDraft,
+	convertDraftToConfig,
+} from "@/lib/config-utils";
 import { exportConfiguration, loadConfiguration } from "@/lib/config-service";
-import { decodeConfig, type EncodableConfig, encodeConfig } from "@/lib/config-codec";
+import {
+	decodeConfig,
+	type EncodableConfig,
+	encodeConfig,
+} from "@/lib/config-codec";
 import { isTauri } from "@/services";
 import type { BitTemplateConfig, GeneralConfig } from "@/types/domain";
 
@@ -75,31 +90,37 @@ export function useConfigurationController() {
 		let zodErrors: z.ZodIssue[] = [];
 
 		const result = match(step)
-			.with(1, () => WizardBasicInfoSchema.safeParse({
-				cannonCenter,
-				pearlPosition: {
-					x: draftConfig.pearl_x_position,
-					y: draftConfig.pearl_y_position,
-					z: draftConfig.pearl_z_position,
-				},
-				pearlMomentum: {
-					x: pearlMomentum.x,
-					y: draftConfig.pearl_y_motion,
-					z: pearlMomentum.z,
-				},
-				maxTNT: draftConfig.max_tnt,
-			}))
-			.with(2, () => WizardTNTConfigSchema.safeParse({
-				northWest: draftConfig.north_west_tnt,
-				northEast: draftConfig.north_east_tnt,
-				southWest: draftConfig.south_west_tnt,
-				southEast: draftConfig.south_east_tnt,
-				redTNTLocation,
-			}))
-			.with(3, () => WizardBitConfigSchema.safeParse({
-				state: bitTemplateState,
-				skipped: isBitConfigSkipped,
-			}))
+			.with(1, () =>
+				WizardBasicInfoSchema.safeParse({
+					cannonCenter,
+					pearlPosition: {
+						x: draftConfig.pearl_x_position,
+						y: draftConfig.pearl_y_position,
+						z: draftConfig.pearl_z_position,
+					},
+					pearlMomentum: {
+						x: pearlMomentum.x,
+						y: draftConfig.pearl_y_motion,
+						z: pearlMomentum.z,
+					},
+					maxTNT: draftConfig.max_tnt,
+				}),
+			)
+			.with(2, () =>
+				WizardTNTConfigSchema.safeParse({
+					northWest: draftConfig.north_west_tnt,
+					northEast: draftConfig.north_east_tnt,
+					southWest: draftConfig.south_west_tnt,
+					southEast: draftConfig.south_east_tnt,
+					redTNTLocation,
+				}),
+			)
+			.with(3, () =>
+				WizardBitConfigSchema.safeParse({
+					state: bitTemplateState,
+					skipped: isBitConfigSkipped,
+				}),
+			)
 			.otherwise(() => ({ success: true, error: null }));
 
 		if (!result.success && result.error) {
@@ -113,10 +134,37 @@ export function useConfigurationController() {
 
 				if (issue.message === "incomplete") {
 					match(bitTemplateState)
-						.with(P.nullish, () => newErrors.bit_template_empty = t("error.configuration_page.validation.required"))
-						.with({ sideValues: P.when(v => v.some(val => !val || val.trim() === "")) }, () => newErrors.bit_values_incomplete = t("error.configuration_page.validation.required"))
-						.with({ masks: P.when(m => m.some(mask => !mask.direction)) }, () => newErrors.bit_masks_incomplete = t("error.configuration_page.validation.required"))
-						.otherwise(() => newErrors.bit_template_empty = t("error.configuration_page.validation.required"));
+						.with(
+							P.nullish,
+							() =>
+								(newErrors.bit_template_empty = t(
+									"error.configuration_page.validation.required",
+								)),
+						)
+						.with(
+							{
+								sideValues: P.when((v) =>
+									v.some((val) => !val || val.trim() === ""),
+								),
+							},
+							() =>
+								(newErrors.bit_values_incomplete = t(
+									"error.configuration_page.validation.required",
+								)),
+						)
+						.with(
+							{ masks: P.when((m) => m.some((mask) => !mask.direction)) },
+							() =>
+								(newErrors.bit_masks_incomplete = t(
+									"error.configuration_page.validation.required",
+								)),
+						)
+						.otherwise(
+							() =>
+								(newErrors.bit_template_empty = t(
+									"error.configuration_page.validation.required",
+								)),
+						);
 					return;
 				}
 
@@ -124,7 +172,9 @@ export function useConfigurationController() {
 				if (mapping) {
 					const [sub, errorKey] = mapping;
 					newErrors[errorKey] = match(sub)
-						.with("maxTNT", () => t("error.configuration_page.validation.positive_integer"))
+						.with("maxTNT", () =>
+							t("error.configuration_page.validation.positive_integer"),
+						)
 						.with("redTNTLocation", () => "true")
 						.otherwise(() => t("error.configuration_page.validation.required"));
 				}
@@ -224,7 +274,8 @@ export function useConfigurationController() {
 		config: GeneralConfig,
 		bitTemplate: BitTemplateConfig | null,
 	) => {
-		const { draft, center, momentum, redLocation } = convertConfigToDraft(config);
+		const { draft, center, momentum, redLocation } =
+			convertConfigToDraft(config);
 		setDraftConfig(draft);
 		setCannonCenter(center);
 		setPearlMomentum(momentum);

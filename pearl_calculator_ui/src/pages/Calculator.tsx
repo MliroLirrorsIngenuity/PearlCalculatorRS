@@ -101,14 +101,26 @@ export default function Calculator() {
 			setConfigPath("");
 			setHasConfig(true);
 
-			updateDefaultInput("pearlX", decoded.generalConfig.pearl_x_position.toString());
-			updateDefaultInput("pearlZ", decoded.generalConfig.pearl_z_position.toString());
+			updateDefaultInput(
+				"pearlX",
+				decoded.generalConfig.pearl_x_position.toString(),
+			);
+			updateDefaultInput(
+				"pearlZ",
+				decoded.generalConfig.pearl_z_position.toString(),
+			);
 			updateDefaultInput(
 				"cannonY",
 				Math.floor(decoded.generalConfig.pearl_y_position).toString(),
 			);
-			updateDefaultInput("offsetX", (decoded.generalConfig.offset_x ?? 0).toString());
-			updateDefaultInput("offsetZ", (decoded.generalConfig.offset_z ?? 0).toString());
+			updateDefaultInput(
+				"offsetX",
+				(decoded.generalConfig.offset_x ?? 0).toString(),
+			);
+			updateDefaultInput(
+				"offsetZ",
+				(decoded.generalConfig.offset_z ?? 0).toString(),
+			);
 
 			showSuccess(t("calculator.toast_code_imported"));
 		} catch (e) {
@@ -162,7 +174,11 @@ export default function Calculator() {
 				<Button className="w-48" onClick={handleImport}>
 					{t("calculator.import_config_btn")}
 				</Button>
-				<Button className="w-48" variant="outline" onClick={handleImportFromClipboard}>
+				<Button
+					className="w-48"
+					variant="outline"
+					onClick={handleImportFromClipboard}
+				>
 					{t("calculator.import_code_btn")}
 				</Button>
 				<Button

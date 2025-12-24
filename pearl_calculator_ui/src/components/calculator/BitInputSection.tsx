@@ -137,9 +137,9 @@ export function BitInputSection({
 			const newValues =
 				state.sideValues.length < state.sideCount
 					? [
-						...state.sideValues,
-						...Array(state.sideCount - state.sideValues.length).fill(""),
-					]
+							...state.sideValues,
+							...Array(state.sideCount - state.sideValues.length).fill(""),
+						]
 					: state.sideValues.slice(0, state.sideCount);
 			setState({ ...state, sideValues: newValues });
 		}
@@ -181,13 +181,14 @@ export function BitInputSection({
 				}
 			})
 			.with("Backspace", () => {
-				const actualIndex = source === "blue" ? index : state.sideCount - 1 - index;
+				const actualIndex =
+					source === "blue" ? index : state.sideCount - 1 - index;
 				if (state.sideValues[actualIndex] === "" && index > 0) {
 					e.preventDefault();
 					refs.current[index - 1]?.focus();
 				}
 			})
-			.otherwise(() => { });
+			.otherwise(() => {});
 	};
 
 	const handleDirectionChange = (groupIndex: number, value: string) => {

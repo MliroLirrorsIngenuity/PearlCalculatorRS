@@ -18,7 +18,9 @@ export function useToastNotifications() {
 		} else if (typeof error === "string") {
 			errorMessage = error.startsWith("error.") ? t(error as any) : error;
 		} else {
-			errorMessage = String(error || t("error.unknown" as any, "Unknown error"));
+			errorMessage = String(
+				error || t("error.unknown" as any, "Unknown error"),
+			);
 		}
 
 		toast(title, {

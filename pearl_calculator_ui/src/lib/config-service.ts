@@ -7,36 +7,49 @@ import {
 	GeneralConfigSchema,
 	TNTDirectionSchema,
 } from "@/lib/schemas";
-import type {
-	BitTemplateConfig,
-	GeneralConfig,
-} from "@/types/domain";
+import type { BitTemplateConfig, GeneralConfig } from "@/types/domain";
 import { isTauri } from "@/services";
 
-
-
-const LooseConfigSchema = z.object({
-	Version: z.string().optional(),
-	CannonSettings: z.array(z.any()).optional(),
-	MaxTNT: z.any().optional(),
-	NorthWestTNT: z.any().optional(),
-	NorthEastTNT: z.any().optional(),
-	SouthWestTNT: z.any().optional(),
-	SouthEastTNT: z.any().optional(),
-	DefaultRedDirection: z.string().optional(),
-	DefaultRedTNTDirection: z.string().optional(),
-	DefaultBlueDirection: z.string().optional(),
-	DefaultBlueTNTDirection: z.string().optional(),
-	Pearl: z.object({
-		Position: z.object({ X: z.any().optional(), Y: z.any().optional(), Z: z.any().optional() }).optional(),
-		Motion: z.object({ X: z.any().optional(), Y: z.any().optional(), Z: z.any().optional() }).optional(),
-	}).optional(),
-	Offset: z.object({ X: z.any().optional(), Z: z.any().optional() }).optional(),
-	SideMode: z.number().optional(),
-	DirectionMasks: z.record(z.string(), z.any()).optional(),
-	RedValues: z.array(z.any()).optional(),
-	IsRedArrowCenter: z.boolean().optional(),
-}).passthrough();
+const LooseConfigSchema = z
+	.object({
+		Version: z.string().optional(),
+		CannonSettings: z.array(z.any()).optional(),
+		MaxTNT: z.any().optional(),
+		NorthWestTNT: z.any().optional(),
+		NorthEastTNT: z.any().optional(),
+		SouthWestTNT: z.any().optional(),
+		SouthEastTNT: z.any().optional(),
+		DefaultRedDirection: z.string().optional(),
+		DefaultRedTNTDirection: z.string().optional(),
+		DefaultBlueDirection: z.string().optional(),
+		DefaultBlueTNTDirection: z.string().optional(),
+		Pearl: z
+			.object({
+				Position: z
+					.object({
+						X: z.any().optional(),
+						Y: z.any().optional(),
+						Z: z.any().optional(),
+					})
+					.optional(),
+				Motion: z
+					.object({
+						X: z.any().optional(),
+						Y: z.any().optional(),
+						Z: z.any().optional(),
+					})
+					.optional(),
+			})
+			.optional(),
+		Offset: z
+			.object({ X: z.any().optional(), Z: z.any().optional() })
+			.optional(),
+		SideMode: z.number().optional(),
+		DirectionMasks: z.record(z.string(), z.any()).optional(),
+		RedValues: z.array(z.any()).optional(),
+		IsRedArrowCenter: z.boolean().optional(),
+	})
+	.passthrough();
 
 type DirtyConfig = z.infer<typeof LooseConfigSchema>;
 
@@ -80,7 +93,6 @@ function normalizeConfig(dirty: DirtyConfig): GeneralConfig {
 		offset_z: Number(root.Offset?.Z ?? 0),
 	};
 
-
 	return GeneralConfigSchema.parse(config);
 }
 
@@ -103,7 +115,7 @@ function extractBitTemplateConfig(
 	const directionMasks: BitTemplateConfig["DirectionMasks"] = {};
 	if (root.DirectionMasks) {
 		const masks = ["00", "01", "10", "11"] as const;
-		masks.forEach(key => {
+		masks.forEach((key) => {
 			const raw = root.DirectionMasks?.[key];
 			const parsed = BitDirectionSchema.safeParse(raw);
 			if (parsed.success) {
@@ -127,7 +139,6 @@ export async function loadConfiguration(): Promise<{
 	bitTemplate: BitTemplateConfig | null;
 	path: string;
 } | null> {
-
 	try {
 		if (isTauri) {
 			const selected = await open({

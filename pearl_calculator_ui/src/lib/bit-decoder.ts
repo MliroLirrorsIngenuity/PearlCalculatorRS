@@ -19,13 +19,19 @@ export interface BitCalculationOutput {
 
 export function validateBitTemplate(values: number[]): BitValidationResult {
 	if (values.length === 0) {
-		return { isValid: false, errorKey: "error.configuration_page.bit_validation.empty" };
+		return {
+			isValid: false,
+			errorKey: "error.configuration_page.bit_validation.empty",
+		};
 	}
 
 	const sorted = [...values].sort((a, b) => a - b);
 
 	if (sorted[0] !== 1) {
-		return { isValid: false, errorKey: "error.configuration_page.bit_validation.no_unit" };
+		return {
+			isValid: false,
+			errorKey: "error.configuration_page.bit_validation.no_unit",
+		};
 	}
 
 	let currentMaxReach = 0;
@@ -106,7 +112,10 @@ export function calculateBits(
 
 	if (!values) {
 		return {
-			error: { isValid: false, errorKey: "error.configuration_page.bit_validation.invalid" },
+			error: {
+				isValid: false,
+				errorKey: "error.configuration_page.bit_validation.invalid",
+			},
 		};
 	}
 
