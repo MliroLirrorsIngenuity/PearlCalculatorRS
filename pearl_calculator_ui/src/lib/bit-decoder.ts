@@ -19,13 +19,13 @@ export interface BitCalculationOutput {
 
 export function validateBitTemplate(values: number[]): BitValidationResult {
 	if (values.length === 0) {
-		return { isValid: false, errorKey: "calculator.bit_validation_empty" };
+		return { isValid: false, errorKey: "error.configuration_page.bit_validation.empty" };
 	}
 
 	const sorted = [...values].sort((a, b) => a - b);
 
 	if (sorted[0] !== 1) {
-		return { isValid: false, errorKey: "calculator.bit_validation_no_unit" };
+		return { isValid: false, errorKey: "error.configuration_page.bit_validation.no_unit" };
 	}
 
 	let currentMaxReach = 0;
@@ -33,7 +33,7 @@ export function validateBitTemplate(values: number[]): BitValidationResult {
 		if (num > currentMaxReach + 1) {
 			return {
 				isValid: false,
-				errorKey: "calculator.bit_validation_gap",
+				errorKey: "error.configuration_page.bit_validation.gap",
 				errorParams: { gap: currentMaxReach + 1, sum: currentMaxReach },
 			};
 		}
@@ -106,7 +106,7 @@ export function calculateBits(
 
 	if (!values) {
 		return {
-			error: { isValid: false, errorKey: "calculator.bit_validation_invalid" },
+			error: { isValid: false, errorKey: "error.configuration_page.bit_validation.invalid" },
 		};
 	}
 

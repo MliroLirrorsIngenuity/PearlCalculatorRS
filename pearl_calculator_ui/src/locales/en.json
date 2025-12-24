@@ -30,9 +30,7 @@
 			"tab_advanced": "Advanced",
 			"calculate_btn": "Calculate TNT Amount",
 			"toast_config_loaded": "Configuration Loaded",
-			"toast_load_failed": "Failed to load config",
 			"toast_found_configs": "Found {{count}} configurations",
-			"toast_calc_failed": "Calculation Failed",
 			"calculation_legend": "Calculation",
 			"label_pearl_x": "Pearl X",
 			"label_pearl_z": "Pearl Z",
@@ -104,15 +102,9 @@
 			"bit_calc_btn": "Bit Calculation",
 			"bit_calculate_btn": "Calculate",
 			"direction_label": "DIRECTION",
-			"bit_validation_empty": "Template cannot be empty",
-			"bit_validation_no_unit": "Template must contain unit value 1",
-			"bit_validation_gap": "Gap detected: cannot cover {{gap}} after sum {{sum}}",
-			"bit_validation_invalid": "Invalid template values",
-			"bit_value_exceeds": "Value {{value}} exceeds maximum {{max}}",
 			"side_mode": "Side Mode",
 			"import_code_btn": "Import Code",
 			"toast_code_imported": "Configuration imported from code",
-			"toast_code_import_failed": "Invalid code format",
 			"copy_code_tooltip": "Copy configuration code",
 			"export_json_tooltip": "Export as JSON file"
 		},
@@ -166,16 +158,9 @@
 			"tnt_config_desc": "Configure TNT coordinates and select the Red TNT group using the badge.",
 			"bit_config_title": "Bit Configuration",
 			"bit_config_desc": "Configure the bit template.",
-			"bit_values_error": "Please fill in all bit values.",
-			"bit_masks_error": "Please select all direction masks.",
 			"skip_btn": "Skip",
 			"skip_warning_title": "Skip Bit Configuration?",
 			"skip_warning_desc": "Skipping this step will prevent automatic Bit encoding calculations, requiring manual entry later. Are you sure?",
-			"red_tnt_error": "Please select a Red TNT group.",
-			"validation": {
-				"required": "Required",
-				"positive_integer": "Positive integer required"
-			},
 			"red_tnt_badge": "Red TNT",
 			"set_red_badge": "Set Red",
 			"label_x": "X",
@@ -204,9 +189,30 @@
 			"export_config": "Failed to export configuration",
 			"open_folder": "Failed to open folder",
 			"copy_code": "Failed to copy code",
-			"clipboard_empty": "Clipboard is empty or invalid",
-			"import_failed": "Failed to import configuration",
-			"pearl_trace": "Pearl Trace Error"
+			"calculator": {
+				"calc_failed": "Calculation Failed",
+				"load_failed": "Failed to load config",
+				"code_import_failed": "Invalid code format",
+				"clipboard_empty": "Clipboard is empty or invalid",
+				"import_failed": "Failed to import configuration",
+				"pearl_trace": "Pearl Trace Error"
+			},
+			"configuration_page": {
+				"bit_values_error": "Please fill in all bit values.",
+				"bit_masks_error": "Please select all direction masks.",
+				"red_tnt_error": "Please select a Red TNT group.",
+				"bit_validation": {
+					"empty": "Template cannot be empty",
+					"no_unit": "Template must contain unit value 1",
+					"gap": "Gap detected: cannot cover {{gap}} after sum {{sum}}",
+					"invalid": "Invalid template values",
+					"value_exceeds": "Value {{value}} exceeds maximum {{max}}"
+				},
+				"validation": {
+					"required": "Required",
+					"positive_integer": "Positive integer required"
+				}
+			}
 		}
 	}
 }

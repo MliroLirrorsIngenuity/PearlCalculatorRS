@@ -85,7 +85,7 @@ export function useConfigurationController() {
 			const newErrors: Record<string, string> = {};
 			zodErrors.forEach((issue) => {
 				const path = issue.path.join(".");
-				const msg = t("configuration_page.validation.required");
+				const msg = t("error.configuration_page.validation.required");
 
 				if (path.includes("cannonCenter.x")) newErrors.cannon_x = msg;
 				else if (path.includes("cannonCenter.z")) newErrors.cannon_z = msg;
@@ -95,7 +95,7 @@ export function useConfigurationController() {
 				else if (path.includes("pearlMomentum.x")) newErrors.momentum_x = msg;
 				else if (path.includes("pearlMomentum.y")) newErrors.momentum_y = msg;
 				else if (path.includes("pearlMomentum.z")) newErrors.momentum_z = msg;
-				else if (path.includes("maxTNT")) newErrors.max_tnt = t("configuration_page.validation.positive_integer");
+				else if (path.includes("maxTNT")) newErrors.max_tnt = t("error.configuration_page.validation.positive_integer");
 
 				else if (path.includes("northWest.x")) newErrors.north_west_tnt_x = msg;
 				else if (path.includes("northWest.y")) newErrors.north_west_tnt_y = msg;
@@ -231,7 +231,7 @@ export function useConfigurationController() {
 			const { calculatorService } = await import("@/services");
 			const text = await calculatorService.readFromClipboard();
 			if (!text) {
-				showError(t("error.clipboard_empty"));
+				showError(t("error.calculator.clipboard_empty"));
 				return;
 			}
 			const decoded = decodeConfig(text);
@@ -239,7 +239,7 @@ export function useConfigurationController() {
 			showSuccess(t("configuration_page.toast_imported"));
 		} catch (error) {
 			console.error(error);
-			showError(t("calculator.toast_code_import_failed"), error);
+			showError(t("error.calculator.code_import_failed"), error);
 		}
 	};
 
@@ -253,7 +253,7 @@ export function useConfigurationController() {
 			}
 		} catch (error) {
 			console.error(error);
-			showError(t("error.import_failed"));
+			showError(t("error.calculator.import_failed"));
 		}
 	};
 

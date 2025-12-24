@@ -32,12 +32,12 @@ export function BitConfigurationStep({ errors }: BitConfigurationStepProps) {
 					<div className="space-y-1">
 						{hasValuesError && (
 							<p className="text-sm text-destructive font-medium animate-in fade-in slide-in-from-top-1">
-								{t("configuration_page.bit_values_error")}
+								{t("error.configuration_page.bit_values_error")}
 							</p>
 						)}
 						{hasMasksError && (
 							<p className="text-sm text-destructive font-medium animate-in fade-in slide-in-from-top-1">
-								{t("configuration_page.bit_masks_error")}
+								{t("error.configuration_page.bit_masks_error")}
 							</p>
 						)}
 					</div>

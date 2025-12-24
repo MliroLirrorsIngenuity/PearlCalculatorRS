@@ -26,7 +26,7 @@ export function TNTConfigurationStep({ errors }: TNTConfigurationStepProps) {
 				</p>
 				{errors.red_tnt_selection && (
 					<p className="text-sm text-destructive font-medium animate-in fade-in slide-in-from-top-1">
-						{t("configuration_page.red_tnt_error")}
+						{t("error.configuration_page.red_tnt_error")}
 					</p>
 				)}
 			</div>

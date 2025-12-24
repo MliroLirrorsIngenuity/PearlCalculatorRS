@@ -87,7 +87,7 @@ export default function Calculator() {
 			}
 		} catch (e) {
 			console.error("Import error:", e);
-			showError(t("calculator.toast_load_failed"), e);
+			showError(t("error.calculator.load_failed"), e);
 		}
 	};
 
@@ -113,7 +113,7 @@ export default function Calculator() {
 			showSuccess(t("calculator.toast_code_imported"));
 		} catch (e) {
 			console.error("Import from clipboard error:", e);
-			showError(t("calculator.toast_code_import_failed"), e);
+			showError(t("error.calculator.code_import_failed"), e);
 		}
 	};
 
@@ -126,7 +126,7 @@ export default function Calculator() {
 				t("calculator.toast_found_configs", { count: result.data.length }),
 			);
 		} else {
-			showError(t("calculator.toast_calc_failed"), result.error);
+			showError(t("error.calculator.calc_failed"), result.error);
 		}
 	};
 

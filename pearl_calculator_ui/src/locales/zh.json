@@ -30,9 +30,7 @@
 			"tab_advanced": "高级",
 			"calculate_btn": "计算 TNT 数量",
 			"toast_config_loaded": "配置已加载",
-			"toast_load_failed": "加载配置失败",
 			"toast_found_configs": "{{count}} 个结果",
-			"toast_calc_failed": "计算失败",
 			"calculation_legend": "常规",
 			"label_pearl_x": "珍珠 X 坐标",
 			"label_pearl_z": "珍珠 Z 坐标",
@@ -104,15 +102,9 @@
 			"bit_calc_btn": "Bit计算",
 			"bit_calculate_btn": "开始计算",
 			"direction_label": "方向",
-			"bit_validation_empty": "模板不能为空",
-			"bit_validation_no_unit": "模板必须包含单位值 1",
-			"bit_validation_gap": "检测到断层：在累加和为 {{sum}} 时无法覆盖 {{gap}}",
-			"bit_validation_invalid": "模板值无效",
-			"bit_value_exceeds": "数值 {{value}} 超出最大范围 {{max}}",
 			"side_mode": "位数",
 			"import_code_btn": "导入代码",
 			"toast_code_imported": "已从代码导入配置",
-			"toast_code_import_failed": "无效的编码格式",
 			"copy_code_tooltip": "复制神秘代码",
 			"export_json_tooltip": "导出 JSON 文件"
 		},
@@ -166,16 +158,9 @@
 			"tnt_config_desc": "配置 TNT 坐标并使用徽章选择红色 TNT 组",
 			"bit_config_title": "Bit 配置",
 			"bit_config_desc": "配置 Bit 样板",
-			"bit_values_error": "请填写所有 Bit 值",
-			"bit_masks_error": "请填写所有方向掩码",
 			"skip_btn": "跳过",
 			"skip_warning_title": "确定要跳过吗？",
 			"skip_warning_desc": "未配置 Bit 模板将导致无法使用自动 Bit 编码计算，需后续手动录入进行计算。是否确认跳过？",
-			"red_tnt_error": "请选择一个红色 TNT 组",
-			"validation": {
-				"required": "必填",
-				"positive_integer": "需要正整数"
-			},
 			"red_tnt_badge": "红组 TNT",
 			"set_red_badge": "设为红组",
 			"label_x": "X",
@@ -204,7 +189,30 @@
 			"export_config": "导出配置失败",
 			"open_folder": "打开文件夹失败",
 			"copy_code": "复制代码失败",
-			"pearl_trace": "珍珠轨迹计算错误"
+			"calculator": {
+				"load_failed": "加载配置失败",
+				"calc_failed": "计算失败",
+				"code_import_failed": "无效的编码格式",
+				"clipboard_empty": "剪贴板为空或无效",
+				"import_failed": "导入配置失败",
+				"pearl_trace": "珍珠轨迹计算错误"
+			},
+			"configuration_page": {
+				"bit_values_error": "请填写所有 Bit 值",
+				"bit_masks_error": "请填写所有方向掩码",
+				"red_tnt_error": "请选择一个红色 TNT 组",
+				"bit_validation": {
+					"empty": "模板不能为空",
+					"no_unit": "模板必须包含单位值 1",
+					"gap": "检测到断层：在累加和为 {{sum}} 时无法覆盖 {{gap}}",
+					"invalid": "模板值无效",
+					"value_exceeds": "数值 {{value}} 超出最大范围 {{max}}"
+				},
+				"validation": {
+					"required": "必填",
+					"positive_integer": "需要正整数"
+				}
+			}
 		}
 	}
 }
