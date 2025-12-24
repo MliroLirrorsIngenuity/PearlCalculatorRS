@@ -195,7 +195,7 @@ export function useConfigurationController() {
 			}
 		} catch (error) {
 			console.error(error);
-			showError(t("error.export_config"));
+			showError(t("error.configuration_page.export_failed"));
 		}
 	};
 
@@ -205,7 +205,7 @@ export function useConfigurationController() {
 				await revealItemInDir(savedPath);
 			} catch (error) {
 				console.error(error);
-				showError(t("error.open_folder"));
+				showError(t("error.configuration_page.open_folder_failed"));
 			}
 		}
 	};
@@ -272,7 +272,7 @@ export function useConfigurationController() {
 			showSuccess(t("configuration_page.toast_code_copied"));
 		} catch (error) {
 			console.error(error);
-			showError(t("error.copy_code"));
+			showError(t("error.configuration_page.copy_code_failed"));
 		}
 	};
 

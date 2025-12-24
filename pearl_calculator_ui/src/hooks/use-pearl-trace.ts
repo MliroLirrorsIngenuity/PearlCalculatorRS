@@ -55,7 +55,7 @@ export function usePearlTrace() {
 			return result;
 		} catch (error) {
 			console.error("Pearl trace calculation failed:", error);
-			showError(t("error.pearl_trace"), error);
+			showError(t("error.calculator.pearl_trace"), error);
 			return null;
 		}
 	};

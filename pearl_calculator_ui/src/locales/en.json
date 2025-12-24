@@ -186,9 +186,6 @@
 				"no_valid_code": "No valid code found",
 				"checksum_mismatch": "Checksum mismatch"
 			},
-			"export_config": "Failed to export configuration",
-			"open_folder": "Failed to open folder",
-			"copy_code": "Failed to copy code",
 			"calculator": {
 				"calc_failed": "Calculation Failed",
 				"load_failed": "Failed to load config",
@@ -198,6 +195,9 @@
 				"pearl_trace": "Pearl Trace Error"
 			},
 			"configuration_page": {
+				"export_failed": "Failed to export configuration",
+				"open_folder_failed": "Failed to open folder",
+				"copy_code_failed": "Failed to copy code",
 				"bit_values_error": "Please fill in all bit values.",
 				"bit_masks_error": "Please select all direction masks.",
 				"red_tnt_error": "Please select a Red TNT group.",

@@ -41,7 +41,7 @@ export function useSimulatorTrace() {
 			return await calculatorService.calculateRawTrace(input);
 		} catch (error) {
 			console.error("Pearl trace calculation failed:", error);
-			showError(t("error.pearl_trace"), error);
+			showError(t("error.calculator.pearl_trace"), error);
 			return null;
 		}
 	};

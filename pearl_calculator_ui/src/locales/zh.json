@@ -186,9 +186,6 @@
 				"no_valid_code": "未找到有效代码",
 				"checksum_mismatch": "校验和不匹配"
 			},
-			"export_config": "导出配置失败",
-			"open_folder": "打开文件夹失败",
-			"copy_code": "复制代码失败",
 			"calculator": {
 				"load_failed": "加载配置失败",
 				"calc_failed": "计算失败",
@@ -198,6 +195,9 @@
 				"pearl_trace": "珍珠轨迹计算错误"
 			},
 			"configuration_page": {
+				"export_failed": "导出配置失败",
+				"open_folder_failed": "打开文件夹失败",
+				"copy_code_failed": "复制代码失败",
 				"bit_values_error": "请填写所有 Bit 值",
 				"bit_masks_error": "请填写所有方向掩码",
 				"red_tnt_error": "请选择一个红色 TNT 组",

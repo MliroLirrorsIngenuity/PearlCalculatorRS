@@ -92,7 +92,7 @@ export default function ConfigurationDataForm({
 			showSuccess(t("configuration_page.toast_code_copied"));
 		} catch (error) {
 			console.error(error);
-			showError(t("error.copy_code"));
+			showError(t("error.configuration_page.copy_code_failed"));
 		}
 	};
 
@@ -103,7 +103,7 @@ export default function ConfigurationDataForm({
 			showSuccess(t("configuration_page.toast_exported"));
 		} catch (error) {
 			console.error(error);
-			showError(t("error.export_config"));
+			showError(t("error.configuration_page.export_failed"));
 		}
 	};
 
