@@ -5,6 +5,8 @@ import type {
 	GeneralConfig,
 	TNTResult,
 } from "@/types/domain";
+import { z } from "zod";
+import { CoercedNumberSchema } from "@/lib/schemas";
 
 type CalculationResult =
 	| { success: true; data: TNTResult[] }
@@ -18,6 +20,21 @@ export function useTNTCalculator() {
 		config: GeneralConfig,
 		version: string,
 	): Promise<CalculationResult> => {
+		const DestSchema = z.object({
+			destX: z.coerce.number(),
+			destZ: z.coerce.number(),
+		});
+
+		const destResult = DestSchema.safeParse(inputs);
+		if (!destResult.success) {
+			return {
+				success: false,
+				error: "Invalid Inputs: Destination coordinates must be valid numbers",
+			};
+		}
+
+		const { destX, destZ } = destResult.data;
+
 		if (!inputs.destX || !inputs.destZ) {
 			return {
 				success: false,
@@ -27,25 +44,14 @@ export function useTNTCalculator() {
 
 		const parseOrConfig = (val: string, defaultVal: number) => {
 			if (!val) return defaultVal;
-			const parsed = parseFloat(val);
-			return Number.isNaN(parsed) ? defaultVal : parsed;
+			const res = z.coerce.number().safeParse(val);
+			return res.success ? res.data : defaultVal;
 		};
 
 		const parseOrZero = (val: string) => {
-			if (!val) return 0;
-			const parsed = parseFloat(val);
-			return Number.isNaN(parsed) ? 0 : parsed;
+			const res = CoercedNumberSchema.safeParse(val);
+			return res.success ? res.data : 0;
 		};
-
-		const destX = parseFloat(inputs.destX);
-		const destZ = parseFloat(inputs.destZ);
-
-		if (Number.isNaN(destX) || Number.isNaN(destZ)) {
-			return {
-				success: false,
-				error: "Invalid Inputs: Destination coordinates must be valid numbers",
-			};
-		}
 
 		setIsCalculating(true);
 		try {
@@ -62,26 +68,10 @@ export function useTNTCalculator() {
 					inputs.cannonY,
 					Math.floor(config.pearl_y_position),
 				),
-				northWestTnt: {
-					x: config.north_west_tnt.x,
-					y: config.north_west_tnt.y,
-					z: config.north_west_tnt.z,
-				},
-				northEastTnt: {
-					x: config.north_east_tnt.x,
-					y: config.north_east_tnt.y,
-					z: config.north_east_tnt.z,
-				},
-				southWestTnt: {
-					x: config.south_west_tnt.x,
-					y: config.south_west_tnt.y,
-					z: config.south_west_tnt.z,
-				},
-				southEastTnt: {
-					x: config.south_east_tnt.x,
-					y: config.south_east_tnt.y,
-					z: config.south_east_tnt.z,
-				},
+				northWestTnt: config.north_west_tnt,
+				northEastTnt: config.north_east_tnt,
+				southWestTnt: config.south_west_tnt,
+				southEastTnt: config.south_east_tnt,
 				defaultRedDirection: config.default_red_tnt_position,
 				defaultBlueDirection: config.default_blue_tnt_position,
 				destinationX: destX,
@@ -100,12 +90,10 @@ export function useTNTCalculator() {
 			return { success: true, data: results };
 		} catch (error) {
 			console.error("Calculation failed:", error);
+			const msg = error instanceof Error ? error.message : "An error occurred";
 			return {
 				success: false,
-				error:
-					typeof error === "string"
-						? error
-						: "An error occurred during calculation",
+				error: typeof error === "string" ? error : msg,
 			};
 		} finally {
 			setIsCalculating(false);

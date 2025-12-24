@@ -1,14 +1,12 @@
+import { z } from "zod";
+import { CoercedNumberSchema, TNTDirectionSchema } from "@/lib/schemas";
 import type {
 	BitDirection,
 	BitInputState,
 	GeneralConfig,
 } from "@/types/domain";
 
-export type TNTDirection =
-	| "SouthEast"
-	| "NorthWest"
-	| "SouthWest"
-	| "NorthEast";
+export type TNTDirection = z.infer<typeof TNTDirectionSchema>;
 
 export interface DraftConfig {
 	pearl_x_position: string;
@@ -48,15 +46,19 @@ export function getOppositeDirection(dir: string | undefined): TNTDirection {
 	}
 }
 
+function parseNumber(val: any): number {
+	return CoercedNumberSchema.parse(val);
+}
+
 export function getRelativeTNT(
 	tnt: { x: string; y: string; z: string },
 	cx: number,
 	cz: number,
 ) {
 	return {
-		x: (parseFloat(tnt.x) || 0) - cx,
-		y: parseFloat(tnt.y) || 0,
-		z: (parseFloat(tnt.z) || 0) - cz,
+		x: parseNumber(tnt.x) - cx,
+		y: parseNumber(tnt.y),
+		z: parseNumber(tnt.z) - cz,
 	};
 }
 
@@ -66,9 +68,9 @@ export function getRelativeTNTUppercase(
 	cz: number,
 ) {
 	return {
-		X: (parseFloat(tnt.x) || 0) - cx,
-		Y: parseFloat(tnt.y) || 0,
-		Z: (parseFloat(tnt.z) || 0) - cz,
+		X: parseNumber(tnt.x) - cx,
+		Y: parseNumber(tnt.y),
+		Z: parseNumber(tnt.z) - cz,
 	};
 }
 
@@ -77,11 +79,11 @@ export function convertDraftToConfig(
 	cannonCenter: CannonCenter,
 	redTNTLocation: string | undefined,
 ): GeneralConfig {
-	const cx = parseFloat(cannonCenter.x) || 0;
-	const cz = parseFloat(cannonCenter.z) || 0;
+	const cx = parseNumber(cannonCenter.x);
+	const cz = parseNumber(cannonCenter.z);
 
 	const redDir: TNTDirection =
-		redTNTLocation === "NorthWest" ? "NorthWest" : "SouthEast";
+		TNTDirectionSchema.safeParse(redTNTLocation).data ?? "SouthEast";
 
 	return {
 		north_east_tnt: getRelativeTNT(draftConfig.north_east_tnt, cx, cz),
@@ -89,12 +91,14 @@ export function convertDraftToConfig(
 		south_east_tnt: getRelativeTNT(draftConfig.south_east_tnt, cx, cz),
 		south_west_tnt: getRelativeTNT(draftConfig.south_west_tnt, cx, cz),
 		pearl_x_position: 0,
-		pearl_y_motion: parseFloat(draftConfig.pearl_y_motion) || 0,
-		pearl_y_position: parseFloat(draftConfig.pearl_y_position) || 0,
+		pearl_y_motion: parseNumber(draftConfig.pearl_y_motion),
+		pearl_y_position: parseNumber(draftConfig.pearl_y_position),
 		pearl_z_position: 0,
-		max_tnt: parseFloat(draftConfig.max_tnt) || 0,
+		max_tnt: parseNumber(draftConfig.max_tnt),
 		default_red_tnt_position: redDir,
 		default_blue_tnt_position: getOppositeDirection(redDir),
+		offset_x: 0,
+		offset_z: 0
 	};
 }
 
@@ -105,10 +109,10 @@ export function buildExportConfig(
 	redTNTLocation: string | undefined,
 	bitTemplateState: BitInputState | undefined,
 ): Record<string, unknown> {
-	const cx = parseFloat(cannonCenter.x) || 0;
-	const cz = parseFloat(cannonCenter.z) || 0;
-	const pearlX = parseFloat(draftConfig.pearl_x_position) || 0;
-	const pearlZ = parseFloat(draftConfig.pearl_z_position) || 0;
+	const cx = parseNumber(cannonCenter.x);
+	const cz = parseNumber(cannonCenter.z);
+	const pearlX = parseNumber(draftConfig.pearl_x_position);
+	const pearlZ = parseNumber(draftConfig.pearl_z_position);
 
 	const config: Record<string, unknown> = {
 		NorthEastTNT: getRelativeTNTUppercase(draftConfig.north_east_tnt, cx, cz),
@@ -119,16 +123,16 @@ export function buildExportConfig(
 		Pearl: {
 			Position: {
 				X: 0,
-				Y: parseFloat(draftConfig.pearl_y_position) || 0,
+				Y: parseNumber(draftConfig.pearl_y_position),
 				Z: 0,
 			},
 			Motion: {
-				X: parseFloat(pearlMomentum.x) || 0,
-				Y: parseFloat(draftConfig.pearl_y_motion) || 0,
-				Z: parseFloat(pearlMomentum.z) || 0,
+				X: parseNumber(pearlMomentum.x),
+				Y: parseNumber(draftConfig.pearl_y_motion),
+				Z: parseNumber(pearlMomentum.z),
 			},
 		},
-		MaxTNT: parseFloat(draftConfig.max_tnt) || 0,
+		MaxTNT: parseNumber(draftConfig.max_tnt),
 		DefaultRedTNTDirection: redTNTLocation,
 		DefaultBlueTNTDirection: getOppositeDirection(redTNTLocation),
 	};

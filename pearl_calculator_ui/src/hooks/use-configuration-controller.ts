@@ -1,4 +1,6 @@
 import { revealItemInDir } from "@tauri-apps/plugin-opener";
+import { WizardBasicInfoSchema, WizardBitConfigSchema, WizardTNTConfigSchema } from "@/lib/schemas";
+import { z } from "zod";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
@@ -44,86 +46,85 @@ export function useConfigurationController() {
 	const [errors, setErrors] = useState<Record<string, string>>({});
 
 	const validateStep = (step: number) => {
-		const newErrors: Record<string, string> = {};
-		let isValid = true;
+		let zodErrors: z.ZodIssue[] = [];
 
 		if (step === 1) {
-			if (!cannonCenter.x)
-				newErrors.cannon_x = t("configuration_page.validation.required");
-			if (!cannonCenter.z)
-				newErrors.cannon_z = t("configuration_page.validation.required");
-			if (!draftConfig.pearl_x_position)
-				newErrors.pearl_x = t("configuration_page.validation.required");
-			if (!draftConfig.pearl_y_position)
-				newErrors.pearl_y = t("configuration_page.validation.required");
-			if (!draftConfig.pearl_z_position)
-				newErrors.pearl_z = t("configuration_page.validation.required");
-			if (!pearlMomentum.x)
-				newErrors.momentum_x = t("configuration_page.validation.required");
-			if (!draftConfig.pearl_y_motion)
-				newErrors.momentum_y = t("configuration_page.validation.required");
-			if (!pearlMomentum.z)
-				newErrors.momentum_z = t("configuration_page.validation.required");
-
-			const maxTntVal = parseFloat(draftConfig.max_tnt);
-			if (!draftConfig.max_tnt || Number.isNaN(maxTntVal) || maxTntVal <= 0)
-				newErrors.max_tnt = t("configuration_page.validation.positive_integer");
-		} else if (step === 2) {
-			const blocks = [
-				"north_west_tnt",
-				"north_east_tnt",
-				"south_west_tnt",
-				"south_east_tnt",
-			] as const;
-			blocks.forEach((block) => {
-				if (!draftConfig[block].x)
-					newErrors[`${block}_x`] = t("configuration_page.validation.required");
-				if (!draftConfig[block].y)
-					newErrors[`${block}_y`] = t("configuration_page.validation.required");
-				if (!draftConfig[block].z)
-					newErrors[`${block}_z`] = t("configuration_page.validation.required");
+			const result = WizardBasicInfoSchema.safeParse({
+				cannonCenter,
+				pearlPosition: {
+					x: draftConfig.pearl_x_position,
+					y: draftConfig.pearl_y_position,
+					z: draftConfig.pearl_z_position,
+				},
+				pearlMomentum: {
+					x: pearlMomentum.x,
+					y: draftConfig.pearl_y_motion,
+					z: pearlMomentum.z,
+				},
+				maxTNT: draftConfig.max_tnt,
 			});
-			if (!redTNTLocation) {
-				newErrors.red_tnt_selection = "true";
-				isValid = false;
-			}
+			if (!result.success) zodErrors = result.error.issues;
+		} else if (step === 2) {
+			const result = WizardTNTConfigSchema.safeParse({
+				northWest: draftConfig.north_west_tnt,
+				northEast: draftConfig.north_east_tnt,
+				southWest: draftConfig.south_west_tnt,
+				southEast: draftConfig.south_east_tnt,
+				redTNTLocation,
+			});
+			if (!result.success) zodErrors = result.error.issues;
 		} else if (step === 3) {
-			if (isBitConfigSkipped) {
-				return true;
-			}
-			if (!bitTemplateState) {
-				newErrors.bit_template_empty = t(
-					"configuration_page.validation.required",
-				);
-				isValid = false;
-			} else {
-				const hasEmptyValue = bitTemplateState.sideValues.some(
-					(v) => !v || v.trim() === "",
-				);
-				if (hasEmptyValue) {
-					newErrors.bit_values_incomplete = t(
-						"configuration_page.validation.required",
-					);
-					isValid = false;
-				}
-				const hasEmptyMask = bitTemplateState.masks.some((m) => !m.direction);
-				if (hasEmptyMask) {
-					newErrors.bit_masks_incomplete = t(
-						"configuration_page.validation.required",
-					);
-					isValid = false;
-				}
-			}
+			const result = WizardBitConfigSchema.safeParse({
+				state: bitTemplateState,
+				skipped: isBitConfigSkipped,
+			});
+			if (!result.success) zodErrors = result.error.issues;
 		}
 
-		if (Object.keys(newErrors).length > 0) {
+		if (zodErrors.length > 0) {
+			const newErrors: Record<string, string> = {};
+			zodErrors.forEach((issue) => {
+				const path = issue.path.join(".");
+				const msg = t("configuration_page.validation.required");
+
+				if (path.includes("cannonCenter.x")) newErrors.cannon_x = msg;
+				else if (path.includes("cannonCenter.z")) newErrors.cannon_z = msg;
+				else if (path.includes("pearlPosition.x")) newErrors.pearl_x = msg;
+				else if (path.includes("pearlPosition.y")) newErrors.pearl_y = msg;
+				else if (path.includes("pearlPosition.z")) newErrors.pearl_z = msg;
+				else if (path.includes("pearlMomentum.x")) newErrors.momentum_x = msg;
+				else if (path.includes("pearlMomentum.y")) newErrors.momentum_y = msg;
+				else if (path.includes("pearlMomentum.z")) newErrors.momentum_z = msg;
+				else if (path.includes("maxTNT")) newErrors.max_tnt = t("configuration_page.validation.positive_integer");
+
+				else if (path.includes("northWest.x")) newErrors.north_west_tnt_x = msg;
+				else if (path.includes("northWest.y")) newErrors.north_west_tnt_y = msg;
+				else if (path.includes("northWest.z")) newErrors.north_west_tnt_z = msg;
+				else if (path.includes("northEast.x")) newErrors.north_east_tnt_x = msg;
+				else if (path.includes("northEast.y")) newErrors.north_east_tnt_y = msg;
+				else if (path.includes("northEast.z")) newErrors.north_east_tnt_z = msg;
+				else if (path.includes("southWest.x")) newErrors.south_west_tnt_x = msg;
+				else if (path.includes("southWest.y")) newErrors.south_west_tnt_y = msg;
+				else if (path.includes("southWest.z")) newErrors.south_west_tnt_z = msg;
+				else if (path.includes("southEast.x")) newErrors.south_east_tnt_x = msg;
+				else if (path.includes("southEast.y")) newErrors.south_east_tnt_y = msg;
+				else if (path.includes("southEast.z")) newErrors.south_east_tnt_z = msg;
+				else if (path.includes("redTNTLocation")) newErrors.red_tnt_selection = "true";
+
+				else if (issue.message === "incomplete") {
+					const state = bitTemplateState;
+					if (!state) newErrors.bit_template_empty = msg;
+					else if (state.sideValues.some(v => !v || v.trim() === "")) newErrors.bit_values_incomplete = msg;
+					else if (state.masks.some(m => !m.direction)) newErrors.bit_masks_incomplete = msg;
+					else newErrors.bit_template_empty = msg;
+				}
+			});
 			setErrors(newErrors);
-			isValid = false;
-		} else {
-			setErrors({});
+			return false;
 		}
 
-		return isValid;
+		setErrors({});
+		return true;
 	};
 
 	const handleStart = () => {

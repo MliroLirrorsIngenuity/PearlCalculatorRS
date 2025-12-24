@@ -2,6 +2,7 @@ import { useTranslation } from "react-i18next";
 import { useToastNotifications } from "@/hooks/use-toast-notifications";
 import { calculatorService } from "@/services";
 import type { GeneralConfig, PearlTraceResult } from "@/types/domain";
+import { CoercedNumberSchema } from "@/lib/schemas";
 
 export function usePearlTrace() {
 	const { t } = useTranslation();
@@ -24,18 +25,20 @@ export function usePearlTrace() {
 		version: string,
 	): Promise<PearlTraceResult | null> => {
 		try {
+			const parse = (v: string) => CoercedNumberSchema.parse(v);
+
 			const input = {
 				redTnt: inputs.red,
 				blueTnt: inputs.blue,
-				pearlX: parseFloat(inputs.pearlX) || 0,
+				pearlX: parse(inputs.pearlX),
 				pearlY: configData.pearl_y_position,
-				pearlZ: parseFloat(inputs.pearlZ) || 0,
+				pearlZ: parse(inputs.pearlZ),
 				pearlMotionX: 0,
 				pearlMotionY: configData.pearl_y_motion,
 				pearlMotionZ: 0,
-				offsetX: parseFloat(inputs.offsetX) || 0,
-				offsetZ: parseFloat(inputs.offsetZ) || 0,
-				cannonY: parseFloat(inputs.cannonY) || 36,
+				offsetX: parse(inputs.offsetX),
+				offsetZ: parse(inputs.offsetZ),
+				cannonY: parse(inputs.cannonY) || 0,
 				northWestTnt: configData.north_west_tnt,
 				northEastTnt: configData.north_east_tnt,
 				southWestTnt: configData.south_west_tnt,
@@ -43,8 +46,8 @@ export function usePearlTrace() {
 				defaultRedDirection: configData.default_red_tnt_position,
 				defaultBlueDirection: configData.default_blue_tnt_position,
 				direction: inputs.direction,
-				destinationX: parseFloat(inputs.destX) || 0,
-				destinationZ: parseFloat(inputs.destZ) || 0,
+				destinationX: parse(inputs.destX),
+				destinationZ: parse(inputs.destZ),
 				version: version,
 			};
 

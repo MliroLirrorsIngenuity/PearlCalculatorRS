@@ -1,4 +1,5 @@
 import type { BitDirection, BitTemplateConfig, GeneralConfig } from "@/types/domain";
+import { GeneralConfigSchema, BitTemplateConfigSchema } from "@/lib/schemas";
 
 const DIR_MAP: Record<string, number> = {
     South: 0,
@@ -276,7 +277,7 @@ export function decodeConfig(input: string): DecodedConfig {
         return "SouthEast";
     };
 
-    const generalConfig: GeneralConfig = {
+    const generalConfig: GeneralConfig = GeneralConfigSchema.parse({
         max_tnt: maxTNT,
         north_east_tnt: { x: NorthEastTNT.X, y: NorthEastTNT.Y, z: NorthEastTNT.Z },
         north_west_tnt: { x: NorthWestTNT.X, y: NorthWestTNT.Y, z: NorthWestTNT.Z },
@@ -290,16 +291,16 @@ export function decodeConfig(input: string): DecodedConfig {
         default_blue_tnt_position: validateDir(defaultBlueDir),
         offset_x: offsetX,
         offset_z: offsetZ,
-    };
+    });
 
     let bitTemplate: BitTemplateConfig | null = null;
     if (sideMode > 0) {
-        bitTemplate = {
+        bitTemplate = BitTemplateConfigSchema.parse({
             SideMode: sideMode,
             DirectionMasks: directionMasks,
             RedValues: redValues,
             IsRedArrowCenter: isRedArrowCenter,
-        };
+        });
     }
 
     return { generalConfig, bitTemplate };

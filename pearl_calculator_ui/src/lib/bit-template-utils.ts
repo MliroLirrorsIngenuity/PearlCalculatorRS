@@ -4,6 +4,8 @@ import type {
 	MaskGroup,
 } from "@/types/domain";
 
+import { BitTemplateConfigSchema, CoercedNumberSchema } from "@/lib/schemas";
+
 export function configToInputState(
 	config: BitTemplateConfig | null,
 ): BitInputState | undefined {
@@ -36,10 +38,14 @@ export function inputStateToConfig(state: BitInputState): BitTemplateConfig {
 		}
 	}
 
-	return {
+	const config = {
 		SideMode: state.sideCount,
 		DirectionMasks: directionMasks,
-		RedValues: state.sideValues.map((v) => parseInt(v, 10) || 0).reverse(),
+		RedValues: state.sideValues
+			.map((v) => CoercedNumberSchema.parse(v))
+			.reverse(),
 		IsRedArrowCenter: state.isSwapped,
 	};
+
+	return BitTemplateConfigSchema.parse(config);
 }

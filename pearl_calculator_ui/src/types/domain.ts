@@ -1,116 +1,39 @@
-export type PearlVersion = "Legacy" | "Post1205" | "Post1212";
+import { z } from "zod";
+import {
+	BitCalculationResultSchema,
+	BitDirectionSchema,
+	BitInputStateSchema,
+	BitTemplateConfigSchema,
+	CalculatorInputsSchema,
+	GeneralConfigSchema,
+	MaskGroupSchema,
+	PearlTraceResultSchema,
+	PearlVersionSchema,
+	SimulatorConfigSchema,
+	TNTResultSchema,
+	TraceTNTSchema,
+} from "@/lib/schemas";
 
-export interface TNTResult {
-	distance: number;
-	tick: number;
-	blue: number;
-	red: number;
-	total: number;
-	pearl_end_pos: { X: number; Y: number; Z: number };
-	pearl_end_motion: { X: number; Y: number; Z: number };
-	direction: string;
-}
+export type PearlVersion = z.infer<typeof PearlVersionSchema>;
 
-export interface PearlTraceResult {
-	landing_position: { X: number; Y: number; Z: number };
-	pearl_trace: Array<{ X: number; Y: number; Z: number }>;
-	pearl_motion_trace: Array<{ X: number; Y: number; Z: number }>;
-	is_successful: boolean;
-	tick: number;
-	final_motion: { X: number; Y: number; Z: number };
-	distance: number;
-	closest_approach?: {
-		tick: number;
-		point: { X: number; Y: number; Z: number };
-		distance: number;
-	};
-}
+export type TNTResult = z.infer<typeof TNTResultSchema>;
 
-export interface TraceTNT {
-	blue: number;
-	red: number;
-	total: number;
-}
+export type PearlTraceResult = z.infer<typeof PearlTraceResultSchema>;
 
-export interface GeneralConfig {
-	max_tnt: number;
-	north_west_tnt: { x: number; y: number; z: number };
-	north_east_tnt: { x: number; y: number; z: number };
-	south_west_tnt: { x: number; y: number; z: number };
-	south_east_tnt: { x: number; y: number; z: number };
-	pearl_x_position: number;
-	pearl_y_motion: number;
-	pearl_y_position: number;
-	pearl_z_position: number;
-	default_red_tnt_position:
-		| "SouthEast"
-		| "NorthWest"
-		| "SouthWest"
-		| "NorthEast";
-	default_blue_tnt_position:
-		| "SouthEast"
-		| "NorthWest"
-		| "SouthWest"
-		| "NorthEast";
-	offset_x?: number;
-	offset_z?: number;
-}
+export type TraceTNT = z.infer<typeof TraceTNTSchema>;
 
-export interface SimulatorConfig {
-	pearl: {
-		pos: { x: number; y: number; z: number };
-		momentum: { x: number; y: number; z: number };
-	};
-	tntA: {
-		pos: { x: number; y: number; z: number };
-		amount: number;
-	};
-	tntB: {
-		pos: { x: number; y: number; z: number };
-		amount: number;
-	};
-}
+export type GeneralConfig = z.infer<typeof GeneralConfigSchema>;
 
-export interface CalculatorInputs {
-	pearlX: string;
-	pearlZ: string;
-	destX: string;
-	destZ: string;
-	cannonY: string;
-	offsetX: string;
-	offsetZ: string;
-	tickRange: number[];
-	distanceRange: number[];
-}
+export type SimulatorConfig = z.infer<typeof SimulatorConfigSchema>;
 
-export interface MaskGroup {
-	bits: [string, string];
-	direction: string;
-}
+export type CalculatorInputs = z.infer<typeof CalculatorInputsSchema>;
 
-export interface BitCalculationResult {
-	blue: number[];
-	red: number[];
-	direction: [boolean, boolean];
-}
+export type MaskGroup = z.infer<typeof MaskGroupSchema>;
 
-export type BitDirection = "North" | "East" | "West" | "South";
+export type BitCalculationResult = z.infer<typeof BitCalculationResultSchema>;
 
-export interface BitTemplateConfig {
-	SideMode: number;
-	DirectionMasks: {
-		"00"?: BitDirection;
-		"01"?: BitDirection;
-		"10"?: BitDirection;
-		"11"?: BitDirection;
-	};
-	RedValues: number[];
-	IsRedArrowCenter: boolean;
-}
+export type BitDirection = z.infer<typeof BitDirectionSchema>;
 
-export interface BitInputState {
-	sideCount: number;
-	masks: MaskGroup[];
-	sideValues: string[];
-	isSwapped: boolean;
-}
+export type BitTemplateConfig = z.infer<typeof BitTemplateConfigSchema>;
+
+export type BitInputState = z.infer<typeof BitInputStateSchema>;

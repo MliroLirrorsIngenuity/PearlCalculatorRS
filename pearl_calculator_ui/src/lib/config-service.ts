@@ -1,44 +1,44 @@
 import { open, save } from "@tauri-apps/plugin-dialog";
 import { readTextFile, writeTextFile } from "@tauri-apps/plugin-fs";
+import { z } from "zod";
+import {
+	BitDirectionSchema,
+	BitTemplateConfigSchema,
+	GeneralConfigSchema,
+	TNTDirectionSchema,
+} from "@/lib/schemas";
 import type {
-	BitDirection,
 	BitTemplateConfig,
 	GeneralConfig,
 } from "@/types/domain";
 import { isTauri } from "@/services";
 
-interface DirtyConfig {
-	Version?: string;
-	CannonSettings?: any[];
 
-	MaxTNT?: number;
-	NorthWestTNT?: any;
-	NorthEastTNT?: any;
-	SouthWestTNT?: any;
-	SouthEastTNT?: any;
 
-	DefaultRedDirection?: string;
-	DefaultRedTNTDirection?: string;
-	DefaultBlueDirection?: string;
-	DefaultBlueTNTDirection?: string;
+const LooseConfigSchema = z.object({
+	Version: z.string().optional(),
+	CannonSettings: z.array(z.any()).optional(),
+	MaxTNT: z.any().optional(),
+	NorthWestTNT: z.any().optional(),
+	NorthEastTNT: z.any().optional(),
+	SouthWestTNT: z.any().optional(),
+	SouthEastTNT: z.any().optional(),
+	DefaultRedDirection: z.string().optional(),
+	DefaultRedTNTDirection: z.string().optional(),
+	DefaultBlueDirection: z.string().optional(),
+	DefaultBlueTNTDirection: z.string().optional(),
+	Pearl: z.object({
+		Position: z.object({ X: z.any().optional(), Y: z.any().optional(), Z: z.any().optional() }).optional(),
+		Motion: z.object({ X: z.any().optional(), Y: z.any().optional(), Z: z.any().optional() }).optional(),
+	}).optional(),
+	Offset: z.object({ X: z.any().optional(), Z: z.any().optional() }).optional(),
+	SideMode: z.number().optional(),
+	DirectionMasks: z.record(z.string(), z.any()).optional(),
+	RedValues: z.array(z.any()).optional(),
+	IsRedArrowCenter: z.boolean().optional(),
+}).passthrough();
 
-	Pearl?: {
-		Position?: { X: number; Y: number; Z: number };
-		Motion?: { X: number; Y: number; Z: number };
-	};
-
-	Offset?: { X: number; Z: number };
-
-	SideMode?: number;
-	DirectionMasks?: {
-		"00"?: string;
-		"01"?: string;
-		"10"?: string;
-		"11"?: string;
-	};
-	RedValues?: number[];
-	IsRedArrowCenter?: boolean;
-}
+type DirtyConfig = z.infer<typeof LooseConfigSchema>;
 
 function normalizeConfig(dirty: DirtyConfig): GeneralConfig {
 	let root = dirty;
@@ -61,44 +61,27 @@ function normalizeConfig(dirty: DirtyConfig): GeneralConfig {
 	const blueDirRaw =
 		root.DefaultBlueDirection ?? root.DefaultBlueTNTDirection ?? "SouthEast";
 
-	return {
-		max_tnt: Number(root.MaxTNT ?? 0),
+	const redDir = TNTDirectionSchema.safeParse(redDirRaw).data ?? "SouthEast";
+	const blueDir = TNTDirectionSchema.safeParse(blueDirRaw).data ?? "SouthEast";
 
+	const config = {
+		max_tnt: Number(root.MaxTNT ?? 0),
 		north_west_tnt: readPos(root.NorthWestTNT),
 		north_east_tnt: readPos(root.NorthEastTNT),
 		south_west_tnt: readPos(root.SouthWestTNT),
 		south_east_tnt: readPos(root.SouthEastTNT),
-
 		pearl_x_position: Number(root.Pearl?.Position?.X ?? 0),
 		pearl_y_motion: Number(root.Pearl?.Motion?.Y ?? 0),
 		pearl_y_position: Number(root.Pearl?.Position?.Y ?? 0),
 		pearl_z_position: Number(root.Pearl?.Position?.Z ?? 0),
-
-		default_red_tnt_position: validateDirection(redDirRaw),
-		default_blue_tnt_position: validateDirection(blueDirRaw),
-
+		default_red_tnt_position: redDir,
+		default_blue_tnt_position: blueDir,
 		offset_x: Number(root.Offset?.X ?? 0),
 		offset_z: Number(root.Offset?.Z ?? 0),
 	};
-}
 
-function validateDirection(
-	dir: string,
-): "SouthEast" | "NorthWest" | "SouthWest" | "NorthEast" {
-	if (dir === "NorthWest") return "NorthWest";
-	if (dir === "SouthEast") return "SouthEast";
-	if (dir === "NorthEast") return "NorthEast";
-	if (dir === "SouthWest") return "SouthWest";
-	return "SouthEast";
-}
 
-function validateBitDirection(
-	dir: string | undefined,
-): BitDirection | undefined {
-	if (dir === "North" || dir === "East" || dir === "West" || dir === "South") {
-		return dir;
-	}
-	return undefined;
+	return GeneralConfigSchema.parse(config);
 }
 
 function extractBitTemplateConfig(
@@ -119,22 +102,24 @@ function extractBitTemplateConfig(
 
 	const directionMasks: BitTemplateConfig["DirectionMasks"] = {};
 	if (root.DirectionMasks) {
-		const d00 = validateBitDirection(root.DirectionMasks["00"]);
-		const d01 = validateBitDirection(root.DirectionMasks["01"]);
-		const d10 = validateBitDirection(root.DirectionMasks["10"]);
-		const d11 = validateBitDirection(root.DirectionMasks["11"]);
-		if (d00) directionMasks["00"] = d00;
-		if (d01) directionMasks["01"] = d01;
-		if (d10) directionMasks["10"] = d10;
-		if (d11) directionMasks["11"] = d11;
+		const masks = ["00", "01", "10", "11"] as const;
+		masks.forEach(key => {
+			const raw = root.DirectionMasks?.[key];
+			const parsed = BitDirectionSchema.safeParse(raw);
+			if (parsed.success) {
+				directionMasks[key] = parsed.data;
+			}
+		});
 	}
 
-	return {
+	const template = {
 		SideMode: root.SideMode,
 		DirectionMasks: directionMasks,
 		RedValues: root.RedValues.map((v) => Number(v) || 0),
 		IsRedArrowCenter: root.IsRedArrowCenter ?? false,
 	};
+
+	return BitTemplateConfigSchema.parse(template);
 }
 
 export async function loadConfiguration(): Promise<{
@@ -153,9 +138,10 @@ export async function loadConfiguration(): Promise<{
 			if (selected && typeof selected === "string") {
 				const content = await readTextFile(selected);
 				const json = JSON.parse(content);
+				const dirty = LooseConfigSchema.parse(json);
 
-				const cleanConfig = normalizeConfig(json);
-				const bitTemplate = extractBitTemplateConfig(json);
+				const cleanConfig = normalizeConfig(dirty);
+				const bitTemplate = extractBitTemplateConfig(dirty);
 
 				return { config: cleanConfig, bitTemplate, path: selected };
 			}
@@ -170,8 +156,10 @@ export async function loadConfiguration(): Promise<{
 						if (file) {
 							const content = await file.text();
 							const json = JSON.parse(content);
-							const cleanConfig = normalizeConfig(json);
-							const bitTemplate = extractBitTemplateConfig(json);
+							const dirty = LooseConfigSchema.parse(json);
+
+							const cleanConfig = normalizeConfig(dirty);
+							const bitTemplate = extractBitTemplateConfig(dirty);
 							resolve({ config: cleanConfig, bitTemplate, path: file.name });
 						} else {
 							resolve(null);

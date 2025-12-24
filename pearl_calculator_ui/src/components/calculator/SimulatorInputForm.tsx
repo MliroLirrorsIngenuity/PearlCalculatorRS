@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import type { SimulatorConfig } from "@/types/domain";
+import { CoercedNumberSchema } from "@/lib/schemas";
 
 function CompactInput({
 	label,
@@ -68,6 +69,8 @@ function Vector3Block({
 	onUpdate: (key: "x" | "y" | "z", val: number) => void;
 }) {
 	const { t } = useTranslation();
+	const parse = (v: string) => CoercedNumberSchema.parse(v);
+
 	return (
 		<div className="space-y-1.5">
 			<div className="text-xs font-bold text-foreground/80">{title}</div>
@@ -76,19 +79,19 @@ function Vector3Block({
 					label={t("simulator.label_x")}
 					labelClassName="w-3 text-left pr-0"
 					value={data.x}
-					onChange={(v) => onUpdate("x", parseFloat(v) || 0)}
+					onChange={(v) => onUpdate("x", parse(v))}
 				/>
 				<CompactInput
 					label={t("simulator.label_y")}
 					labelClassName="w-3 text-left pr-0"
 					value={data.y}
-					onChange={(v) => onUpdate("y", parseFloat(v) || 0)}
+					onChange={(v) => onUpdate("y", parse(v))}
 				/>
 				<CompactInput
 					label={t("simulator.label_z")}
 					labelClassName="w-3 text-left pr-0"
 					value={data.z}
-					onChange={(v) => onUpdate("z", parseFloat(v) || 0)}
+					onChange={(v) => onUpdate("z", parse(v))}
 				/>
 			</div>
 		</div>
@@ -108,6 +111,8 @@ function TNTGroupBlock({
 	}) => void;
 }) {
 	const { t } = useTranslation();
+	const parse = (v: string) => CoercedNumberSchema.parse(v);
+
 	return (
 		<div className="space-y-1.5">
 			<div className="text-xs font-bold text-foreground/80">{title}</div>
@@ -117,7 +122,7 @@ function TNTGroupBlock({
 					labelClassName="w-3 text-left pr-0"
 					value={data.pos.x}
 					onChange={(v) =>
-						onUpdate({ ...data, pos: { ...data.pos, x: parseFloat(v) || 0 } })
+						onUpdate({ ...data, pos: { ...data.pos, x: parse(v) } })
 					}
 				/>
 				<CompactInput
@@ -125,7 +130,7 @@ function TNTGroupBlock({
 					labelClassName="w-3 text-left pr-0"
 					value={data.pos.y}
 					onChange={(v) =>
-						onUpdate({ ...data, pos: { ...data.pos, y: parseFloat(v) || 0 } })
+						onUpdate({ ...data, pos: { ...data.pos, y: parse(v) } })
 					}
 				/>
 				<CompactInput
@@ -133,14 +138,14 @@ function TNTGroupBlock({
 					labelClassName="w-3 text-left pr-0"
 					value={data.pos.z}
 					onChange={(v) =>
-						onUpdate({ ...data, pos: { ...data.pos, z: parseFloat(v) || 0 } })
+						onUpdate({ ...data, pos: { ...data.pos, z: parse(v) } })
 					}
 				/>
 				<CompactInput
 					label={t("simulator.label_amount")}
 					labelClassName="w-10 text-left pr-0"
 					value={data.amount}
-					onChange={(v) => onUpdate({ ...data, amount: parseFloat(v) || 0 })}
+					onChange={(v) => onUpdate({ ...data, amount: parse(v) })}
 				/>
 			</div>
 		</div>
