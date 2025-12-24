@@ -38,7 +38,7 @@ export function usePearlTrace() {
 				pearlMotionZ: 0,
 				offsetX: parse(inputs.offsetX),
 				offsetZ: parse(inputs.offsetZ),
-				cannonY: parse(inputs.cannonY) || 0,
+				cannonY: parse(inputs.cannonY),
 				northWestTnt: configData.north_west_tnt,
 				northEastTnt: configData.north_east_tnt,
 				southWestTnt: configData.south_west_tnt,
