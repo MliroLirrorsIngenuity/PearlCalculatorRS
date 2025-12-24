@@ -246,7 +246,6 @@ export function useConfigurationController() {
 			}
 			const decoded = decodeConfig(text);
 			hydrateWizard(decoded.generalConfig, decoded.bitTemplate);
-			showSuccess(t("configuration_page.toast_imported"));
 		} catch (error) {
 			console.error(error);
 			showError(t("error.calculator.code_import_failed"), error);
@@ -259,7 +258,6 @@ export function useConfigurationController() {
 			if (result) {
 				hydrateWizard(result.config, result.bitTemplate);
 				setSavedPath(result.path);
-				showSuccess(t("configuration_page.toast_imported"));
 			}
 		} catch (error) {
 			console.error(error);
