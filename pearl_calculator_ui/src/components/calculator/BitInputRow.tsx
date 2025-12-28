@@ -38,7 +38,8 @@ export function BitInputRow({
 	const style = THEME_CLASSES[theme];
 	const isRightToLeft = arrowPosition === "left";
 
-	const { ref: containerRef, width: containerWidth } = useElementSize<HTMLDivElement>();
+	const { ref: containerRef, width: containerWidth } =
+		useElementSize<HTMLDivElement>();
 
 	const { chunks, indexChunks } = React.useMemo(() => {
 		return calculateRowChunks(values, containerWidth, isRightToLeft);
@@ -63,13 +64,17 @@ export function BitInputRow({
 					</Label>
 				</div>
 				<div className="flex justify-center">
-					{!isRightToLeft && <ArrowRight className={`w-4 h-4 ${style.arrow}`} />}
+					{!isRightToLeft && (
+						<ArrowRight className={`w-4 h-4 ${style.arrow}`} />
+					)}
 				</div>
 			</div>
 
 			<div className="space-y-0 relative px-4">
 				{chunks.map((chunk, chunkIndex) => {
-					const staggerIndex = isRightToLeft ? (chunks.length - 1 - chunkIndex) : chunkIndex;
+					const staggerIndex = isRightToLeft
+						? chunks.length - 1 - chunkIndex
+						: chunkIndex;
 					const staggerOffset = isSingleRow ? 0 : staggerIndex * 32;
 
 					return (
@@ -89,12 +94,13 @@ export function BitInputRow({
 								}}
 							>
 								<div
-									className={`flex gap-1.5 flex-wrap ${isSingleRow
-										? "justify-center"
-										: isRightToLeft
-											? "flex-row-reverse justify-start"
-											: "justify-start"
-										}`}
+									className={`flex gap-1.5 flex-wrap ${
+										isSingleRow
+											? "justify-center"
+											: isRightToLeft
+												? "flex-row-reverse justify-start"
+												: "justify-start"
+									}`}
 								>
 									{chunk.map((val, i) => {
 										const originalIndex = indexChunks[chunkIndex][i];
@@ -106,7 +112,9 @@ export function BitInputRow({
 													inputRefs.current[originalIndex] = el;
 												}}
 												value={val}
-												onChange={(e) => onValueChange(originalIndex, e.target.value)}
+												onChange={(e) =>
+													onValueChange(originalIndex, e.target.value)
+												}
 												onKeyDown={(e) => onKeyDown(originalIndex, e)}
 												onPaste={(e) => onPaste?.(originalIndex, e)}
 												className={`w-12 h-8 text-center text-xs p-0 font-mono rounded-lg bg-white shadow-sm transition-all duration-200 ${style.input}`}

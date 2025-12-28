@@ -25,7 +25,7 @@ function parsePastedValues(text: string): string[] | null {
 	}
 
 	if (/^(\d+\s*,\s*)+\d+$/.test(trimmed)) {
-		return trimmed.split(',').map(s => s.trim());
+		return trimmed.split(",").map((s) => s.trim());
 	}
 
 	return null;
@@ -97,9 +97,9 @@ export function BitInputSection({
 			const newValues =
 				state.sideValues.length < state.sideCount
 					? [
-						...state.sideValues,
-						...Array(state.sideCount - state.sideValues.length).fill(""),
-					]
+							...state.sideValues,
+							...Array(state.sideCount - state.sideValues.length).fill(""),
+						]
 					: state.sideValues.slice(0, state.sideCount);
 			setState({ ...state, sideValues: newValues });
 		}
@@ -159,7 +159,7 @@ export function BitInputSection({
 	const handlePaste = (
 		index: number,
 		e: React.ClipboardEvent,
-		source: "blue" | "red"
+		source: "blue" | "red",
 	) => {
 		const text = e.clipboardData.getData("text");
 		const values = parsePastedValues(text);
@@ -174,7 +174,7 @@ export function BitInputSection({
 		const direction = source === "blue" ? 1 : -1;
 
 		values.forEach((val, i) => {
-			const targetIndex = startIndex + (i * direction);
+			const targetIndex = startIndex + i * direction;
 			if (targetIndex >= 0 && targetIndex < state.sideCount) {
 				newValues[targetIndex] = val;
 			}

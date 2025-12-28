@@ -19,16 +19,10 @@ import {
 	inputStateToConfig,
 } from "@/lib/bit-template-utils";
 import type { BitCalculationResult, BitInputState } from "@/types/domain";
-import {
-	BitCellGroup,
-	HorizontalBitRow,
-} from "./BitCellGroup";
+import { BitCellGroup, HorizontalBitRow } from "./BitCellGroup";
 import { BitInputSection } from "./BitInputSection";
 import { DirectionDisplay } from "./DirectionDisplay";
-import {
-	ThemeColor,
-	calculateRequiredWidth,
-} from "./bit-layout-utils";
+import { ThemeColor, calculateRequiredWidth } from "./bit-layout-utils";
 
 export default function BitCalculationPanel() {
 	const { t } = useTranslation();
@@ -71,8 +65,10 @@ export default function BitCalculationPanel() {
 	const [isConfigOpen, setIsConfigOpen] = useState(!hasTemplateValues);
 	const hasAutoCalculated = useRef(false);
 
-	const { ref: scrollViewportRef, height: viewportHeight } = useElementSize<HTMLDivElement>();
-	const { ref: resultContainerRef, width: resultContainerWidth } = useElementSize<HTMLDivElement>();
+	const { ref: scrollViewportRef, height: viewportHeight } =
+		useElementSize<HTMLDivElement>();
+	const { ref: resultContainerRef, width: resultContainerWidth } =
+		useElementSize<HTMLDivElement>();
 
 	const runCalculation = useCallback(() => {
 		if (!inputState || !traceTNT) return;
