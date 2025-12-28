@@ -5,42 +5,9 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
 import type { BitInputState, MaskGroup } from "@/types/domain";
 import { BitInputRow, type ThemeColor } from "./BitInputRow";
-
-const DIRECTIONS = [
-	{ value: "North", labelKey: "calculator.direction_north" },
-	{ value: "East", labelKey: "calculator.direction_east" },
-	{ value: "West", labelKey: "calculator.direction_west" },
-	{ value: "South", labelKey: "calculator.direction_south" },
-] as const;
-
-const PLACEHOLDERS = [
-	"1680",
-	"840",
-	"420",
-	"4",
-	"3",
-	"2",
-	"1",
-	"10",
-	"20",
-	"40",
-	"80",
-	"110",
-	"150",
-	"0",
-	"0",
-	"150",
-	"110",
-];
+import { MaskGroupInput } from "./MaskGroupInput";
 
 const DEFAULT_MASKS: MaskGroup[] = [
 	{ bits: ["0", "0"], direction: "" },
@@ -48,45 +15,6 @@ const DEFAULT_MASKS: MaskGroup[] = [
 	{ bits: ["1", "0"], direction: "" },
 	{ bits: ["1", "1"], direction: "" },
 ];
-
-function MaskGroupInput({
-	mask,
-	onDirectionChange,
-}: {
-	mask: MaskGroup;
-	onDirectionChange: (value: string) => void;
-}) {
-	const { t } = useTranslation();
-	return (
-		<div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-2xl bg-slate-50 border border-slate-200">
-			{mask.bits.map((bit, bIdx) => (
-				<Input
-					key={bIdx}
-					value={bit}
-					readOnly
-					disabled
-					className="w-7 h-7 text-center text-xs font-mono p-0 rounded-lg border-slate-300 bg-slate-100 text-muted-foreground cursor-not-allowed"
-					maxLength={1}
-				/>
-			))}
-			<Select
-				value={mask.direction || undefined}
-				onValueChange={onDirectionChange}
-			>
-				<SelectTrigger className="w-[88px] h-7 text-xs px-2 rounded-xl">
-					<SelectValue placeholder={t("calculator.direction_label")} />
-				</SelectTrigger>
-				<SelectContent>
-					{DIRECTIONS.map((d) => (
-						<SelectItem key={d.value} value={d.value}>
-							{t(d.labelKey)}
-						</SelectItem>
-					))}
-				</SelectContent>
-			</Select>
-		</div>
-	);
-}
 
 export type BitInputSectionState = BitInputState;
 
@@ -137,9 +65,9 @@ export function BitInputSection({
 			const newValues =
 				state.sideValues.length < state.sideCount
 					? [
-							...state.sideValues,
-							...Array(state.sideCount - state.sideValues.length).fill(""),
-						]
+						...state.sideValues,
+						...Array(state.sideCount - state.sideValues.length).fill(""),
+					]
 					: state.sideValues.slice(0, state.sideCount);
 			setState({ ...state, sideValues: newValues });
 		}
@@ -149,7 +77,7 @@ export function BitInputSection({
 
 	const handleBlur = () => {
 		const val = Number.parseInt(inputValue);
-		if (!Number.isNaN(val) && val > 0 && val <= 17) {
+		if (!Number.isNaN(val) && val > 0 && val <= 64) {
 			setState({ ...state, sideCount: val });
 		} else {
 			setInputValue(state.sideCount.toString());
@@ -188,7 +116,7 @@ export function BitInputSection({
 					refs.current[index - 1]?.focus();
 				}
 			})
-			.otherwise(() => {});
+			.otherwise(() => { });
 	};
 
 	const handleDirectionChange = (groupIndex: number, value: string) => {
@@ -201,7 +129,7 @@ export function BitInputSection({
 		setState({ ...state, isSwapped: !state.isSwapped });
 	};
 
-	const getPlaceholder = (index: number) => PLACEHOLDERS[index] || "0";
+	const getPlaceholder = (index: number) => (index + 1).toString();
 
 	const topDisplay = state.sideValues;
 	const botDisplay = [...state.sideValues].reverse();
@@ -295,4 +223,4 @@ export function BitInputSection({
 	);
 }
 
-export { PLACEHOLDERS, DEFAULT_MASKS };
+export { DEFAULT_MASKS };

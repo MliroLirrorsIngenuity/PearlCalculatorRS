@@ -1,32 +1,14 @@
+import React from "react";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-
-type ThemeColor = "blue" | "red";
-
-interface ThemeClasses {
-	text: string;
-	arrow: string;
-	container: string;
-	input: string;
-}
-
-const THEME_CLASSES: Record<ThemeColor, ThemeClasses> = {
-	blue: {
-		text: "text-blue-600",
-		arrow: "text-blue-400",
-		container: "bg-blue-50/50 border-blue-100",
-		input:
-			"border-blue-200 hover:border-blue-300 focus-visible:border-blue-400 focus-visible:ring-2 focus-visible:ring-blue-500/20 placeholder:text-blue-200/50 text-blue-700 font-bold",
-	},
-	red: {
-		text: "text-red-600",
-		arrow: "text-red-400",
-		container: "bg-red-50/50 border-red-100",
-		input:
-			"border-red-200 hover:border-red-300 focus-visible:border-red-400 focus-visible:ring-2 focus-visible:ring-red-500/20 placeholder:text-red-200/50 text-red-700 font-bold",
-	},
-};
+import { useElementSize } from "@/hooks/use-element-size";
+import { CarriageReturnGuide } from "./CarriageReturnGuide";
+import {
+	THEME_CLASSES,
+	ThemeColor,
+	calculateRowChunks,
+} from "./bit-layout-utils";
 
 interface BitInputRowProps {
 	theme: ThemeColor;
@@ -39,6 +21,8 @@ interface BitInputRowProps {
 	onKeyDown: (index: number, e: React.KeyboardEvent<HTMLInputElement>) => void;
 }
 
+export { type ThemeColor };
+
 export function BitInputRow({
 	theme,
 	label,
@@ -50,17 +34,25 @@ export function BitInputRow({
 	onKeyDown,
 }: BitInputRowProps) {
 	const style = THEME_CLASSES[theme];
+	const isRightToLeft = arrowPosition === "left";
+
+	const { ref: containerRef, width: containerWidth } = useElementSize<HTMLDivElement>();
+
+	const { chunks, indexChunks } = React.useMemo(() => {
+		return calculateRowChunks(values, containerWidth, isRightToLeft);
+	}, [values, containerWidth, isRightToLeft]);
+
+	const isSingleRow = chunks.length === 1;
 
 	return (
-		<div className={`space-y-1 p-2 rounded-xl border ${style.container}`}>
-			<div className="grid grid-cols-[16px_1fr_16px] w-20 items-center mx-auto">
-				{arrowPosition === "left" ? (
-					<div className="flex justify-center">
-						<ArrowLeft className={`w-4 h-4 ${style.arrow}`} />
-					</div>
-				) : (
-					<div />
-				)}
+		<div
+			ref={containerRef}
+			className={`p-4 rounded-xl border ${style.container} space-y-2 mx-auto`}
+		>
+			<div className="grid grid-cols-[16px_1fr_16px] w-40 items-center mx-auto mb-2">
+				<div className="flex justify-center">
+					{isRightToLeft && <ArrowLeft className={`w-4 h-4 ${style.arrow}`} />}
+				</div>
 				<div className="flex justify-center">
 					<Label
 						className={`text-xs font-bold uppercase tracking-wider ${style.text}`}
@@ -68,35 +60,63 @@ export function BitInputRow({
 						{label}
 					</Label>
 				</div>
-				{arrowPosition === "right" ? (
-					<div className="flex justify-center">
-						<ArrowRight className={`w-4 h-4 ${style.arrow}`} />
-					</div>
-				) : (
-					<div />
-				)}
+				<div className="flex justify-center">
+					{!isRightToLeft && <ArrowRight className={`w-4 h-4 ${style.arrow}`} />}
+				</div>
 			</div>
-			<div className="flex flex-wrap justify-center gap-1.5">
-				{values.map((val, index) => (
-					<Input
-						key={index}
-						ref={(el) => {
-							inputRefs.current[index] = el;
-						}}
-						value={val}
-						onChange={(e) => onValueChange(index, e.target.value)}
-						onKeyDown={(e) => onKeyDown(index, e)}
-						className={`w-12 h-8 text-center text-xs p-0 font-mono rounded-lg bg-white shadow-sm transition-all duration-200 ${style.input}`}
-						placeholder={placeholders[index] || "0"}
-					/>
-				))}
+
+			<div className="space-y-0 relative px-4">
+				{chunks.map((chunk, chunkIndex) => {
+					const staggerIndex = isRightToLeft ? (chunks.length - 1 - chunkIndex) : chunkIndex;
+					const staggerOffset = isSingleRow ? 0 : staggerIndex * 32;
+
+					return (
+						<div key={chunkIndex} className="relative">
+							{chunkIndex > 0 && !isSingleRow && (
+								<CarriageReturnGuide
+									theme={theme}
+									isRightToLeft={isRightToLeft}
+									staggerOffset={staggerOffset}
+								/>
+							)}
+
+							<div
+								style={{
+									paddingLeft: !isRightToLeft ? staggerOffset : 0,
+									paddingRight: isRightToLeft ? staggerOffset : 0,
+								}}
+							>
+								<div
+									className={`flex gap-1.5 flex-wrap ${isSingleRow
+										? "justify-center"
+										: isRightToLeft
+											? "flex-row-reverse justify-start"
+											: "justify-start"
+										}`}
+								>
+									{chunk.map((val, i) => {
+										const originalIndex = indexChunks[chunkIndex][i];
+
+										return (
+											<Input
+												key={originalIndex}
+												ref={(el) => {
+													inputRefs.current[originalIndex] = el;
+												}}
+												value={val}
+												onChange={(e) => onValueChange(originalIndex, e.target.value)}
+												onKeyDown={(e) => onKeyDown(originalIndex, e)}
+												className={`w-12 h-8 text-center text-xs p-0 font-mono rounded-lg bg-white shadow-sm transition-all duration-200 ${style.input}`}
+												placeholder={placeholders[originalIndex] || "0"}
+											/>
+										);
+									})}
+								</div>
+							</div>
+						</div>
+					);
+				})}
 			</div>
 		</div>
 	);
 }
-
-export function getThemeClasses(color: ThemeColor): ThemeClasses {
-	return THEME_CLASSES[color];
-}
-
-export type { ThemeColor, ThemeClasses };
