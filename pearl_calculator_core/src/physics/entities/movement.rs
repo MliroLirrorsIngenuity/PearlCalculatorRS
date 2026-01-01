@@ -18,6 +18,22 @@ pub enum PearlVersion {
     Post1212,
 }
 
+impl PearlVersion {
+    pub fn apply_grav_drag_tick(&self, velocity: f64, gravity: f64, drag: f64) -> f64 {
+        match self {
+            PearlVersion::Legacy | PearlVersion::Post1205 => (velocity * drag) + gravity,
+            PearlVersion::Post1212 => (velocity + gravity) * drag,
+        }
+    }
+
+    pub fn get_projection_multiplier(&self, drag: f64) -> f64 {
+        match self {
+            PearlVersion::Legacy | PearlVersion::Post1205 => 1.0,
+            PearlVersion::Post1212 => drag,
+        }
+    }
+}
+
 pub trait PearlMovement {
     fn run_tick_sequence(pearl: &mut PearlEntity<Self>, world_collisions: &[AABBBox])
     where
