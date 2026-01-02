@@ -197,7 +197,10 @@
 			"mode_accumulation_title": "堆叠模式 (弱加载)",
 			"mode_accumulation_desc": "使用累积 TNT 蓄力的弱加载炮。",
 			"mode_vector3d_title": "矢量模式 (3D)",
-			"mode_vector3d_desc": "支持垂直 TNT 的 3D 矢量炮。"
+			"mode_vector3d_desc": "支持垂直 TNT 的 3D 矢量炮。",
+			"vertical_tnt_config_title": "垂直 TNT 配置",
+			"vertical_tnt_config_desc": "配置 3D 矢量炮的垂直 TNT 位置。",
+			"vertical_tnt": "垂直 TNT"
 		},
 		"error": {
 			"config": {

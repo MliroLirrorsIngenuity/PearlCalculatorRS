@@ -4,6 +4,7 @@ import {
 	WizardBasicInfoSchema,
 	WizardBitConfigSchema,
 	WizardTNTConfigSchema,
+	WizardVerticalTNTSchema,
 } from "@/lib/schemas";
 import { z } from "zod";
 import { useState } from "react";
@@ -54,6 +55,9 @@ export const ERROR_MAPPINGS = [
 	["southEast.y", "south_east_tnt_y"],
 	["southEast.z", "south_east_tnt_z"],
 	["redTNTLocation", "red_tnt_selection"],
+	["verticalTNT.x", "vertical_tnt_x"],
+	["verticalTNT.y", "vertical_tnt_y"],
+	["verticalTNT.z", "vertical_tnt_z"],
 ] as const;
 
 export function useConfigurationController() {
@@ -79,6 +83,7 @@ export function useConfigurationController() {
 		setIsBitConfigSkipped,
 		savedPath,
 		setSavedPath,
+		calculationMode,
 	} = useConfigurationState();
 	const { setConfigData, setHasConfig, setBitTemplateConfig } = useConfig();
 	const { updateDefaultInput } = useCalculatorState();
@@ -117,12 +122,26 @@ export function useConfigurationController() {
 					redTNTLocation,
 				}),
 			)
-			.with(4, () =>
-				WizardBitConfigSchema.safeParse({
+			.with(4, () => {
+				if (calculationMode === "Vector3D") {
+					return WizardVerticalTNTSchema.safeParse({
+						verticalTNT: draftConfig.vertical_tnt,
+					});
+				}
+				return WizardBitConfigSchema.safeParse({
 					state: bitTemplateState,
 					skipped: isBitConfigSkipped,
-				}),
-			)
+				});
+			})
+			.with(5, () => {
+				if (calculationMode === "Vector3D") {
+					return WizardBitConfigSchema.safeParse({
+						state: bitTemplateState,
+						skipped: isBitConfigSkipped,
+					});
+				}
+				return { success: true, error: null };
+			})
 			.otherwise(() => ({ success: true, error: null }));
 
 		if (!result.success && result.error) {
@@ -204,7 +223,8 @@ export function useConfigurationController() {
 	};
 
 	const handleFinish = () => {
-		if (validateStep(4)) {
+		const lastStep = calculationMode === "Vector3D" ? 5 : 4;
+		if (validateStep(lastStep)) {
 			setIsFinished(true);
 			setShouldRestoreLastPage(true);
 		}
@@ -215,6 +235,7 @@ export function useConfigurationController() {
 			draftConfig,
 			cannonCenter,
 			redTNTLocation,
+			calculationMode,
 		);
 
 		updateDefaultInput("pearlX", "0");
@@ -249,6 +270,7 @@ export function useConfigurationController() {
 				pearlMomentum,
 				redTNTLocation,
 				bitTemplateState,
+				calculationMode,
 			);
 			const path = await exportConfiguration(config);
 			if (path) {
@@ -334,6 +356,7 @@ export function useConfigurationController() {
 				pearlMomentum,
 				redTNTLocation,
 				bitTemplateState,
+				calculationMode,
 			);
 			const encoded = encodeConfig(config as unknown as EncodableConfig);
 			const { calculatorService } = await import("@/services");

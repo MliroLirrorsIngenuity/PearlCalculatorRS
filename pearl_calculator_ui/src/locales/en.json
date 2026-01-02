@@ -197,7 +197,10 @@
 			"mode_accumulation_title": "Accumulation (Lazy Loaded)",
 			"mode_accumulation_desc": "Lazy loaded cannon with accumulated TNT charges.",
 			"mode_vector3d_title": "Vector (3D)",
-			"mode_vector3d_desc": "3D vector cannon with vertical TNT support."
+			"mode_vector3d_desc": "3D vector cannon with vertical TNT support.",
+			"vertical_tnt_config_title": "Vertical TNT Configuration",
+			"vertical_tnt_config_desc": "Configure the position of vertical TNT for 3D vector cannon.",
+			"vertical_tnt": "Vertical TNT"
 		},
 		"error": {
 			"config": {

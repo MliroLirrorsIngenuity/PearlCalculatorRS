@@ -65,7 +65,7 @@ export const PearlTraceResultSchema = z.object({
 	closest_approach: z
 		.object({
 			tick: z.number(),
-			point: z.object({ x: z.number(), y: z.number(), z: z.number() }),
+			point: z.object({ X: z.number(), Y: z.number(), Z: z.number() }),
 			distance: z.number(),
 		})
 		.nullish(),
@@ -197,6 +197,14 @@ export const WizardTNTConfigSchema = z.object({
 		z: z.string().min(1),
 	}),
 	redTNTLocation: z.string().min(1),
+});
+
+export const WizardVerticalTNTSchema = z.object({
+	verticalTNT: z.object({
+		x: z.string().min(1),
+		y: z.string().min(1),
+		z: z.string().min(1),
+	}),
 });
 
 export const WizardBitConfigSchema = z

@@ -23,6 +23,7 @@ export interface DraftConfig {
 	north_east_tnt: { x: string; y: string; z: string };
 	south_west_tnt: { x: string; y: string; z: string };
 	south_east_tnt: { x: string; y: string; z: string };
+	vertical_tnt: { x: string; y: string; z: string };
 }
 
 export interface CannonCenter {
@@ -82,6 +83,7 @@ export function convertDraftToConfig(
 	draftConfig: DraftConfig,
 	cannonCenter: CannonCenter,
 	redTNTLocation: string | undefined,
+	mode?: CannonMode,
 ): GeneralConfig {
 	const cx = parseNumber(cannonCenter.x);
 	const cz = parseNumber(cannonCenter.z);
@@ -89,7 +91,7 @@ export function convertDraftToConfig(
 	const redDir: TNTDirection =
 		TNTDirectionSchema.safeParse(redTNTLocation).data ?? "SouthEast";
 
-	return {
+	const baseConfig: GeneralConfig = {
 		north_east_tnt: getRelativeTNT(draftConfig.north_east_tnt, cx, cz),
 		north_west_tnt: getRelativeTNT(draftConfig.north_west_tnt, cx, cz),
 		south_east_tnt: getRelativeTNT(draftConfig.south_east_tnt, cx, cz),
@@ -104,6 +106,13 @@ export function convertDraftToConfig(
 		offset_x: 0,
 		offset_z: 0,
 	};
+
+	if (mode === "Vector3D") {
+		baseConfig.vertical_tnt = getRelativeTNT(draftConfig.vertical_tnt, cx, cz);
+		baseConfig.mode = mode;
+	}
+
+	return baseConfig;
 }
 
 export function buildExportConfig(
@@ -112,13 +121,14 @@ export function buildExportConfig(
 	pearlMomentum: PearlMomentum,
 	redTNTLocation: string | undefined,
 	bitTemplateState: BitInputState | undefined,
+	mode?: CannonMode,
 ): Record<string, unknown> {
 	const cx = parseNumber(cannonCenter.x);
 	const cz = parseNumber(cannonCenter.z);
 	const pearlX = parseNumber(draftConfig.pearl_x_position);
 	const pearlZ = parseNumber(draftConfig.pearl_z_position);
 
-	const baseConfig = {
+	const baseConfig: Record<string, unknown> = {
 		NorthEastTNT: getRelativeTNTUppercase(draftConfig.north_east_tnt, cx, cz),
 		NorthWestTNT: getRelativeTNTUppercase(draftConfig.north_west_tnt, cx, cz),
 		SouthEastTNT: getRelativeTNTUppercase(draftConfig.south_east_tnt, cx, cz),
@@ -140,6 +150,15 @@ export function buildExportConfig(
 		DefaultRedTNTDirection: redTNTLocation,
 		DefaultBlueTNTDirection: getOppositeDirection(redTNTLocation),
 	};
+
+	if (mode === "Vector3D") {
+		baseConfig.VerticalTNT = getRelativeTNTUppercase(
+			draftConfig.vertical_tnt,
+			cx,
+			cz,
+		);
+		baseConfig.Mode = mode;
+	}
 
 	if (!bitTemplateState) {
 		return baseConfig;
@@ -172,7 +191,10 @@ export function convertConfigToDraft(config: GeneralConfig): {
 	momentum: PearlMomentum;
 	redLocation: string | undefined;
 } {
-	const center = { x: "0", z: "0" };
+	const center = {
+		x: (config.pearl_x_position - (config.offset_x ?? 0)).toString(),
+		z: (config.pearl_z_position - (config.offset_z ?? 0)).toString(),
+	};
 
 	const momentum = {
 		x: "0",
@@ -204,6 +226,13 @@ export function convertConfigToDraft(config: GeneralConfig): {
 			y: config.south_east_tnt.y.toString(),
 			z: config.south_east_tnt.z.toString(),
 		},
+		vertical_tnt: config.vertical_tnt
+			? {
+					x: config.vertical_tnt.x.toString(),
+					y: config.vertical_tnt.y.toString(),
+					z: config.vertical_tnt.z.toString(),
+				}
+			: { x: "", y: "", z: "" },
 		pearl_x_position: config.pearl_x_position.toString(),
 		pearl_y_position: config.pearl_y_position.toString(),
 		pearl_z_position: config.pearl_z_position.toString(),
