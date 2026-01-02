@@ -20,20 +20,12 @@ export function useSimulatorTrace() {
 				pearlMotionY: config.pearl.momentum.y,
 				pearlMotionZ: config.pearl.momentum.z,
 
-				tntGroups: [
-					{
-						x: config.tntA.pos.x,
-						y: config.tntA.pos.y,
-						z: config.tntA.pos.z,
-						amount: config.tntA.amount,
-					},
-					{
-						x: config.tntB.pos.x,
-						y: config.tntB.pos.y,
-						z: config.tntB.pos.z,
-						amount: config.tntB.amount,
-					},
-				],
+				tntGroups: (["tntA", "tntB", "tntC", "tntD"] as const).map((key) => ({
+					x: config[key].pos.x,
+					y: config[key].pos.y,
+					z: config[key].pos.z,
+					amount: config[key].amount,
+				})),
 
 				version: version,
 			};

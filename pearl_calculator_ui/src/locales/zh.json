@@ -124,6 +124,8 @@
 			"momentum": "珍珠动量",
 			"tnt_group_a": "TNT A 组",
 			"tnt_group_b": "TNT B 组",
+			"tnt_group_c": "TNT C 组",
+			"tnt_group_d": "TNT D 组",
 			"trace_btn": "计算轨迹",
 			"label_x": "X",
 			"label_y": "Y",

@@ -98,17 +98,17 @@ export default function PearlTracePanel({
 									<div className="grid grid-cols-3 gap-2 font-medium">
 										<span>
 											{t("calculator.trace_x", {
-												value: closestApproach.point.X.toFixed(2),
+												value: closestApproach.point.x.toFixed(2),
 											})}
 										</span>
 										<span>
 											{t("calculator.trace_y", {
-												value: closestApproach.point.Y.toFixed(2),
+												value: closestApproach.point.y.toFixed(2),
 											})}
 										</span>
 										<span>
 											{t("calculator.trace_z", {
-												value: closestApproach.point.Z.toFixed(2),
+												value: closestApproach.point.z.toFixed(2),
 											})}
 										</span>
 									</div>

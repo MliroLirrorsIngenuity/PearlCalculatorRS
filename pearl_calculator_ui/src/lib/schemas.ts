@@ -65,10 +65,10 @@ export const PearlTraceResultSchema = z.object({
 	closest_approach: z
 		.object({
 			tick: z.number(),
-			point: z.object({ X: z.number(), Y: z.number(), Z: z.number() }),
+			point: z.object({ x: z.number(), y: z.number(), z: z.number() }),
 			distance: z.number(),
 		})
-		.optional(),
+		.nullish(),
 });
 
 export const TraceTNTSchema = z.object({
@@ -95,19 +95,20 @@ export const GeneralConfigSchema = z.object({
 	mode: CannonModeSchema.optional(),
 });
 
+const TntGroupSchema = z.object({
+	pos: Vector3Schema,
+	amount: z.number(),
+});
+
 export const SimulatorConfigSchema = z.object({
 	pearl: z.object({
 		pos: Vector3Schema,
 		momentum: Vector3Schema,
 	}),
-	tntA: z.object({
-		pos: Vector3Schema,
-		amount: z.number(),
-	}),
-	tntB: z.object({
-		pos: Vector3Schema,
-		amount: z.number(),
-	}),
+	tntA: TntGroupSchema,
+	tntB: TntGroupSchema,
+	tntC: TntGroupSchema,
+	tntD: TntGroupSchema,
 });
 
 export const CalculatorInputsSchema = z.object({

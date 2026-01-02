@@ -124,6 +124,8 @@
 			"momentum": "Momentum",
 			"tnt_group_a": "TNT Group A",
 			"tnt_group_b": "TNT Group B",
+			"tnt_group_c": "TNT Group C",
+			"tnt_group_d": "TNT Group D",
 			"trace_btn": "Trace Pearl",
 			"label_x": "X",
 			"label_y": "Y",
