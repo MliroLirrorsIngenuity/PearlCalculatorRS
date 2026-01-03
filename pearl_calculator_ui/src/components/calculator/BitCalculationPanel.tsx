@@ -1,34 +1,52 @@
 import { ChevronDown, Settings2 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
 	Collapsible,
 	CollapsibleContent,
 	CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useCalculatorState } from "@/context/CalculatorStateContext";
 import { useConfig } from "@/context/ConfigContext";
+import { useConfigurationState } from "@/context/ConfigurationStateContext";
 import { useElementSize } from "@/hooks/use-element-size";
 import { useToastNotifications } from "@/hooks/use-toast-notifications";
-import { calculateBits } from "@/lib/bit-decoder";
+import { calculateBits, decodeWithMultiplier } from "@/lib/bit-decoder";
 import {
 	configToInputState,
+	configToMultiplierInputState,
 	inputStateToConfig,
+	inputStateToMultiplierConfig,
 } from "@/lib/bit-template-utils";
 import type { BitCalculationResult, BitInputState } from "@/types/domain";
-import { BitCellGroup, HorizontalBitRow } from "./BitCellGroup";
 import { BitInputSection } from "./BitInputSection";
-import { DirectionDisplay } from "./DirectionDisplay";
-import { ThemeColor, calculateRequiredWidth } from "./bit-layout-utils";
+import { BitResultSection } from "./BitResultSection";
+import {
+	MultiplierBitInputSection,
+	type MultiplierBitInputState,
+} from "./MultiplierBitInputSection";
+
+interface MultiplierCalculationResult {
+	blue: number[];
+	red: number[];
+}
 
 export default function BitCalculationPanel() {
 	const { t } = useTranslation();
-	const { bitTemplateConfig, setBitTemplateConfig } = useConfig();
+	const {
+		bitTemplateConfig,
+		setBitTemplateConfig,
+		multiplierConfig,
+		setMultiplierConfig,
+	} = useConfig();
 	const { defaultCalculator } = useCalculatorState();
+	const { calculationMode } = useConfigurationState();
 	const { showError } = useToastNotifications();
+
+	const isAccumulationMode = calculationMode === "Accumulation";
 
 	const traceTNT = defaultCalculator.trace.tnt;
 	const traceDirection = defaultCalculator.trace.direction;
@@ -41,13 +59,39 @@ export default function BitCalculationPanel() {
 		initialState,
 	);
 
+	const initialMultiplierState = useMemo(
+		() =>
+			configToMultiplierInputState(multiplierConfig) ?? {
+				sideCount: 13,
+				sideValues: Array(13).fill(""),
+				multiplier: 200,
+				isSwapped: false,
+			},
+		[multiplierConfig],
+	);
+
+	const [multiplierState, setMultiplierState] =
+		useState<MultiplierBitInputState>(initialMultiplierState);
+
 	useEffect(() => {
 		setInputState(configToInputState(bitTemplateConfig));
 	}, [bitTemplateConfig]);
 
+	useEffect(() => {
+		const newState = configToMultiplierInputState(multiplierConfig);
+		if (newState) {
+			setMultiplierState(newState);
+		}
+	}, [multiplierConfig]);
+
 	const handleInputChange = (state: BitInputState) => {
 		setInputState(state);
 		setBitTemplateConfig(inputStateToConfig(state));
+	};
+
+	const handleMultiplierChange = (state: MultiplierBitInputState) => {
+		setMultiplierState(state);
+		setMultiplierConfig(inputStateToMultiplierConfig(state));
 	};
 
 	const [calculationResult, setCalculationResult] =
@@ -55,6 +99,12 @@ export default function BitCalculationPanel() {
 			blue: [],
 			red: [],
 			direction: [false, false],
+		});
+
+	const [multiplierResult, setMultiplierResult] =
+		useState<MultiplierCalculationResult>({
+			blue: [],
+			red: [],
 		});
 
 	const hasTemplateValues = useMemo(() => {
@@ -67,32 +117,100 @@ export default function BitCalculationPanel() {
 
 	const { ref: scrollViewportRef, height: viewportHeight } =
 		useElementSize<HTMLDivElement>();
-	const { ref: resultContainerRef, width: resultContainerWidth } =
-		useElementSize<HTMLDivElement>();
+
+	const parseMultiplierValues = (
+		state: MultiplierBitInputState,
+	): number[] | null => {
+		const values: number[] = [];
+		for (const v of state.sideValues) {
+			const num = parseInt(v, 10);
+			if (isNaN(num) || num <= 0) {
+				return null;
+			}
+			values.push(num);
+		}
+		return values;
+	};
 
 	const runCalculation = useCallback(() => {
 		if (!inputState || !traceTNT) return;
 
-		const result = calculateBits(
-			inputState,
-			traceTNT.blue,
-			traceTNT.red,
-			traceDirection,
-		);
+		if (isAccumulationMode) {
+			const multiplierValues = parseMultiplierValues(multiplierState);
 
-		if ("error" in result) {
-			const { errorKey, errorParams } = result.error;
-			if (errorKey) {
-				showError(
-					t("error.calculator.calc_failed"),
-					t(errorKey as any, errorParams as any),
+			let blueTNT = traceTNT.blue;
+			let redTNT = traceTNT.red;
+			let blueMultiplierIndices: number[] = [];
+			let redMultiplierIndices: number[] = [];
+
+			if (multiplierValues && multiplierValues.length > 0) {
+				const blueMultResult = decodeWithMultiplier(
+					multiplierValues,
+					multiplierState.multiplier,
+					blueTNT,
 				);
-			}
-			return;
-		}
+				blueMultiplierIndices = blueMultResult.activatedIndices;
+				blueTNT = blueMultResult.remainder;
 
-		setCalculationResult(result.result);
-	}, [inputState, traceTNT, traceDirection, showError, t]);
+				const redMultResult = decodeWithMultiplier(
+					multiplierValues,
+					multiplierState.multiplier,
+					redTNT,
+				);
+				redMultiplierIndices = redMultResult.activatedIndices;
+				redTNT = redMultResult.remainder;
+			}
+
+			setMultiplierResult({
+				blue: blueMultiplierIndices,
+				red: redMultiplierIndices,
+			});
+
+			const result = calculateBits(inputState, blueTNT, redTNT, traceDirection);
+
+			if ("error" in result) {
+				const { errorKey, errorParams } = result.error;
+				if (errorKey) {
+					showError(
+						t("error.calculator.calc_failed"),
+						t(errorKey as any, errorParams as any),
+					);
+				}
+				return;
+			}
+
+			setCalculationResult(result.result);
+		} else {
+			const result = calculateBits(
+				inputState,
+				traceTNT.blue,
+				traceTNT.red,
+				traceDirection,
+			);
+
+			if ("error" in result) {
+				const { errorKey, errorParams } = result.error;
+				if (errorKey) {
+					showError(
+						t("error.calculator.calc_failed"),
+						t(errorKey as any, errorParams as any),
+					);
+				}
+				return;
+			}
+
+			setCalculationResult(result.result);
+			setMultiplierResult({ blue: [], red: [] });
+		}
+	}, [
+		inputState,
+		traceTNT,
+		traceDirection,
+		showError,
+		t,
+		isAccumulationMode,
+		multiplierState,
+	]);
 
 	useEffect(() => {
 		if (hasAutoCalculated.current) return;
@@ -108,50 +226,6 @@ export default function BitCalculationPanel() {
 		}
 	}, [inputState, traceTNT, runCalculation]);
 
-	const sideCount = inputState?.sideCount ?? 13;
-	const isSwapped = inputState?.isSwapped ?? false;
-	const getPlaceholder = (index: number) => (index + 1).toString();
-
-	const topTheme: ThemeColor = isSwapped ? "red" : "blue";
-	const botTheme: ThemeColor = isSwapped ? "blue" : "red";
-
-	const topResultValues = useMemo(
-		() =>
-			Array(sideCount)
-				.fill(0)
-				.map((_, i) => {
-					const val = inputState?.sideValues[i];
-					return val && val.trim() !== "" ? val : getPlaceholder(i);
-				}),
-		[sideCount, inputState?.sideValues],
-	);
-
-	const botResultValues = useMemo(
-		() =>
-			Array(sideCount)
-				.fill(0)
-				.map((_, i) => {
-					const idx = sideCount - 1 - i;
-					const val = inputState?.sideValues[idx];
-					return val && val.trim() !== "" ? val : getPlaceholder(idx);
-				}),
-		[sideCount, inputState?.sideValues],
-	);
-
-	const topActiveIndices =
-		topTheme === "blue" ? calculationResult.blue : calculationResult.red;
-	const botActiveIndices = useMemo(
-		() =>
-			(botTheme === "blue"
-				? calculationResult.blue
-				: calculationResult.red
-			).map((idx) => sideCount - 1 - idx),
-		[botTheme, calculationResult.blue, calculationResult.red, sideCount],
-	);
-
-	const useHorizontalLayout =
-		resultContainerWidth >= calculateRequiredWidth(sideCount);
-
 	return (
 		<div className="flex h-full w-full flex-col bg-background">
 			<Card className="h-full w-full shadow-sm">
@@ -166,7 +240,7 @@ export default function BitCalculationPanel() {
 							<Collapsible
 								open={isConfigOpen}
 								onOpenChange={setIsConfigOpen}
-								className="space-y-2 shrink-0"
+								className="space-y-2 shrink-0 relative z-10"
 							>
 								<CollapsibleTrigger className="group flex w-full items-center justify-between py-2 hover:bg-slate-50 rounded-lg transition-colors px-1">
 									<h3 className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
@@ -177,76 +251,85 @@ export default function BitCalculationPanel() {
 								</CollapsibleTrigger>
 
 								<CollapsibleContent>
-									<div className="pt-2">
-										<BitInputSection
-											value={inputState}
-											onChange={handleInputChange}
-											showCalculateButton
-											calculateButtonLabel={t("calculator.bit_calculate_btn")}
-											onCalculate={runCalculation}
-										/>
+									<div className="pt-2 space-y-4">
+										{isAccumulationMode && (
+											<>
+												<Collapsible defaultOpen className="space-y-2">
+													<CollapsibleTrigger className="group flex w-full items-center justify-center gap-2 py-1.5 px-3 bg-amber-50 hover:bg-amber-100/80 rounded-lg border border-amber-200 transition-colors">
+														<span className="text-[11px] font-bold text-amber-600 uppercase tracking-widest">
+															{t("calculator.multiplier_section")}
+														</span>
+														<ChevronDown className="h-3.5 w-3.5 text-amber-500 transition-transform duration-200 group-data-[state=open]:rotate-180" />
+													</CollapsibleTrigger>
+													<CollapsibleContent>
+														<MultiplierBitInputSection
+															value={multiplierState}
+															onChange={handleMultiplierChange}
+														/>
+													</CollapsibleContent>
+												</Collapsible>
+												<Collapsible defaultOpen className="space-y-2">
+													<CollapsibleTrigger className="group flex w-full items-center justify-center gap-2 py-1.5 px-3 bg-violet-50 hover:bg-violet-100/80 rounded-lg border border-violet-200 transition-colors">
+														<span className="text-[11px] font-bold text-violet-500 uppercase tracking-widest">
+															{t("calculator.standard_section")}
+														</span>
+														<ChevronDown className="h-3.5 w-3.5 text-violet-400 transition-transform duration-200 group-data-[state=open]:rotate-180" />
+													</CollapsibleTrigger>
+													<CollapsibleContent>
+														<BitInputSection
+															value={inputState}
+															onChange={handleInputChange}
+														/>
+													</CollapsibleContent>
+												</Collapsible>
+											</>
+										)}
+
+										{!isAccumulationMode && (
+											<BitInputSection
+												value={inputState}
+												onChange={handleInputChange}
+											/>
+										)}
+
+										<div className="flex justify-center pt-2 pb-4">
+											<Button
+												className="w-40 bg-slate-900 hover:bg-slate-800 text-white shadow-md transition-all active:scale-95"
+												onClick={runCalculation}
+											>
+												{t("calculator.bit_calculate_btn")}
+											</Button>
+										</div>
 									</div>
 								</CollapsibleContent>
 							</Collapsible>
 
-							<div className="flex items-center gap-4 py-2 shrink-0">
-								<div className="h-px flex-1 bg-slate-200 border-t border-dashed border-slate-300" />
-								<Label className="text-xs font-bold text-slate-400 uppercase tracking-widest">
-									Calculation Result
-								</Label>
-								<div className="h-px flex-1 bg-slate-200 border-t border-dashed border-slate-300" />
-							</div>
-
 							<div
-								ref={resultContainerRef}
-								className="flex-1 flex flex-col justify-center items-center w-full gap-4 pb-4"
+								className={`flex-1 flex flex-col justify-center ${isAccumulationMode && !isConfigOpen ? "-mt-8" : ""}`}
 							>
-								{useHorizontalLayout ? (
-									<div className="flex justify-center items-center gap-2 w-full">
-										<HorizontalBitRow
-											values={topResultValues}
-											activeIndices={topActiveIndices}
-											theme={topTheme}
-											arrowPosition="right"
-										/>
-										<DirectionDisplay direction={calculationResult.direction} />
-										<HorizontalBitRow
-											values={botResultValues}
-											activeIndices={botActiveIndices}
-											theme={botTheme}
-											arrowPosition="left"
-										/>
-									</div>
-								) : (
-									<>
-										<DirectionDisplay
-											direction={calculationResult.direction}
-											label={t("calculator.direction_label")}
-										/>
-										<div className="space-y-2 w-full">
-											<div className="flex justify-center items-center gap-2 px-4">
-												<BitCellGroup
-													values={topResultValues}
-													activeIndices={topActiveIndices}
-													theme={topTheme}
-													arrowPosition="right"
-													wrap
-													elevated
-												/>
-											</div>
-											<div className="flex justify-center items-center gap-2 px-4">
-												<BitCellGroup
-													values={botResultValues}
-													activeIndices={botActiveIndices}
-													theme={botTheme}
-													arrowPosition="left"
-													wrap
-													elevated
-												/>
-											</div>
-										</div>
-									</>
+								{isAccumulationMode && (
+									<BitResultSection
+										sideCount={multiplierState.sideCount}
+										sideValues={multiplierState.sideValues}
+										activeIndices={multiplierResult}
+										isSwapped={multiplierState.isSwapped}
+										label={t("calculator.multiplier_result")}
+										variant="multiplier"
+									/>
 								)}
+
+								<BitResultSection
+									sideCount={inputState?.sideCount ?? 13}
+									sideValues={inputState?.sideValues ?? []}
+									activeIndices={calculationResult}
+									direction={calculationResult.direction}
+									isSwapped={inputState?.isSwapped ?? false}
+									label={
+										isAccumulationMode
+											? t("calculator.standard_result")
+											: undefined
+									}
+								/>
 							</div>
 						</div>
 					</ScrollArea>

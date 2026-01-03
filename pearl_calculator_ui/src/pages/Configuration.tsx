@@ -15,6 +15,7 @@ import { OnboardingPanel } from "@/components/common/OnboardingPanel";
 import { BasicInfoStep } from "@/components/configuration/BasicInfoStep";
 import { BitConfigurationStep } from "@/components/configuration/BitConfigurationStep";
 import { CannonTypeStep } from "@/components/configuration/CannonTypeStep";
+import { MultiplierConfigurationStep } from "@/components/configuration/MultiplierConfigurationStep";
 import { PreviewStep } from "@/components/configuration/PreviewStep";
 import { TNTConfigurationStep } from "@/components/configuration/TNTConfigurationStep";
 import { VerticalTNTStep } from "@/components/configuration/VerticalTNTStep";
@@ -49,6 +50,7 @@ export default function Configuration() {
 	const { t } = useTranslation();
 	const { calculationMode } = useConfigurationState();
 	const isVector3D = calculationMode === "Vector3D";
+	const isAccumulation = calculationMode === "Accumulation";
 
 	const {
 		isConfiguring,
@@ -231,6 +233,13 @@ export default function Configuration() {
 									<BitConfigurationStep errors={errors} />
 								</ScrollArea>
 							</CarouselItem>
+							{isAccumulation && (
+								<CarouselItem className="h-full">
+									<ScrollArea className="h-full">
+										<MultiplierConfigurationStep errors={errors} />
+									</ScrollArea>
+								</CarouselItem>
+							)}
 							<CarouselItem className="h-full">
 								<ScrollArea className="h-full">
 									<PreviewStep />

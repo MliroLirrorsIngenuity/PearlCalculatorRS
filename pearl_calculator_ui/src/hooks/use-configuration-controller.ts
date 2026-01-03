@@ -16,6 +16,7 @@ import { useConfigurationState } from "@/context/ConfigurationStateContext";
 import { useToastNotifications } from "@/hooks/use-toast-notifications";
 import {
 	configToInputState,
+	configToMultiplierInputState,
 	inputStateToConfig,
 } from "@/lib/bit-template-utils";
 import {
@@ -30,7 +31,11 @@ import {
 	encodeConfig,
 } from "@/lib/config-codec";
 import { isTauri } from "@/services";
-import type { BitTemplateConfig, GeneralConfig } from "@/types/domain";
+import type {
+	BitTemplateConfig,
+	GeneralConfig,
+	MultiplierConfig,
+} from "@/types/domain";
 
 export const ERROR_MAPPINGS = [
 	["cannonCenter.x", "cannon_x"],
@@ -84,6 +89,8 @@ export function useConfigurationController() {
 		savedPath,
 		setSavedPath,
 		calculationMode,
+		multiplierBitState,
+		setMultiplierBitState,
 	} = useConfigurationState();
 	const { setConfigData, setHasConfig, setBitTemplateConfig } = useConfig();
 	const { updateDefaultInput } = useCalculatorState();
@@ -139,6 +146,9 @@ export function useConfigurationController() {
 						state: bitTemplateState,
 						skipped: isBitConfigSkipped,
 					});
+				}
+				if (calculationMode === "Accumulation") {
+					return { success: true, error: null };
 				}
 				return { success: true, error: null };
 			})
@@ -223,7 +233,10 @@ export function useConfigurationController() {
 	};
 
 	const handleFinish = () => {
-		const lastStep = calculationMode === "Vector3D" ? 5 : 4;
+		const lastStep =
+			calculationMode === "Vector3D" || calculationMode === "Accumulation"
+				? 5
+				: 4;
 		if (validateStep(lastStep)) {
 			setIsFinished(true);
 			setShouldRestoreLastPage(true);
@@ -271,6 +284,7 @@ export function useConfigurationController() {
 				redTNTLocation,
 				bitTemplateState,
 				calculationMode,
+				multiplierBitState,
 			);
 			const path = await exportConfiguration(config);
 			if (path) {
@@ -298,6 +312,7 @@ export function useConfigurationController() {
 		config: GeneralConfig,
 		bitTemplate: BitTemplateConfig | null,
 		path: string | null = null,
+		multiplierTemplate?: MultiplierConfig | null,
 	) => {
 		const { draft, center, momentum, redLocation } =
 			convertConfigToDraft(config);
@@ -309,7 +324,12 @@ export function useConfigurationController() {
 		const bitInput = configToInputState(bitTemplate);
 		setBitTemplateState(bitInput);
 
-		setBitTemplateState(bitInput);
+		if (multiplierTemplate) {
+			const multiplierInput = configToMultiplierInputState(multiplierTemplate);
+			if (multiplierInput) {
+				setMultiplierBitState(multiplierInput);
+			}
+		}
 
 		if (path) {
 			setSavedPath(path);
@@ -329,7 +349,7 @@ export function useConfigurationController() {
 				return;
 			}
 			const decoded = decodeConfig(text);
-			hydrateWizard(decoded.generalConfig, decoded.bitTemplate);
+			hydrateWizard(decoded.generalConfig, decoded.bitTemplate, null, null);
 		} catch (error) {
 			console.error(error);
 			showError(t("error.calculator.code_import_failed"), error);
@@ -340,7 +360,12 @@ export function useConfigurationController() {
 		try {
 			const result = await loadConfiguration();
 			if (result) {
-				hydrateWizard(result.config, result.bitTemplate, result.path);
+				hydrateWizard(
+					result.config,
+					result.bitTemplate,
+					result.path,
+					result.multiplierTemplate,
+				);
 			}
 		} catch (error) {
 			console.error(error);
@@ -357,6 +382,7 @@ export function useConfigurationController() {
 				redTNTLocation,
 				bitTemplateState,
 				calculationMode,
+				multiplierBitState,
 			);
 			const encoded = encodeConfig(config as unknown as EncodableConfig);
 			const { calculatorService } = await import("@/services");

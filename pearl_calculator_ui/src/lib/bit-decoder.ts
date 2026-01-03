@@ -78,6 +78,39 @@ export function decodeBitValue(
 	return { activatedBits, activatedIndices };
 }
 
+export interface MultiplierDecodeResult {
+	activatedIndices: number[];
+	remainder: number;
+}
+
+export function decodeWithMultiplier(
+	values: number[],
+	multiplier: number,
+	targetValue: number,
+): MultiplierDecodeResult {
+	if (targetValue <= 0 || multiplier <= 0) {
+		return { activatedIndices: [], remainder: targetValue };
+	}
+
+	const multipliedValues = values.map((val) => val * multiplier);
+
+	const indexed = multipliedValues.map((val, idx) => ({ val, idx }));
+	indexed.sort((a, b) => b.val - a.val);
+
+	const activatedIndices: number[] = [];
+	let remaining = targetValue;
+
+	for (const { val, idx } of indexed) {
+		if (remaining >= val) {
+			remaining -= val;
+			activatedIndices.push(idx);
+		}
+		if (remaining === 0) break;
+	}
+
+	return { activatedIndices, remainder: remaining };
+}
+
 export function getDirectionBits(
 	masks: MaskGroup[],
 	direction: string,

@@ -115,7 +115,12 @@
 			"import_code_btn": "Import Code",
 			"toast_code_imported": "Configuration imported from code",
 			"copy_code_tooltip": "Copy configuration code",
-			"export_json_tooltip": "Export as JSON file"
+			"export_json_tooltip": "Export as JSON file",
+			"multiplier_section": "Multiplier Bits",
+			"standard_section": "Standard Bits",
+			"multiplier_label": "Multiplier",
+			"multiplier_result": "Multiplier Result",
+			"standard_result": "Standard Result"
 		},
 		"simulator": {
 			"configuration_title": "Simulator Configuration",
@@ -169,6 +174,8 @@
 			"tnt_config_desc": "Configure TNT coordinates and select the Red TNT group using the badge.",
 			"bit_config_title": "Bit Configuration",
 			"bit_config_desc": "Configure the bit template.",
+			"multiplier_config_title": "Multiplier Bits Configuration",
+			"multiplier_config_desc": "Configure multiplier bits for weak loaded cannon.",
 			"skip_btn": "Skip",
 			"skip_warning_title": "Skip Bit Configuration?",
 			"skip_warning_desc": "Skipping this step will prevent automatic Bit encoding calculations, requiring manual entry later. Are you sure?",
@@ -222,11 +229,12 @@
 				"copy_code_failed": "Failed to copy code",
 				"bit_values_error": "Please fill in all bit values.",
 				"bit_masks_error": "Please select all direction masks.",
+				"multiplier_values_error": "Please fill in all multiplier bit values.",
 				"red_tnt_error": "Please select a Red TNT group.",
 				"bit_validation": {
 					"empty": "Template cannot be empty",
 					"no_unit": "Template must contain unit value 1",
-					"gap": "Gap detected: cannot cover {{gap}} after sum {{sum}}",
+					"gap": "Template gap: Small values only sum to {{sum}}, cannot cover {{gap}}. Add missing values between {{sum}} and {{gap}}.",
 					"invalid": "Invalid template values",
 					"value_exceeds": "Value {{value}} exceeds maximum {{max}}"
 				},

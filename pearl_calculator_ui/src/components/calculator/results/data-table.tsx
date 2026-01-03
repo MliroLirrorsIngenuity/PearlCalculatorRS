@@ -34,6 +34,7 @@ interface DataTableProps<TData, TValue> {
 		vertical?: number,
 	) => void;
 	columnVisibility?: VisibilityState;
+	defaultSortColumn?: string;
 }
 
 const DEFAULT_COLUMN_SIZES: Record<string, number> = {
@@ -89,16 +90,40 @@ export const DataTable = React.forwardRef<
 		minColumnSizes = MIN_COLUMN_SIZES,
 		onTrace,
 		columnVisibility = {},
+		defaultSortColumn,
 	},
 	ref,
 ) {
 	const { t } = useTranslation();
-	const [sorting, setSorting] = React.useState<SortingState>([
-		{
-			id: "distance",
-			desc: false,
-		},
-	]);
+
+	const getInitialSortColumn = React.useCallback((): SortingState => {
+		const columnIds = columns
+			.map((col) => {
+				if ("accessorKey" in col && typeof col.accessorKey === "string") {
+					return col.accessorKey;
+				}
+				if ("id" in col && col.id) {
+					return col.id;
+				}
+				return null;
+			})
+			.filter(Boolean) as string[];
+
+		if (defaultSortColumn && columnIds.includes(defaultSortColumn)) {
+			return [{ id: defaultSortColumn, desc: false }];
+		}
+		if (columnIds.includes("distance")) {
+			return [{ id: "distance", desc: false }];
+		}
+		if (columnIds.length > 0) {
+			return [{ id: columnIds[0], desc: false }];
+		}
+		return [];
+	}, [columns, defaultSortColumn]);
+
+	const [sorting, setSorting] = React.useState<SortingState>(() =>
+		getInitialSortColumn(),
+	);
 	const [columnSizing, setColumnSizing] =
 		React.useState<ColumnSizingState>(defaultColumnSizing);
 	const tableRef = React.useRef<HTMLTableElement>(null);

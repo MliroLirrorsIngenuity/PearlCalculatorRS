@@ -2,6 +2,7 @@ import { createContext, type ReactNode, useContext, useState } from "react";
 import type {
 	BitTemplateConfig,
 	GeneralConfig,
+	MultiplierConfig,
 	PearlVersion,
 } from "../types/domain";
 
@@ -16,6 +17,8 @@ interface ConfigContextType {
 	setConfigPath: (path: string) => void;
 	bitTemplateConfig: BitTemplateConfig | null;
 	setBitTemplateConfig: (data: BitTemplateConfig | null) => void;
+	multiplierConfig: MultiplierConfig | null;
+	setMultiplierConfig: (data: MultiplierConfig | null) => void;
 	resetConfig: () => void;
 }
 
@@ -41,11 +44,14 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
 	const [configPath, setConfigPath] = useState("");
 	const [bitTemplateConfig, setBitTemplateConfig] =
 		useState<BitTemplateConfig | null>(null);
+	const [multiplierConfig, setMultiplierConfig] =
+		useState<MultiplierConfig | null>(null);
 
 	const resetConfig = () => {
 		setConfigData(defaultConfig);
 		setConfigPath("");
 		setBitTemplateConfig(null);
+		setMultiplierConfig(null);
 		setHasConfig(false);
 	};
 
@@ -62,6 +68,8 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
 				setConfigPath,
 				bitTemplateConfig,
 				setBitTemplateConfig,
+				multiplierConfig,
+				setMultiplierConfig,
 				resetConfig,
 			}}
 		>

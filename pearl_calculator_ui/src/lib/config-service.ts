@@ -5,9 +5,14 @@ import {
 	BitDirectionSchema,
 	BitTemplateConfigSchema,
 	GeneralConfigSchema,
+	MultiplierConfigSchema,
 	TNTDirectionSchema,
 } from "@/lib/schemas";
-import type { BitTemplateConfig, GeneralConfig } from "@/types/domain";
+import type {
+	BitTemplateConfig,
+	GeneralConfig,
+	MultiplierConfig,
+} from "@/types/domain";
 import { isTauri } from "@/services";
 
 const LooseConfigSchema = z
@@ -50,6 +55,10 @@ const LooseConfigSchema = z
 		RedValues: z.array(z.any()).optional(),
 		IsRedArrowCenter: z.boolean().optional(),
 		Mode: z.string().optional(),
+		MultiplierSideMode: z.number().optional(),
+		MultiplierValues: z.array(z.any()).optional(),
+		Multiplier: z.number().optional(),
+		MultiplierIsSwapped: z.boolean().optional(),
 	})
 	.passthrough();
 
@@ -138,12 +147,41 @@ function extractBitTemplateConfig(
 	return BitTemplateConfigSchema.parse(template);
 }
 
+function extractMultiplierConfig(dirty: DirtyConfig): MultiplierConfig | null {
+	let root = dirty;
+	if (
+		dirty.CannonSettings &&
+		Array.isArray(dirty.CannonSettings) &&
+		dirty.CannonSettings.length > 0
+	) {
+		root = dirty.CannonSettings[0];
+	}
+
+	if (
+		!root.MultiplierSideMode ||
+		!root.MultiplierValues ||
+		!Array.isArray(root.MultiplierValues)
+	) {
+		return null;
+	}
+
+	const config = {
+		MultiplierSideMode: root.MultiplierSideMode,
+		MultiplierValues: root.MultiplierValues.map((v) => Number(v) || 0),
+		Multiplier: root.Multiplier ?? 200,
+		MultiplierIsSwapped: root.MultiplierIsSwapped ?? false,
+	};
+
+	return MultiplierConfigSchema.parse(config);
+}
+
 export function parseConfigurationContent(
 	content: string,
 	path: string,
 ): {
 	config: GeneralConfig;
 	bitTemplate: BitTemplateConfig | null;
+	multiplierTemplate: MultiplierConfig | null;
 	path: string;
 } {
 	const json = JSON.parse(content);
@@ -151,13 +189,15 @@ export function parseConfigurationContent(
 
 	const cleanConfig = normalizeConfig(dirty);
 	const bitTemplate = extractBitTemplateConfig(dirty);
+	const multiplierTemplate = extractMultiplierConfig(dirty);
 
-	return { config: cleanConfig, bitTemplate, path };
+	return { config: cleanConfig, bitTemplate, multiplierTemplate, path };
 }
 
 export async function loadConfiguration(): Promise<{
 	config: GeneralConfig;
 	bitTemplate: BitTemplateConfig | null;
+	multiplierTemplate: MultiplierConfig | null;
 	path: string;
 } | null> {
 	try {

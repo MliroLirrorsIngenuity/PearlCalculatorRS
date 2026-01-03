@@ -154,6 +154,13 @@ export const BitInputStateSchema = z.object({
 	isSwapped: z.boolean(),
 });
 
+export const MultiplierBitInputStateSchema = z.object({
+	sideCount: z.number(),
+	sideValues: z.array(z.string()),
+	multiplier: z.number(),
+	isSwapped: z.boolean(),
+});
+
 export const WizardBasicInfoSchema = z.object({
 	cannonCenter: z.object({
 		x: z.string().min(1),
@@ -228,3 +235,10 @@ export const WizardBitConfigSchema = z
 			message: "incomplete",
 		},
 	);
+
+export const MultiplierConfigSchema = z.object({
+	MultiplierSideMode: z.number(),
+	MultiplierValues: z.array(z.number()),
+	Multiplier: z.number(),
+	MultiplierIsSwapped: z.boolean(),
+});

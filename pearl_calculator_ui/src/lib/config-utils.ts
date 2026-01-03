@@ -5,6 +5,7 @@ import type {
 	BitInputState,
 	CannonMode,
 	GeneralConfig,
+	MultiplierBitInputState,
 } from "@/types/domain";
 import { preciseSubtract } from "./floating-point-utils";
 
@@ -123,6 +124,7 @@ export function buildExportConfig(
 	redTNTLocation: string | undefined,
 	bitTemplateState: BitInputState | undefined,
 	mode?: CannonMode,
+	multiplierBitState?: MultiplierBitInputState,
 ): Record<string, unknown> {
 	const cx = parseNumber(cannonCenter.x);
 	const cz = parseNumber(cannonCenter.z);
@@ -155,12 +157,14 @@ export function buildExportConfig(
 		DefaultBlueTNTDirection: getOppositeDirection(redTNTLocation),
 	};
 
-	if (mode === "Vector3D") {
-		baseConfig.VerticalTNT = getRelativeTNTUppercase(
-			draftConfig.vertical_tnt,
-			cx,
-			cz,
-		);
+	if (mode === "Vector3D" || mode === "Accumulation") {
+		if (mode === "Vector3D") {
+			baseConfig.VerticalTNT = getRelativeTNTUppercase(
+				draftConfig.vertical_tnt,
+				cx,
+				cz,
+			);
+		}
 		baseConfig.Mode = mode;
 	}
 
@@ -178,7 +182,7 @@ export function buildExportConfig(
 		{} as Record<string, BitDirection>,
 	);
 
-	return {
+	const result: Record<string, unknown> = {
 		...baseConfig,
 		SideMode: bitTemplateState.sideCount,
 		DirectionMasks: directionMasks,
@@ -187,6 +191,17 @@ export function buildExportConfig(
 			.reverse(),
 		IsRedArrowCenter: bitTemplateState.isSwapped,
 	};
+
+	if (multiplierBitState) {
+		result.MultiplierSideMode = multiplierBitState.sideCount;
+		result.MultiplierValues = multiplierBitState.sideValues
+			.map((v: string) => parseInt(v, 10) || 0)
+			.reverse();
+		result.Multiplier = multiplierBitState.multiplier;
+		result.MultiplierIsSwapped = multiplierBitState.isSwapped;
+	}
+
+	return result;
 }
 
 export function convertConfigToDraft(config: GeneralConfig): {

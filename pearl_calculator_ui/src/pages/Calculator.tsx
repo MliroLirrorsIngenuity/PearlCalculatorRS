@@ -31,6 +31,7 @@ export default function Calculator() {
 		setConfigData,
 		setConfigPath,
 		setBitTemplateConfig,
+		setMultiplierConfig,
 		version,
 		resetConfig,
 	} = useConfig();
@@ -74,6 +75,7 @@ export default function Calculator() {
 				setConfigData(result.config);
 				setConfigPath(result.path);
 				setBitTemplateConfig(result.bitTemplate);
+				setMultiplierConfig(result.multiplierTemplate);
 				setHasConfig(true);
 
 				updateDefaultInput("pearlX", result.config.pearl_x_position.toString());
@@ -165,14 +167,8 @@ export default function Calculator() {
 			direction,
 			vertical,
 		};
-		const destination = {
-			x: parseFloat(inputs.destX) || 0,
-			z: parseFloat(inputs.destZ) || 0,
-		};
 
-		const cannonY =
-			parseInt(inputs.cannonY) || Math.floor(configData.pearl_y_position);
-		const result = await calculatePearlTrace(tntResult, destination, cannonY);
+		const result = await calculatePearlTrace(inputs, tntResult);
 		if (result) {
 			updateDefaultTrace({
 				data: result,
