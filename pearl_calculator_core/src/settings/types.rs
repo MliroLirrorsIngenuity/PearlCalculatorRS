@@ -8,11 +8,31 @@ pub struct AppSettings {
     pub cannon_settings: Vec<CannonSettings>,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum CannonMode {
+    Standard,
+    Accumulation,
+}
+
+impl Default for CannonMode {
+    fn default() -> Self {
+        Self::Standard
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct CannonSettings {
     #[serde(rename = "MaxTNT")]
     pub max_tnt: u32,
+    #[serde(default)]
+    pub red_tnt: Option<Space3D>,
+    #[serde(default)]
+    pub blue_tnt: Option<Space3D>,
+    #[serde(default)]
+    pub vertical_tnt: Option<Space3D>,
+    #[serde(default)]
+    pub mode: CannonMode,
     #[serde(default)]
     pub default_red_direction: Option<LayoutDirection>,
     #[serde(default)]

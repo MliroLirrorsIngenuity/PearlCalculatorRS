@@ -10,6 +10,11 @@
 		},
 		"breadcrumb": {
 			"back": "返回",
+			"mode": {
+				"Standard": "标准模式 (2D)",
+				"Accumulation": "堆叠模式 (弱加载)",
+				"Vector3D": "矢量模式 (3D)"
+			},
 			"select_config": "选择配置",
 			"calculator": "TNT 计算",
 			"pearl_trace": "珍珠轨迹",
@@ -100,6 +105,9 @@
 			"header_vx": "X动量",
 			"header_vy": "Y动量",
 			"header_vz": "Z动量",
+			"header_vertical": "垂直",
+			"direction_vertical": "垂直 TNT",
+			"label_dest_y": "目标 Y 坐标",
 			"bit_calc_btn": "Bit计算",
 			"bit_calculate_btn": "开始计算",
 			"direction_label": "方向",
@@ -107,7 +115,12 @@
 			"import_code_btn": "导入代码",
 			"toast_code_imported": "已从代码导入配置",
 			"copy_code_tooltip": "复制神秘代码",
-			"export_json_tooltip": "导出 JSON 文件"
+			"export_json_tooltip": "导出 JSON 文件",
+			"multiplier_section": "倍率位",
+			"standard_section": "标准位",
+			"multiplier_label": "倍率",
+			"multiplier_result": "倍率位结果",
+			"standard_result": "标准位结果"
 		},
 		"simulator": {
 			"configuration_title": "模拟器配置",
@@ -116,6 +129,8 @@
 			"momentum": "珍珠动量",
 			"tnt_group_a": "TNT A 组",
 			"tnt_group_b": "TNT B 组",
+			"tnt_group_c": "TNT C 组",
+			"tnt_group_d": "TNT D 组",
 			"trace_btn": "计算轨迹",
 			"label_x": "X",
 			"label_y": "Y",
@@ -159,6 +174,8 @@
 			"tnt_config_desc": "配置 TNT 坐标并使用徽章选择红色 TNT 组",
 			"bit_config_title": "Bit 配置",
 			"bit_config_desc": "配置 Bit 样板",
+			"multiplier_config_title": "倍率位配置",
+			"multiplier_config_desc": "配置弱加载炮复制倍率",
 			"skip_btn": "跳过",
 			"skip_warning_title": "确定要跳过吗？",
 			"skip_warning_desc": "未配置 Bit 模板将导致无法使用自动 Bit 编码计算，需后续手动录入进行计算。是否确认跳过？",
@@ -179,7 +196,18 @@
 			"color_blue": "蓝组 TNT",
 			"copy_code_btn": "复制神秘代码",
 			"toast_code_copied": "神秘代码已复制到剪贴板",
-			"toast_exported": "配置已成功导出"
+			"toast_exported": "配置已成功导出",
+			"cannon_type_title": "珍珠炮类型",
+			"cannon_type_desc": "选择你正在配置的珍珠炮类型。",
+			"mode_standard_title": "标准模式 (2D)",
+			"mode_standard_desc": "标准水平珍珠炮，包含 4 个方向的 TNT 组。",
+			"mode_accumulation_title": "堆叠模式 (弱加载)",
+			"mode_accumulation_desc": "使用累积 TNT 蓄力的弱加载炮。",
+			"mode_vector3d_title": "矢量模式 (3D)",
+			"mode_vector3d_desc": "支持垂直 TNT 的 3D 矢量炮。",
+			"vertical_tnt_config_title": "垂直 TNT 配置",
+			"vertical_tnt_config_desc": "配置 3D 矢量炮的垂直 TNT 位置。",
+			"vertical_tnt": "垂直 TNT"
 		},
 		"error": {
 			"config": {
@@ -201,11 +229,12 @@
 				"copy_code_failed": "复制代码失败",
 				"bit_values_error": "请填写所有 Bit 值",
 				"bit_masks_error": "请填写所有方向掩码",
+				"multiplier_values_error": "请填写所有倍率位值",
 				"red_tnt_error": "请选择一个红色 TNT 组",
 				"bit_validation": {
 					"empty": "模板不能为空",
 					"no_unit": "模板必须包含单位值 1",
-					"gap": "检测到断层：在累加和为 {{sum}} 时无法覆盖 {{gap}}",
+					"gap": "模板断层：小数值仅能累加到 {{sum}}，无法覆盖 {{gap}}。请在确保模板完备。",
 					"invalid": "模板值无效",
 					"value_exceeds": "数值 {{value}} 超出最大范围 {{max}}"
 				},

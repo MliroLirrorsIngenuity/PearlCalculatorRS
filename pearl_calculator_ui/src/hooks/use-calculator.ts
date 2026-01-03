@@ -7,6 +7,8 @@ import type {
 } from "@/types/domain";
 import { z } from "zod";
 import { CoercedNumberSchema } from "@/lib/schemas";
+import { toBackendMode } from "@/lib/config-utils";
+import type { CannonMode } from "@/types/domain";
 
 type CalculationResult =
 	| { success: true; data: TNTResult[] }
@@ -19,6 +21,7 @@ export function useTNTCalculator() {
 		inputs: CalculatorInputs,
 		config: GeneralConfig,
 		version: string,
+		mode: CannonMode,
 	): Promise<CalculationResult> => {
 		const DestSchema = z.object({
 			destX: z.coerce.number(),
@@ -55,6 +58,9 @@ export function useTNTCalculator() {
 
 		setIsCalculating(true);
 		try {
+			const verticalTnt = config.vertical_tnt;
+			const backendMode = toBackendMode(mode);
+
 			const calculationInput = {
 				pearlX: parseOrConfig(inputs.pearlX, config.pearl_x_position),
 				pearlY: config.pearl_y_position,
@@ -75,11 +81,14 @@ export function useTNTCalculator() {
 				defaultRedDirection: config.default_red_tnt_position,
 				defaultBlueDirection: config.default_blue_tnt_position,
 				destinationX: destX,
+				destinationY: inputs.destY ? parseFloat(inputs.destY) || 0 : 0,
 				destinationZ: destZ,
 				maxTnt: config.max_tnt,
 				maxTicks: 10000,
 				maxDistance: 50.0,
 				version: version,
+				mode: backendMode,
+				verticalTnt: verticalTnt,
 			};
 
 			console.log("Sending calculation input:", calculationInput);

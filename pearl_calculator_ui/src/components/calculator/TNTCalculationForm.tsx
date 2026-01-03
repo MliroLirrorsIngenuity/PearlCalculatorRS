@@ -16,6 +16,7 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useConfigurationState } from "@/context/ConfigurationStateContext";
 import type { CalculatorInputs } from "@/types/domain";
 
 interface TNTCalculationFormProps {
@@ -29,6 +30,8 @@ export default function TNTCalculationForm({
 	onInputChange,
 }: TNTCalculationFormProps) {
 	const { t } = useTranslation();
+	const { calculationMode } = useConfigurationState();
+	const is3D = calculationMode === "Vector3D";
 
 	return (
 		<ScrollArea className="h-full">
@@ -96,7 +99,9 @@ export default function TNTCalculationForm({
 							/>
 						</Field>
 					</FieldGroup>
-					<FieldGroup className="grid grid-cols-2 gap-4">
+					<FieldGroup
+						className={`grid ${is3D ? "grid-cols-3" : "grid-cols-2"} gap-4`}
+					>
 						<Field>
 							<FieldLabel htmlFor="dest-x">
 								{t("calculator.label_dest_x")}
@@ -109,6 +114,20 @@ export default function TNTCalculationForm({
 								onChange={(e) => onInputChange("destX", e.target.value)}
 							/>
 						</Field>
+						{is3D && (
+							<Field>
+								<FieldLabel htmlFor="dest-y">
+									{t("calculator.label_dest_y", "Dest Y")}
+								</FieldLabel>
+								<Input
+									id="dest-y"
+									type="number"
+									placeholder="0.0"
+									value={inputs.destY || ""}
+									onChange={(e) => onInputChange("destY", e.target.value)}
+								/>
+							</Field>
+						)}
 						<Field>
 							<FieldLabel htmlFor="dest-z">
 								{t("calculator.label_dest_z")}

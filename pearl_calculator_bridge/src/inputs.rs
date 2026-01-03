@@ -1,8 +1,10 @@
 use pearl_calculator_core::calculation::inputs::{Cannon, Pearl};
+
 use pearl_calculator_core::physics::entities::movement::PearlVersion;
 use pearl_calculator_core::physics::world::direction::Direction;
 use pearl_calculator_core::physics::world::layout_direction::LayoutDirection;
 use pearl_calculator_core::physics::world::space::Space3D;
+use pearl_calculator_core::settings::CannonMode;
 use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]
@@ -27,12 +29,16 @@ pub struct CalculationInput {
     pub default_blue_direction: String,
 
     pub destination_x: f64,
+    pub destination_y: Option<f64>,
     pub destination_z: f64,
 
     pub max_tnt: u32,
     pub max_ticks: u32,
     pub max_distance: f64,
     pub version: String,
+
+    pub vertical_tnt: Option<Space3DInput>,
+    pub mode: Option<String>,
 }
 
 impl CalculationInput {
@@ -57,11 +63,17 @@ impl CalculationInput {
             &self.south_east_tnt,
             &self.default_red_direction,
             &self.default_blue_direction,
+            self.vertical_tnt,
+            self.mode.clone(),
         )
     }
 
     pub fn get_destination(&self) -> Space3D {
-        Space3D::new(self.destination_x, 0.0, self.destination_z)
+        Space3D::new(
+            self.destination_x,
+            self.destination_y.unwrap_or(0.0),
+            self.destination_z,
+        )
     }
 }
 
@@ -70,6 +82,7 @@ impl CalculationInput {
 pub struct PearlTraceInput {
     pub red_tnt: u32,
     pub blue_tnt: u32,
+    pub vertical_tnt_amount: Option<u32>,
     pub pearl_x: f64,
     pub pearl_y: f64,
     pub pearl_z: f64,
@@ -86,9 +99,12 @@ pub struct PearlTraceInput {
     pub default_red_direction: String,
     pub default_blue_direction: String,
     pub destination_x: f64,
+    pub destination_y: Option<f64>,
     pub destination_z: f64,
     pub direction: Option<String>,
     pub version: String,
+    pub vertical_tnt: Option<Space3DInput>,
+    pub mode: Option<String>,
 }
 
 impl PearlTraceInput {
@@ -113,6 +129,8 @@ impl PearlTraceInput {
             &self.south_east_tnt,
             &self.default_red_direction,
             &self.default_blue_direction,
+            self.vertical_tnt,
+            self.mode.clone(),
         )
     }
 
@@ -220,10 +238,23 @@ fn build_cannon(
     se: &Space3DInput,
     red_dir: &str,
     blue_dir: &str,
+    vert: Option<Space3DInput>,
+    mode_str: Option<String>,
 ) -> Result<Cannon, String> {
     let y_offset = cy - py.floor();
     let default_red_direction = parse_layout_direction(red_dir);
     let default_blue_direction = parse_layout_direction(blue_dir);
+
+    let mode = match mode_str.as_deref() {
+        Some("Accumulation") => CannonMode::Accumulation,
+        _ => CannonMode::Standard,
+    };
+
+    let vertical_tnt = vert.map(|v| Space3D::new(v.x, v.y + y_offset, v.z));
+    let nw_pos = Space3D::new(nw.x, nw.y + y_offset, nw.z);
+    let ne_pos = Space3D::new(ne.x, ne.y + y_offset, ne.z);
+
+    let (red_override, blue_override) = (None, None);
 
     Ok(Cannon {
         pearl: Pearl {
@@ -231,8 +262,12 @@ fn build_cannon(
             motion: Space3D::new(pmx, pmy, pmz),
             offset: Space3D::new(ox, 0.0, oz),
         },
-        north_west_tnt: Space3D::new(nw.x, nw.y + y_offset, nw.z),
-        north_east_tnt: Space3D::new(ne.x, ne.y + y_offset, ne.z),
+        vertical_tnt,
+        red_tnt_override: red_override,
+        blue_tnt_override: blue_override,
+        mode,
+        north_west_tnt: nw_pos,
+        north_east_tnt: ne_pos,
         south_west_tnt: Space3D::new(sw.x, sw.y + y_offset, sw.z),
         south_east_tnt: Space3D::new(se.x, se.y + y_offset, se.z),
         default_red_duper: default_red_direction,

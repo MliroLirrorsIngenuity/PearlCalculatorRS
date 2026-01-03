@@ -15,6 +15,7 @@ import SpinnerCircle1 from "@/components/ui/spinner-circle";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useCalculatorState } from "@/context/CalculatorStateContext";
 import { useConfig } from "@/context/ConfigContext";
+import { useConfigurationState } from "@/context/ConfigurationStateContext";
 import { useTNTCalculator } from "@/hooks/use-calculator";
 import { usePearlTrace } from "@/hooks/use-pearl-trace";
 import { useToastNotifications } from "@/hooks/use-toast-notifications";
@@ -30,6 +31,7 @@ export default function Calculator() {
 		setConfigData,
 		setConfigPath,
 		setBitTemplateConfig,
+		setMultiplierConfig,
 		version,
 		resetConfig,
 	} = useConfig();
@@ -60,6 +62,7 @@ export default function Calculator() {
 	const { calculate, isCalculating } = useTNTCalculator();
 	const { calculatePearlTrace } = usePearlTrace();
 	const { showSuccess, showError } = useToastNotifications();
+	const { calculationMode, setCalculationMode } = useConfigurationState();
 
 	useEffect(() => {
 		isFirstRender.current = false;
@@ -72,6 +75,7 @@ export default function Calculator() {
 				setConfigData(result.config);
 				setConfigPath(result.path);
 				setBitTemplateConfig(result.bitTemplate);
+				setMultiplierConfig(result.multiplierTemplate);
 				setHasConfig(true);
 
 				updateDefaultInput("pearlX", result.config.pearl_x_position.toString());
@@ -82,6 +86,8 @@ export default function Calculator() {
 				);
 				updateDefaultInput("offsetX", (result.config.offset_x ?? 0).toString());
 				updateDefaultInput("offsetZ", (result.config.offset_z ?? 0).toString());
+
+				setCalculationMode(result.config.mode ?? "Standard");
 
 				showSuccess(t("calculator.toast_config_loaded"));
 			}
@@ -122,6 +128,8 @@ export default function Calculator() {
 				(decoded.generalConfig.offset_z ?? 0).toString(),
 			);
 
+			setCalculationMode(decoded.generalConfig.mode ?? "Standard");
+
 			showSuccess(t("calculator.toast_code_imported"));
 		} catch (e) {
 			console.error("Import from clipboard error:", e);
@@ -130,7 +138,12 @@ export default function Calculator() {
 	};
 
 	const handleRunCalculation = async () => {
-		const result = await calculate(inputs, configData, version);
+		const result = await calculate(
+			inputs,
+			configData,
+			version,
+			calculationMode,
+		);
 
 		if (result.success) {
 			setDefaultCalculator((prev) => ({ ...prev, results: result.data }));
@@ -146,14 +159,16 @@ export default function Calculator() {
 		red: number,
 		blue: number,
 		direction: string,
+		vertical?: number,
 	) => {
-		const traceInputs = {
-			...inputs,
+		const tntResult = {
 			red,
 			blue,
 			direction,
+			vertical,
 		};
-		const result = await calculatePearlTrace(traceInputs, configData, version);
+
+		const result = await calculatePearlTrace(inputs, tntResult);
 		if (result) {
 			updateDefaultTrace({
 				data: result,

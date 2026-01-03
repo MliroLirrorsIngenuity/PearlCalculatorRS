@@ -14,8 +14,11 @@ import { useTranslation } from "react-i18next";
 import { OnboardingPanel } from "@/components/common/OnboardingPanel";
 import { BasicInfoStep } from "@/components/configuration/BasicInfoStep";
 import { BitConfigurationStep } from "@/components/configuration/BitConfigurationStep";
+import { CannonTypeStep } from "@/components/configuration/CannonTypeStep";
+import { MultiplierConfigurationStep } from "@/components/configuration/MultiplierConfigurationStep";
 import { PreviewStep } from "@/components/configuration/PreviewStep";
 import { TNTConfigurationStep } from "@/components/configuration/TNTConfigurationStep";
+import { VerticalTNTStep } from "@/components/configuration/VerticalTNTStep";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -36,6 +39,7 @@ import {
 } from "@/components/ui/carousel";
 import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useConfigurationState } from "@/context/ConfigurationStateContext";
 import { useConfigurationController } from "@/hooks/use-configuration-controller";
 import { isTauri } from "@/services";
 
@@ -44,6 +48,9 @@ export default function Configuration() {
 	const [current, setCurrent] = React.useState(0);
 	const [count, setCount] = React.useState(0);
 	const { t } = useTranslation();
+	const { calculationMode } = useConfigurationState();
+	const isVector3D = calculationMode === "Vector3D";
+	const isAccumulation = calculationMode === "Accumulation";
 
 	const {
 		isConfiguring,
@@ -70,18 +77,27 @@ export default function Configuration() {
 			return;
 		}
 
-		const snapListLength = api.scrollSnapList().length;
-		setCount(snapListLength);
+		const updateCount = () => {
+			setCount(api.scrollSnapList().length);
+		};
+
+		updateCount();
 
 		if (shouldRestoreLastPage) {
-			api.scrollTo(snapListLength - 1, true);
-			setCurrent(snapListLength);
+			const total = api.scrollSnapList().length;
+			api.scrollTo(total - 1, true);
+			setCurrent(total);
 			setShouldRestoreLastPage(false);
 		} else {
 			setCurrent(api.selectedScrollSnap() + 1);
 		}
 
 		api.on("select", () => {
+			setCurrent(api.selectedScrollSnap() + 1);
+		});
+
+		api.on("reInit", () => {
+			updateCount();
 			setCurrent(api.selectedScrollSnap() + 1);
 		});
 	}, [api, shouldRestoreLastPage, setShouldRestoreLastPage]);
@@ -189,6 +205,11 @@ export default function Configuration() {
 						<CarouselContent className="h-full">
 							<CarouselItem className="h-full">
 								<ScrollArea className="h-full">
+									<CannonTypeStep />
+								</ScrollArea>
+							</CarouselItem>
+							<CarouselItem className="h-full">
+								<ScrollArea className="h-full">
 									<BasicInfoStep
 										errors={errors}
 										onForceNext={handleForceNext}
@@ -200,11 +221,25 @@ export default function Configuration() {
 									<TNTConfigurationStep errors={errors} />
 								</ScrollArea>
 							</CarouselItem>
+							{isVector3D && (
+								<CarouselItem className="h-full">
+									<ScrollArea className="h-full">
+										<VerticalTNTStep errors={errors} />
+									</ScrollArea>
+								</CarouselItem>
+							)}
 							<CarouselItem className="h-full">
 								<ScrollArea className="h-full">
 									<BitConfigurationStep errors={errors} />
 								</ScrollArea>
 							</CarouselItem>
+							{isAccumulation && (
+								<CarouselItem className="h-full">
+									<ScrollArea className="h-full">
+										<MultiplierConfigurationStep errors={errors} />
+									</ScrollArea>
+								</CarouselItem>
+							)}
 							<CarouselItem className="h-full">
 								<ScrollArea className="h-full">
 									<PreviewStep />
@@ -265,7 +300,7 @@ export default function Configuration() {
 									</Button>
 								) : (
 									<div className="flex items-center gap-2">
-										{current === 3 && (
+										{current === (isVector3D ? 5 : 4) && (
 											<AlertDialog>
 												<AlertDialogTrigger asChild>
 													<Button variant="outline">

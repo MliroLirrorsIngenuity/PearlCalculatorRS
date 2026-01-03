@@ -1,6 +1,6 @@
 use crate::physics::world::layout_direction::LayoutDirection;
 use crate::physics::world::space::Space3D;
-use crate::settings::CannonSettings;
+use crate::settings::{CannonMode, CannonSettings};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -26,6 +26,10 @@ pub struct Pearl {
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Cannon {
     pub pearl: Pearl,
+    pub red_tnt_override: Option<Space3D>,
+    pub blue_tnt_override: Option<Space3D>,
+    pub vertical_tnt: Option<Space3D>,
+    pub mode: CannonMode,
     pub north_west_tnt: Space3D,
     pub north_east_tnt: Space3D,
     pub south_west_tnt: Space3D,
@@ -42,6 +46,10 @@ impl Cannon {
                 motion: settings.pearl.motion,
                 offset: Space3D::new(settings.offset.x, 0.0, settings.offset.z),
             },
+            red_tnt_override: settings.red_tnt,
+            blue_tnt_override: settings.blue_tnt,
+            vertical_tnt: settings.vertical_tnt,
+            mode: settings.mode,
             north_west_tnt: settings.north_west_tnt,
             north_east_tnt: settings.north_east_tnt,
             south_west_tnt: settings.south_west_tnt,

@@ -2,9 +2,15 @@ import type {
 	BitInputState,
 	BitTemplateConfig,
 	MaskGroup,
+	MultiplierBitInputState,
+	MultiplierConfig,
 } from "@/types/domain";
 
-import { BitTemplateConfigSchema, CoercedNumberSchema } from "@/lib/schemas";
+import {
+	BitTemplateConfigSchema,
+	CoercedNumberSchema,
+	MultiplierConfigSchema,
+} from "@/lib/schemas";
 
 export function configToInputState(
 	config: BitTemplateConfig | null,
@@ -48,4 +54,32 @@ export function inputStateToConfig(state: BitInputState): BitTemplateConfig {
 	};
 
 	return BitTemplateConfigSchema.parse(config);
+}
+
+export function configToMultiplierInputState(
+	config: MultiplierConfig | null,
+): MultiplierBitInputState | undefined {
+	if (!config) return undefined;
+
+	return {
+		sideCount: config.MultiplierSideMode,
+		sideValues: config.MultiplierValues.map((v) =>
+			v === 0 ? "" : v.toString(),
+		).reverse(),
+		multiplier: config.Multiplier,
+		isSwapped: config.MultiplierIsSwapped,
+	};
+}
+
+export function inputStateToMultiplierConfig(
+	state: MultiplierBitInputState,
+): MultiplierConfig {
+	return MultiplierConfigSchema.parse({
+		MultiplierSideMode: state.sideCount,
+		MultiplierValues: state.sideValues
+			.map((v) => parseInt(v, 10) || 0)
+			.reverse(),
+		Multiplier: state.multiplier,
+		MultiplierIsSwapped: state.isSwapped,
+	});
 }

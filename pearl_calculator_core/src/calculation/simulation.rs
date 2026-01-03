@@ -122,6 +122,7 @@ pub fn scan_trajectory(
     offset: Space3D,
     version: PearlVersion,
     max_distance_sq: f64,
+    check_3d: bool,
 ) -> Vec<SimResult> {
     match version {
         PearlVersion::Legacy => scan_internal::<MovementLegacy>(
@@ -132,6 +133,7 @@ pub fn scan_trajectory(
             world_collisions,
             offset,
             max_distance_sq,
+            check_3d,
         ),
         PearlVersion::Post1205 => scan_internal::<MovementPost1205>(
             data,
@@ -141,6 +143,7 @@ pub fn scan_trajectory(
             world_collisions,
             offset,
             max_distance_sq,
+            check_3d,
         ),
         PearlVersion::Post1212 => scan_internal::<MovementPost1212>(
             data,
@@ -150,6 +153,7 @@ pub fn scan_trajectory(
             world_collisions,
             offset,
             max_distance_sq,
+            check_3d,
         ),
     }
 }
@@ -199,6 +203,7 @@ fn scan_internal<M: PearlMovement + Clone>(
     world_collisions: &[AABBBox],
     offset: Space3D,
     max_distance_sq: f64,
+    check_3d: bool,
 ) -> Vec<SimResult> {
     let mut results = Vec::new();
     let mut pearl = PearlEntity::<M>::new(data.pearl_position, data.pearl_motion);
@@ -220,7 +225,11 @@ fn scan_internal<M: PearlMovement + Clone>(
         let current_pos = pearl.data.position + offset;
 
         if (tick as usize) < valid_ticks.len() && valid_ticks[tick as usize] {
-            let dist_sq = current_pos.distance_2d_sq(&destination);
+            let dist_sq = if check_3d {
+                current_pos.distance_sq(&destination)
+            } else {
+                current_pos.distance_2d_sq(&destination)
+            };
             if dist_sq <= max_distance_sq {
                 results.push(SimResult {
                     tick,
@@ -232,7 +241,11 @@ fn scan_internal<M: PearlMovement + Clone>(
         }
 
         if pearl.data.motion.length_sq() < FLOAT_PRECISION_EPSILON {
-            let dist_sq = current_pos.distance_2d_sq(&destination);
+            let dist_sq = if check_3d {
+                current_pos.distance_sq(&destination)
+            } else {
+                current_pos.distance_2d_sq(&destination)
+            };
             if dist_sq <= max_distance_sq {}
             break;
         }

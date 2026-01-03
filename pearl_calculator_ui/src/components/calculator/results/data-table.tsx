@@ -8,6 +8,7 @@ import {
 	getSortedRowModel,
 	type Row,
 	type SortingState,
+	type VisibilityState,
 	useReactTable,
 } from "@tanstack/react-table";
 import * as React from "react";
@@ -26,7 +27,14 @@ interface DataTableProps<TData, TValue> {
 	data: TData[];
 	defaultColumnSizing?: Record<string, number>;
 	minColumnSizes?: Record<string, number>;
-	onTrace?: (red: number, blue: number, direction: string) => void;
+	onTrace?: (
+		red: number,
+		blue: number,
+		direction: string,
+		vertical?: number,
+	) => void;
+	columnVisibility?: VisibilityState;
+	defaultSortColumn?: string;
 }
 
 const DEFAULT_COLUMN_SIZES: Record<string, number> = {
@@ -65,9 +73,6 @@ const DataTableRow = React.memo(
 			</TableRow>
 		);
 	},
-	(prev, next) =>
-		prev.row.original === next.row.original &&
-		prev.isHighlighted === next.isHighlighted,
 );
 
 export interface DataTableRef {
@@ -84,16 +89,41 @@ export const DataTable = React.forwardRef<
 		defaultColumnSizing = DEFAULT_COLUMN_SIZES,
 		minColumnSizes = MIN_COLUMN_SIZES,
 		onTrace,
+		columnVisibility = {},
+		defaultSortColumn,
 	},
 	ref,
 ) {
 	const { t } = useTranslation();
-	const [sorting, setSorting] = React.useState<SortingState>([
-		{
-			id: "distance",
-			desc: false,
-		},
-	]);
+
+	const getInitialSortColumn = React.useCallback((): SortingState => {
+		const columnIds = columns
+			.map((col) => {
+				if ("accessorKey" in col && typeof col.accessorKey === "string") {
+					return col.accessorKey;
+				}
+				if ("id" in col && col.id) {
+					return col.id;
+				}
+				return null;
+			})
+			.filter(Boolean) as string[];
+
+		if (defaultSortColumn && columnIds.includes(defaultSortColumn)) {
+			return [{ id: defaultSortColumn, desc: false }];
+		}
+		if (columnIds.includes("distance")) {
+			return [{ id: "distance", desc: false }];
+		}
+		if (columnIds.length > 0) {
+			return [{ id: columnIds[0], desc: false }];
+		}
+		return [];
+	}, [columns, defaultSortColumn]);
+
+	const [sorting, setSorting] = React.useState<SortingState>(() =>
+		getInitialSortColumn(),
+	);
 	const [columnSizing, setColumnSizing] =
 		React.useState<ColumnSizingState>(defaultColumnSizing);
 	const tableRef = React.useRef<HTMLTableElement>(null);
@@ -165,7 +195,9 @@ export const DataTable = React.forwardRef<
 		state: {
 			sorting,
 			columnSizing,
+			columnVisibility,
 		},
+		onColumnVisibilityChange: () => {},
 		meta: {
 			onTrace,
 		},
@@ -278,7 +310,7 @@ export const DataTable = React.forwardRef<
 				}}
 			>
 				<colgroup>
-					{table.getAllLeafColumns().map((column) => {
+					{table.getVisibleLeafColumns().map((column) => {
 						const size =
 							columnSizing[column.id] || defaultColumnSizing[column.id];
 						return <col key={column.id} style={{ width: `${size}%` }} />;

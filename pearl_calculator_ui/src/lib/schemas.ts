@@ -2,6 +2,12 @@ import { z } from "zod";
 
 export const PearlVersionSchema = z.enum(["Legacy", "Post1205", "Post1212"]);
 
+export const CannonModeSchema = z.enum([
+	"Standard",
+	"Accumulation",
+	"Vector3D",
+]);
+
 export const TNTDirectionSchema = z.enum([
 	"SouthEast",
 	"NorthWest",
@@ -40,6 +46,8 @@ export const TNTResultSchema = z.object({
 	pearl_end_pos: z.object({ X: z.number(), Y: z.number(), Z: z.number() }),
 	pearl_end_motion: z.object({ X: z.number(), Y: z.number(), Z: z.number() }),
 	direction: z.string(),
+	vertical: z.number().optional(),
+	charges: z.number().optional(),
 });
 
 export const PearlTraceResultSchema = z.object({
@@ -60,7 +68,7 @@ export const PearlTraceResultSchema = z.object({
 			point: z.object({ X: z.number(), Y: z.number(), Z: z.number() }),
 			distance: z.number(),
 		})
-		.optional(),
+		.nullish(),
 });
 
 export const TraceTNTSchema = z.object({
@@ -83,6 +91,13 @@ export const GeneralConfigSchema = z.object({
 	default_blue_tnt_position: TNTDirectionSchema,
 	offset_x: z.number().optional(),
 	offset_z: z.number().optional(),
+	vertical_tnt: Vector3Schema.optional(),
+	mode: CannonModeSchema.optional(),
+});
+
+const TntGroupSchema = z.object({
+	pos: Vector3Schema,
+	amount: z.number(),
 });
 
 export const SimulatorConfigSchema = z.object({
@@ -90,20 +105,17 @@ export const SimulatorConfigSchema = z.object({
 		pos: Vector3Schema,
 		momentum: Vector3Schema,
 	}),
-	tntA: z.object({
-		pos: Vector3Schema,
-		amount: z.number(),
-	}),
-	tntB: z.object({
-		pos: Vector3Schema,
-		amount: z.number(),
-	}),
+	tntA: TntGroupSchema,
+	tntB: TntGroupSchema,
+	tntC: TntGroupSchema,
+	tntD: TntGroupSchema,
 });
 
 export const CalculatorInputsSchema = z.object({
 	pearlX: z.string(),
 	pearlZ: z.string(),
 	destX: z.string(),
+	destY: z.string().optional(),
 	destZ: z.string(),
 	cannonY: z.string(),
 	offsetX: z.string(),
@@ -139,6 +151,13 @@ export const BitInputStateSchema = z.object({
 	sideCount: z.number(),
 	masks: z.array(MaskGroupSchema),
 	sideValues: z.array(z.string()),
+	isSwapped: z.boolean(),
+});
+
+export const MultiplierBitInputStateSchema = z.object({
+	sideCount: z.number(),
+	sideValues: z.array(z.string()),
+	multiplier: z.number(),
 	isSwapped: z.boolean(),
 });
 
@@ -187,6 +206,14 @@ export const WizardTNTConfigSchema = z.object({
 	redTNTLocation: z.string().min(1),
 });
 
+export const WizardVerticalTNTSchema = z.object({
+	verticalTNT: z.object({
+		x: z.string().min(1),
+		y: z.string().min(1),
+		z: z.string().min(1),
+	}),
+});
+
 export const WizardBitConfigSchema = z
 	.object({
 		state: BitInputStateSchema.nullable().optional(),
@@ -208,3 +235,10 @@ export const WizardBitConfigSchema = z
 			message: "incomplete",
 		},
 	);
+
+export const MultiplierConfigSchema = z.object({
+	MultiplierSideMode: z.number(),
+	MultiplierValues: z.array(z.number()),
+	Multiplier: z.number(),
+	MultiplierIsSwapped: z.boolean(),
+});

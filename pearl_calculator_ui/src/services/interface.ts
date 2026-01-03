@@ -23,16 +23,20 @@ export interface CalculationInput {
 	defaultRedDirection: string;
 	defaultBlueDirection: string;
 	destinationX: number;
+	destinationY?: number;
 	destinationZ: number;
 	maxTnt: number;
 	maxTicks: number;
 	maxDistance: number;
 	version: string;
+	verticalTnt?: Space3DInput;
+	mode?: string;
 }
 
 export interface PearlTraceInput {
 	redTnt: number;
 	blueTnt: number;
+	verticalTntAmount?: number;
 	pearlX: number;
 	pearlY: number;
 	pearlZ: number;
@@ -52,11 +56,15 @@ export interface PearlTraceInput {
 	destinationZ: number;
 	direction?: string;
 	version: string;
+	verticalTnt?: Space3DInput;
+	mode?: string;
 }
 
 export interface TntGroupInput {
 	x: number;
 	y: number;
+	vertical?: number;
+	charges?: number;
 	z: number;
 	amount: number;
 }

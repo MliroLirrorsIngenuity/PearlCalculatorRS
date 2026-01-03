@@ -5,8 +5,11 @@ import {
 	BitInputStateSchema,
 	BitTemplateConfigSchema,
 	CalculatorInputsSchema,
+	CannonModeSchema,
 	GeneralConfigSchema,
 	MaskGroupSchema,
+	MultiplierBitInputStateSchema,
+	MultiplierConfigSchema,
 	PearlTraceResultSchema,
 	PearlVersionSchema,
 	SimulatorConfigSchema,
@@ -15,6 +18,8 @@ import {
 } from "@/lib/schemas";
 
 export type PearlVersion = z.infer<typeof PearlVersionSchema>;
+
+export type CannonMode = z.infer<typeof CannonModeSchema>;
 
 export type TNTResult = z.infer<typeof TNTResultSchema>;
 
@@ -37,3 +42,9 @@ export type BitDirection = z.infer<typeof BitDirectionSchema>;
 export type BitTemplateConfig = z.infer<typeof BitTemplateConfigSchema>;
 
 export type BitInputState = z.infer<typeof BitInputStateSchema>;
+
+export type MultiplierBitInputState = z.infer<
+	typeof MultiplierBitInputStateSchema
+>;
+
+export type MultiplierConfig = z.infer<typeof MultiplierConfigSchema>;

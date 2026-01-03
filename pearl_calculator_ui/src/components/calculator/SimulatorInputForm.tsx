@@ -167,62 +167,69 @@ export default function SimulatorInputForm({
 }: SimulatorInputFormProps) {
 	const { t } = useTranslation();
 	return (
-		<div className="flex flex-col h-full">
-			<ScrollArea className="flex-1 pr-3 pl-1">
-				<FieldSet className="w-full pb-4">
-					<div className="flex items-center justify-between">
-						<FieldLegend className="text-lg font-semibold flex items-center gap-2">
-							{t("simulator.configuration_title")}
-						</FieldLegend>
-						<Button
-							variant="outline"
-							size="sm"
-							className="h-6 px-2 text-xs"
-							onClick={onReset}
-						>
-							{t("simulator.reset")}
-						</Button>
-					</div>
+		<div className="flex flex-col h-full min-h-0">
+			<ScrollArea className="flex-1 min-h-0">
+				<div className="pl-1 pr-3">
+					<FieldSet className="w-full pb-4">
+						<div className="flex items-center justify-between">
+							<FieldLegend className="text-lg font-semibold flex items-center gap-2">
+								{t("simulator.configuration_title")}
+							</FieldLegend>
+							<Button
+								variant="outline"
+								size="sm"
+								className="h-6 px-2 text-xs"
+								onClick={onReset}
+							>
+								{t("simulator.reset")}
+							</Button>
+						</div>
 
-					<div className="grid grid-cols-2 gap-x-4 gap-y-4">
-						<Vector3Block
-							title={t("simulator.pearl_position")}
-							data={config.pearl.pos}
-							onUpdate={(k, v) =>
-								onConfigChange({
-									...config,
-									pearl: {
-										...config.pearl,
-										pos: { ...config.pearl.pos, [k]: v },
-									},
-								})
-							}
-						/>
-						<Vector3Block
-							title={t("simulator.momentum")}
-							data={config.pearl.momentum}
-							onUpdate={(k, v) =>
-								onConfigChange({
-									...config,
-									pearl: {
-										...config.pearl,
-										momentum: { ...config.pearl.momentum, [k]: v },
-									},
-								})
-							}
-						/>
-						<TNTGroupBlock
-							title={t("simulator.tnt_group_a")}
-							data={config.tntA}
-							onUpdate={(d) => onConfigChange({ ...config, tntA: d })}
-						/>
-						<TNTGroupBlock
-							title={t("simulator.tnt_group_b")}
-							data={config.tntB}
-							onUpdate={(d) => onConfigChange({ ...config, tntB: d })}
-						/>
-					</div>
-				</FieldSet>
+						<div className="grid grid-cols-2 gap-x-4 gap-y-4">
+							<Vector3Block
+								title={t("simulator.pearl_position")}
+								data={config.pearl.pos}
+								onUpdate={(k, v) =>
+									onConfigChange({
+										...config,
+										pearl: {
+											...config.pearl,
+											pos: { ...config.pearl.pos, [k]: v },
+										},
+									})
+								}
+							/>
+							<Vector3Block
+								title={t("simulator.momentum")}
+								data={config.pearl.momentum}
+								onUpdate={(k, v) =>
+									onConfigChange({
+										...config,
+										pearl: {
+											...config.pearl,
+											momentum: { ...config.pearl.momentum, [k]: v },
+										},
+									})
+								}
+							/>
+							{(
+								[
+									{ key: "tntA", i18nKey: "simulator.tnt_group_a" },
+									{ key: "tntB", i18nKey: "simulator.tnt_group_b" },
+									{ key: "tntC", i18nKey: "simulator.tnt_group_c" },
+									{ key: "tntD", i18nKey: "simulator.tnt_group_d" },
+								] as const
+							).map(({ key, i18nKey }) => (
+								<TNTGroupBlock
+									key={key}
+									title={t(i18nKey)}
+									data={config[key]}
+									onUpdate={(d) => onConfigChange({ ...config, [key]: d })}
+								/>
+							))}
+						</div>
+					</FieldSet>
+				</div>
 			</ScrollArea>
 			<div className="pt-2">
 				<Button className="w-full" onClick={onTrace}>

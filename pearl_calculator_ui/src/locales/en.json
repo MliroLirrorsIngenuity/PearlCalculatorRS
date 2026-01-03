@@ -10,6 +10,11 @@
 		},
 		"breadcrumb": {
 			"back": "Back",
+			"mode": {
+				"Standard": "Standard (2D)",
+				"Accumulation": "Accumulation (Lazy Loaded)",
+				"Vector3D": "Vector (3D)"
+			},
 			"select_config": "Select Config",
 			"calculator": "Calculator",
 			"pearl_trace": "Pearl Trace",
@@ -100,6 +105,9 @@
 			"header_vx": "VX",
 			"header_vy": "VY",
 			"header_vz": "VZ",
+			"header_vertical": "Vertical",
+			"direction_vertical": "Vertical TNT",
+			"label_dest_y": "Destination Y",
 			"bit_calc_btn": "Bit Calculation",
 			"bit_calculate_btn": "Calculate",
 			"direction_label": "DIRECTION",
@@ -107,7 +115,12 @@
 			"import_code_btn": "Import Code",
 			"toast_code_imported": "Configuration imported from code",
 			"copy_code_tooltip": "Copy configuration code",
-			"export_json_tooltip": "Export as JSON file"
+			"export_json_tooltip": "Export as JSON file",
+			"multiplier_section": "Multiplier Bits",
+			"standard_section": "Standard Bits",
+			"multiplier_label": "Multiplier",
+			"multiplier_result": "Multiplier Result",
+			"standard_result": "Standard Result"
 		},
 		"simulator": {
 			"configuration_title": "Simulator Configuration",
@@ -116,6 +129,8 @@
 			"momentum": "Momentum",
 			"tnt_group_a": "TNT Group A",
 			"tnt_group_b": "TNT Group B",
+			"tnt_group_c": "TNT Group C",
+			"tnt_group_d": "TNT Group D",
 			"trace_btn": "Trace Pearl",
 			"label_x": "X",
 			"label_y": "Y",
@@ -159,6 +174,8 @@
 			"tnt_config_desc": "Configure TNT coordinates and select the Red TNT group using the badge.",
 			"bit_config_title": "Bit Configuration",
 			"bit_config_desc": "Configure the bit template.",
+			"multiplier_config_title": "Multiplier Bits Configuration",
+			"multiplier_config_desc": "Configure multiplier bits for weak loaded cannon.",
 			"skip_btn": "Skip",
 			"skip_warning_title": "Skip Bit Configuration?",
 			"skip_warning_desc": "Skipping this step will prevent automatic Bit encoding calculations, requiring manual entry later. Are you sure?",
@@ -179,7 +196,18 @@
 			"color_blue": "Blue",
 			"copy_code_btn": "Copy Code",
 			"toast_code_copied": "Code copied to clipboard",
-			"toast_exported": "Configuration exported successfully"
+			"toast_exported": "Configuration exported successfully",
+			"cannon_type_title": "Cannon Type",
+			"cannon_type_desc": "Select the type of pearl cannon you are configuring.",
+			"mode_standard_title": "Standard (2D)",
+			"mode_standard_desc": "Standard horizontal pearl cannon with 4 directional TNT groups.",
+			"mode_accumulation_title": "Accumulation (Lazy Loaded)",
+			"mode_accumulation_desc": "Lazy loaded cannon with accumulated TNT charges.",
+			"mode_vector3d_title": "Vector (3D)",
+			"mode_vector3d_desc": "3D vector cannon with vertical TNT support.",
+			"vertical_tnt_config_title": "Vertical TNT Configuration",
+			"vertical_tnt_config_desc": "Configure the position of vertical TNT for 3D vector cannon.",
+			"vertical_tnt": "Vertical TNT"
 		},
 		"error": {
 			"config": {
@@ -201,11 +229,12 @@
 				"copy_code_failed": "Failed to copy code",
 				"bit_values_error": "Please fill in all bit values.",
 				"bit_masks_error": "Please select all direction masks.",
+				"multiplier_values_error": "Please fill in all multiplier bit values.",
 				"red_tnt_error": "Please select a Red TNT group.",
 				"bit_validation": {
 					"empty": "Template cannot be empty",
 					"no_unit": "Template must contain unit value 1",
-					"gap": "Gap detected: cannot cover {{gap}} after sum {{sum}}",
+					"gap": "Template gap: Small values only sum to {{sum}}, cannot cover {{gap}}. Add missing values between {{sum}} and {{gap}}.",
 					"invalid": "Invalid template values",
 					"value_exceeds": "Value {{value}} exceeds maximum {{max}}"
 				},

@@ -102,6 +102,14 @@ export const emptySimulatorConfig: SimulatorConfig = {
 		pos: { x: 0, y: 0, z: 0 },
 		amount: 0,
 	},
+	tntC: {
+		pos: { x: 0, y: 0, z: 0 },
+		amount: 0,
+	},
+	tntD: {
+		pos: { x: 0, y: 0, z: 0 },
+		amount: 0,
+	},
 };
 
 const CalculatorStateContext = createContext<

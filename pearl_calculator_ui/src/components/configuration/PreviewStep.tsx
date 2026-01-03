@@ -1,4 +1,5 @@
 import { useTranslation } from "react-i18next";
+import { preciseSubtract } from "@/lib/floating-point-utils";
 import { Badge } from "@/components/ui/badge";
 import {
 	Card,
@@ -94,9 +95,10 @@ export function PreviewStep() {
 											{t("configuration_page.label_x")}:{" "}
 											<span className="text-foreground">
 												{(() => {
-													const val =
-														(parseFloat(draftConfig.pearl_x_position) || 0) -
-														(parseFloat(cannonCenter.x) || 0);
+													const val = preciseSubtract(
+														parseFloat(draftConfig.pearl_x_position) || 0,
+														parseFloat(cannonCenter.x) || 0,
+													);
 													return val > 0 ? `+${val}` : val;
 												})()}
 											</span>
@@ -105,9 +107,10 @@ export function PreviewStep() {
 											{t("configuration_page.label_z")}:{" "}
 											<span className="text-foreground">
 												{(() => {
-													const val =
-														(parseFloat(draftConfig.pearl_z_position) || 0) -
-														(parseFloat(cannonCenter.z) || 0);
+													const val = preciseSubtract(
+														parseFloat(draftConfig.pearl_z_position) || 0,
+														parseFloat(cannonCenter.z) || 0,
+													);
 													return val > 0 ? `+${val}` : val;
 												})()}
 											</span>

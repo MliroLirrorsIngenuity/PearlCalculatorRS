@@ -1,5 +1,9 @@
 import { createContext, type ReactNode, useContext, useState } from "react";
-import type { BitInputState } from "@/types/domain";
+import type {
+	BitInputState,
+	CannonMode,
+	MultiplierBitInputState,
+} from "@/types/domain";
 
 export interface DraftConfig {
 	max_tnt: string;
@@ -7,6 +11,7 @@ export interface DraftConfig {
 	north_east_tnt: { x: string; y: string; z: string };
 	south_west_tnt: { x: string; y: string; z: string };
 	south_east_tnt: { x: string; y: string; z: string };
+	vertical_tnt: { x: string; y: string; z: string };
 	pearl_x_position: string;
 	pearl_y_motion: string;
 	pearl_y_position: string;
@@ -19,6 +24,7 @@ export const emptyDraftConfig: DraftConfig = {
 	north_east_tnt: { x: "", y: "", z: "" },
 	south_west_tnt: { x: "", y: "", z: "" },
 	south_east_tnt: { x: "", y: "", z: "" },
+	vertical_tnt: { x: "", y: "", z: "" },
 	pearl_x_position: "",
 	pearl_y_motion: "",
 	pearl_y_position: "",
@@ -44,6 +50,13 @@ interface ConfigurationStateContextType {
 	setIsBitConfigSkipped: (skipped: boolean) => void;
 	savedPath: string | null;
 	setSavedPath: (path: string | null) => void;
+
+	calculationMode: CannonMode;
+	setCalculationMode: (mode: CannonMode) => void;
+	multiplierBitState: MultiplierBitInputState | undefined;
+	setMultiplierBitState: (state: MultiplierBitInputState | undefined) => void;
+	isMultiplierConfigSkipped: boolean;
+	setIsMultiplierConfigSkipped: (skipped: boolean) => void;
 	resetDraft: () => void;
 }
 
@@ -69,7 +82,15 @@ export function ConfigurationStateProvider({
 	const [isWizardActive, setIsWizardActive] = useState(false);
 	const [isFinished, setIsFinished] = useState(false);
 	const [savedPath, setSavedPath] = useState<string | null>(null);
+
 	const [isBitConfigSkipped, setIsBitConfigSkipped] = useState(false);
+	const [calculationMode, setCalculationMode] =
+		useState<CannonMode>("Standard");
+	const [multiplierBitState, setMultiplierBitState] = useState<
+		MultiplierBitInputState | undefined
+	>(undefined);
+	const [isMultiplierConfigSkipped, setIsMultiplierConfigSkipped] =
+		useState(false);
 
 	const resetDraft = () => {
 		setDraftConfig(emptyDraftConfig);
@@ -81,6 +102,9 @@ export function ConfigurationStateProvider({
 		setSavedPath(null);
 		setIsWizardActive(false);
 		setIsFinished(false);
+		setCalculationMode("Standard");
+		setMultiplierBitState(undefined);
+		setIsMultiplierConfigSkipped(false);
 	};
 
 	return (
@@ -104,6 +128,13 @@ export function ConfigurationStateProvider({
 				setIsBitConfigSkipped,
 				savedPath,
 				setSavedPath,
+
+				calculationMode,
+				setCalculationMode,
+				multiplierBitState,
+				setMultiplierBitState,
+				isMultiplierConfigSkipped,
+				setIsMultiplierConfigSkipped,
 				resetDraft,
 			}}
 		>

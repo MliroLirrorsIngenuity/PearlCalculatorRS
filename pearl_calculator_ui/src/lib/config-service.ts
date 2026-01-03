@@ -5,9 +5,14 @@ import {
 	BitDirectionSchema,
 	BitTemplateConfigSchema,
 	GeneralConfigSchema,
+	MultiplierConfigSchema,
 	TNTDirectionSchema,
 } from "@/lib/schemas";
-import type { BitTemplateConfig, GeneralConfig } from "@/types/domain";
+import type {
+	BitTemplateConfig,
+	GeneralConfig,
+	MultiplierConfig,
+} from "@/types/domain";
 import { isTauri } from "@/services";
 
 const LooseConfigSchema = z
@@ -19,6 +24,7 @@ const LooseConfigSchema = z
 		NorthEastTNT: z.any().optional(),
 		SouthWestTNT: z.any().optional(),
 		SouthEastTNT: z.any().optional(),
+		VerticalTNT: z.any().optional(),
 		DefaultRedDirection: z.string().optional(),
 		DefaultRedTNTDirection: z.string().optional(),
 		DefaultBlueDirection: z.string().optional(),
@@ -48,6 +54,11 @@ const LooseConfigSchema = z
 		DirectionMasks: z.record(z.string(), z.any()).optional(),
 		RedValues: z.array(z.any()).optional(),
 		IsRedArrowCenter: z.boolean().optional(),
+		Mode: z.string().optional(),
+		MultiplierSideMode: z.number().optional(),
+		MultiplierValues: z.array(z.any()).optional(),
+		Multiplier: z.number().optional(),
+		MultiplierIsSwapped: z.boolean().optional(),
 	})
 	.passthrough();
 
@@ -83,6 +94,7 @@ function normalizeConfig(dirty: DirtyConfig): GeneralConfig {
 		north_east_tnt: readPos(root.NorthEastTNT),
 		south_west_tnt: readPos(root.SouthWestTNT),
 		south_east_tnt: readPos(root.SouthEastTNT),
+		vertical_tnt: root.VerticalTNT ? readPos(root.VerticalTNT) : undefined,
 		pearl_x_position: Number(root.Pearl?.Position?.X ?? 0),
 		pearl_y_motion: Number(root.Pearl?.Motion?.Y ?? 0),
 		pearl_y_position: Number(root.Pearl?.Position?.Y ?? 0),
@@ -91,6 +103,7 @@ function normalizeConfig(dirty: DirtyConfig): GeneralConfig {
 		default_blue_tnt_position: blueDir,
 		offset_x: Number(root.Offset?.X ?? 0),
 		offset_z: Number(root.Offset?.Z ?? 0),
+		mode: root.Mode,
 	};
 
 	return GeneralConfigSchema.parse(config);
@@ -134,12 +147,41 @@ function extractBitTemplateConfig(
 	return BitTemplateConfigSchema.parse(template);
 }
 
+function extractMultiplierConfig(dirty: DirtyConfig): MultiplierConfig | null {
+	let root = dirty;
+	if (
+		dirty.CannonSettings &&
+		Array.isArray(dirty.CannonSettings) &&
+		dirty.CannonSettings.length > 0
+	) {
+		root = dirty.CannonSettings[0];
+	}
+
+	if (
+		!root.MultiplierSideMode ||
+		!root.MultiplierValues ||
+		!Array.isArray(root.MultiplierValues)
+	) {
+		return null;
+	}
+
+	const config = {
+		MultiplierSideMode: root.MultiplierSideMode,
+		MultiplierValues: root.MultiplierValues.map((v) => Number(v) || 0),
+		Multiplier: root.Multiplier ?? 200,
+		MultiplierIsSwapped: root.MultiplierIsSwapped ?? false,
+	};
+
+	return MultiplierConfigSchema.parse(config);
+}
+
 export function parseConfigurationContent(
 	content: string,
 	path: string,
 ): {
 	config: GeneralConfig;
 	bitTemplate: BitTemplateConfig | null;
+	multiplierTemplate: MultiplierConfig | null;
 	path: string;
 } {
 	const json = JSON.parse(content);
@@ -147,13 +189,15 @@ export function parseConfigurationContent(
 
 	const cleanConfig = normalizeConfig(dirty);
 	const bitTemplate = extractBitTemplateConfig(dirty);
+	const multiplierTemplate = extractMultiplierConfig(dirty);
 
-	return { config: cleanConfig, bitTemplate, path };
+	return { config: cleanConfig, bitTemplate, multiplierTemplate, path };
 }
 
 export async function loadConfiguration(): Promise<{
 	config: GeneralConfig;
 	bitTemplate: BitTemplateConfig | null;
+	multiplierTemplate: MultiplierConfig | null;
 	path: string;
 } | null> {
 	try {

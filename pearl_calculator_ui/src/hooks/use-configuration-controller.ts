@@ -4,6 +4,7 @@ import {
 	WizardBasicInfoSchema,
 	WizardBitConfigSchema,
 	WizardTNTConfigSchema,
+	WizardVerticalTNTSchema,
 } from "@/lib/schemas";
 import { z } from "zod";
 import { useState } from "react";
@@ -15,6 +16,7 @@ import { useConfigurationState } from "@/context/ConfigurationStateContext";
 import { useToastNotifications } from "@/hooks/use-toast-notifications";
 import {
 	configToInputState,
+	configToMultiplierInputState,
 	inputStateToConfig,
 } from "@/lib/bit-template-utils";
 import {
@@ -29,7 +31,11 @@ import {
 	encodeConfig,
 } from "@/lib/config-codec";
 import { isTauri } from "@/services";
-import type { BitTemplateConfig, GeneralConfig } from "@/types/domain";
+import type {
+	BitTemplateConfig,
+	GeneralConfig,
+	MultiplierConfig,
+} from "@/types/domain";
 
 export const ERROR_MAPPINGS = [
 	["cannonCenter.x", "cannon_x"],
@@ -54,6 +60,9 @@ export const ERROR_MAPPINGS = [
 	["southEast.y", "south_east_tnt_y"],
 	["southEast.z", "south_east_tnt_z"],
 	["redTNTLocation", "red_tnt_selection"],
+	["verticalTNT.x", "vertical_tnt_x"],
+	["verticalTNT.y", "vertical_tnt_y"],
+	["verticalTNT.z", "vertical_tnt_z"],
 ] as const;
 
 export function useConfigurationController() {
@@ -79,6 +88,9 @@ export function useConfigurationController() {
 		setIsBitConfigSkipped,
 		savedPath,
 		setSavedPath,
+		calculationMode,
+		multiplierBitState,
+		setMultiplierBitState,
 	} = useConfigurationState();
 	const { setConfigData, setHasConfig, setBitTemplateConfig } = useConfig();
 	const { updateDefaultInput } = useCalculatorState();
@@ -90,8 +102,9 @@ export function useConfigurationController() {
 	const validateStep = (step: number) => {
 		let zodErrors: z.ZodIssue[] = [];
 
-		const result = match(step)
-			.with(1, () =>
+		const result: any = match(step)
+			.with(1, () => ({ success: true, error: null }))
+			.with(2, () =>
 				WizardBasicInfoSchema.safeParse({
 					cannonCenter,
 					pearlPosition: {
@@ -107,7 +120,7 @@ export function useConfigurationController() {
 					maxTNT: draftConfig.max_tnt,
 				}),
 			)
-			.with(2, () =>
+			.with(3, () =>
 				WizardTNTConfigSchema.safeParse({
 					northWest: draftConfig.north_west_tnt,
 					northEast: draftConfig.north_east_tnt,
@@ -116,12 +129,29 @@ export function useConfigurationController() {
 					redTNTLocation,
 				}),
 			)
-			.with(3, () =>
-				WizardBitConfigSchema.safeParse({
+			.with(4, () => {
+				if (calculationMode === "Vector3D") {
+					return WizardVerticalTNTSchema.safeParse({
+						verticalTNT: draftConfig.vertical_tnt,
+					});
+				}
+				return WizardBitConfigSchema.safeParse({
 					state: bitTemplateState,
 					skipped: isBitConfigSkipped,
-				}),
-			)
+				});
+			})
+			.with(5, () => {
+				if (calculationMode === "Vector3D") {
+					return WizardBitConfigSchema.safeParse({
+						state: bitTemplateState,
+						skipped: isBitConfigSkipped,
+					});
+				}
+				if (calculationMode === "Accumulation") {
+					return { success: true, error: null };
+				}
+				return { success: true, error: null };
+			})
 			.otherwise(() => ({ success: true, error: null }));
 
 		if (!result.success && result.error) {
@@ -203,7 +233,11 @@ export function useConfigurationController() {
 	};
 
 	const handleFinish = () => {
-		if (validateStep(3)) {
+		const lastStep =
+			calculationMode === "Vector3D" || calculationMode === "Accumulation"
+				? 5
+				: 4;
+		if (validateStep(lastStep)) {
 			setIsFinished(true);
 			setShouldRestoreLastPage(true);
 		}
@@ -214,6 +248,7 @@ export function useConfigurationController() {
 			draftConfig,
 			cannonCenter,
 			redTNTLocation,
+			calculationMode,
 		);
 
 		updateDefaultInput("pearlX", "0");
@@ -248,6 +283,8 @@ export function useConfigurationController() {
 				pearlMomentum,
 				redTNTLocation,
 				bitTemplateState,
+				calculationMode,
+				multiplierBitState,
 			);
 			const path = await exportConfiguration(config);
 			if (path) {
@@ -275,6 +312,7 @@ export function useConfigurationController() {
 		config: GeneralConfig,
 		bitTemplate: BitTemplateConfig | null,
 		path: string | null = null,
+		multiplierTemplate?: MultiplierConfig | null,
 	) => {
 		const { draft, center, momentum, redLocation } =
 			convertConfigToDraft(config);
@@ -286,7 +324,12 @@ export function useConfigurationController() {
 		const bitInput = configToInputState(bitTemplate);
 		setBitTemplateState(bitInput);
 
-		setBitTemplateState(bitInput);
+		if (multiplierTemplate) {
+			const multiplierInput = configToMultiplierInputState(multiplierTemplate);
+			if (multiplierInput) {
+				setMultiplierBitState(multiplierInput);
+			}
+		}
 
 		if (path) {
 			setSavedPath(path);
@@ -306,7 +349,7 @@ export function useConfigurationController() {
 				return;
 			}
 			const decoded = decodeConfig(text);
-			hydrateWizard(decoded.generalConfig, decoded.bitTemplate);
+			hydrateWizard(decoded.generalConfig, decoded.bitTemplate, null, null);
 		} catch (error) {
 			console.error(error);
 			showError(t("error.calculator.code_import_failed"), error);
@@ -317,7 +360,12 @@ export function useConfigurationController() {
 		try {
 			const result = await loadConfiguration();
 			if (result) {
-				hydrateWizard(result.config, result.bitTemplate, result.path);
+				hydrateWizard(
+					result.config,
+					result.bitTemplate,
+					result.path,
+					result.multiplierTemplate,
+				);
 			}
 		} catch (error) {
 			console.error(error);
@@ -333,6 +381,8 @@ export function useConfigurationController() {
 				pearlMomentum,
 				redTNTLocation,
 				bitTemplateState,
+				calculationMode,
+				multiplierBitState,
 			);
 			const encoded = encodeConfig(config as unknown as EncodableConfig);
 			const { calculatorService } = await import("@/services");
