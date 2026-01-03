@@ -83,7 +83,10 @@ export default function BitCalculationPanel() {
 		if ("error" in result) {
 			const { errorKey, errorParams } = result.error;
 			if (errorKey) {
-				showError(t(errorKey as any, errorParams as any));
+				showError(
+					t("error.calculator.calc_failed"),
+					t(errorKey as any, errorParams as any),
+				);
 			}
 			return;
 		}
@@ -95,8 +98,10 @@ export default function BitCalculationPanel() {
 		if (hasAutoCalculated.current) return;
 
 		if (inputState && traceTNT) {
-			const hasValues = inputState.sideValues.some((v) => v && v.trim() !== "");
-			if (hasValues) {
+			const allValuesPresent = inputState.sideValues.every(
+				(v) => v && v.trim() !== "",
+			);
+			if (allValuesPresent) {
 				hasAutoCalculated.current = true;
 				runCalculation();
 			}

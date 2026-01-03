@@ -95,12 +95,8 @@ export function BitInputRow({
 							>
 								<div
 									className={`flex gap-1.5 flex-wrap ${
-										isSingleRow
-											? "justify-center"
-											: isRightToLeft
-												? "flex-row-reverse justify-start"
-												: "justify-start"
-									}`}
+										isSingleRow ? "justify-center" : "justify-start"
+									} ${isRightToLeft ? "flex-row-reverse" : ""}`}
 								>
 									{chunk.map((val, i) => {
 										const originalIndex = indexChunks[chunkIndex][i];
