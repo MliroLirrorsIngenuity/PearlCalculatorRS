@@ -41,7 +41,7 @@ const CANNON_MODES: ModeOption[] = [
 ];
 
 export function CannonTypeStep() {
-	const { calculationMode, setCalculationMode } = useConfigurationState();
+	const { wizardMode, setWizardMode } = useConfigurationState();
 	const { t } = useTranslation();
 
 	return (
@@ -59,11 +59,11 @@ export function CannonTypeStep() {
 							<button
 								key={mode.value}
 								type="button"
-								onClick={() => setCalculationMode(mode.value)}
+								onClick={() => setWizardMode(mode.value)}
 								className={cn(
 									"w-full text-left p-4 rounded-lg border-2 transition-all duration-200",
 									"hover:border-primary/50 hover:bg-accent/50",
-									calculationMode === mode.value
+									wizardMode === mode.value
 										? "border-primary bg-primary/5 shadow-sm"
 										: "border-muted bg-background",
 								)}

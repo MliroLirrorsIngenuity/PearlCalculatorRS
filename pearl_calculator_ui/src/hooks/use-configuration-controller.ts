@@ -18,6 +18,7 @@ import {
 	configToInputState,
 	configToMultiplierInputState,
 	inputStateToConfig,
+	inputStateToMultiplierConfig,
 } from "@/lib/bit-template-utils";
 import {
 	buildExportConfig,
@@ -90,10 +91,13 @@ export function useConfigurationController() {
 		savedPath,
 		setSavedPath,
 		calculationMode,
+		setCalculationMode,
+		wizardMode,
+		setWizardMode,
 		multiplierBitState,
 		setMultiplierBitState,
 	} = useConfigurationState();
-	const { setConfigData, setHasConfig, setBitTemplateConfig } = useConfig();
+	const { setConfigData, setHasConfig, setBitTemplateConfig, setMultiplierConfig } = useConfig();
 	const { updateDefaultInput } = useCalculatorState();
 	const { showSuccess, showError } = useToastNotifications();
 
@@ -118,9 +122,9 @@ export function useConfigurationController() {
 						y: draftConfig.pearl_y_motion,
 						z: pearlMomentum.z,
 					},
-					maxTNT: calculationMode === "Vector3D" ? "1" : draftConfig.max_tnt,
+					maxTNT: wizardMode === "Vector3D" ? "1" : draftConfig.max_tnt,
 					maxVerticalTNT:
-						calculationMode === "Vector3D"
+						wizardMode === "Vector3D"
 							? draftConfig.max_vertical_tnt
 							: undefined,
 				};
@@ -136,7 +140,7 @@ export function useConfigurationController() {
 				}),
 			)
 			.with(4, () => {
-				if (calculationMode === "Vector3D") {
+				if (wizardMode === "Vector3D") {
 					return WizardVerticalTNTSchema.safeParse({
 						verticalTNT: draftConfig.vertical_tnt,
 					});
@@ -147,13 +151,13 @@ export function useConfigurationController() {
 				});
 			})
 			.with(5, () => {
-				if (calculationMode === "Vector3D") {
+				if (wizardMode === "Vector3D") {
 					return WizardBitConfigSchema.safeParse({
 						state: bitTemplateState,
 						skipped: isBitConfigSkipped,
 					});
 				}
-				if (calculationMode === "Accumulation") {
+				if (wizardMode === "Accumulation") {
 					return { success: true, error: null };
 				}
 				return { success: true, error: null };
@@ -174,9 +178,9 @@ export function useConfigurationController() {
 						.with(
 							P.nullish,
 							() =>
-								(newErrors.bit_template_empty = t(
-									"error.configuration_page.validation.required",
-								)),
+							(newErrors.bit_template_empty = t(
+								"error.configuration_page.validation.required",
+							)),
 						)
 						.with(
 							{
@@ -185,22 +189,22 @@ export function useConfigurationController() {
 								),
 							},
 							() =>
-								(newErrors.bit_values_incomplete = t(
-									"error.configuration_page.validation.required",
-								)),
+							(newErrors.bit_values_incomplete = t(
+								"error.configuration_page.validation.required",
+							)),
 						)
 						.with(
 							{ masks: P.when((m) => m.some((mask) => !mask.direction)) },
 							() =>
-								(newErrors.bit_masks_incomplete = t(
-									"error.configuration_page.validation.required",
-								)),
+							(newErrors.bit_masks_incomplete = t(
+								"error.configuration_page.validation.required",
+							)),
 						)
 						.otherwise(
 							() =>
-								(newErrors.bit_template_empty = t(
-									"error.configuration_page.validation.required",
-								)),
+							(newErrors.bit_template_empty = t(
+								"error.configuration_page.validation.required",
+							)),
 						);
 					return;
 				}
@@ -240,9 +244,7 @@ export function useConfigurationController() {
 
 	const handleFinish = () => {
 		const lastStep =
-			calculationMode === "Vector3D" || calculationMode === "Accumulation"
-				? 5
-				: 4;
+			wizardMode === "Vector3D" || wizardMode === "Accumulation" ? 5 : 4;
 		if (validateStep(lastStep)) {
 			setIsFinished(true);
 			setShouldRestoreLastPage(true);
@@ -254,8 +256,10 @@ export function useConfigurationController() {
 			draftConfig,
 			cannonCenter,
 			redTNTLocation,
-			calculationMode,
+			wizardMode,
 		);
+
+		setCalculationMode(wizardMode);
 
 		updateDefaultInput("pearlX", "0");
 		updateDefaultInput("pearlZ", "0");
@@ -278,6 +282,10 @@ export function useConfigurationController() {
 			setBitTemplateConfig(inputStateToConfig(bitTemplateState));
 		}
 
+		if (multiplierBitState) {
+			setMultiplierConfig(inputStateToMultiplierConfig(multiplierBitState));
+		}
+
 		navigate("/");
 	};
 
@@ -289,7 +297,7 @@ export function useConfigurationController() {
 				pearlMomentum,
 				redTNTLocation,
 				bitTemplateState,
-				calculationMode,
+				wizardMode,
 				multiplierBitState,
 			);
 			const path = await exportConfiguration(config);
@@ -342,6 +350,8 @@ export function useConfigurationController() {
 		} else {
 			setSavedPath(null);
 		}
+
+		setWizardMode(config.mode || "Standard");
 
 		setIsWizardActive(true);
 	};

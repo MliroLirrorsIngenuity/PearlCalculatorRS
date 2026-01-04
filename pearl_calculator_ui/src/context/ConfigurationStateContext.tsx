@@ -55,6 +55,8 @@ interface ConfigurationStateContextType {
 
 	calculationMode: CannonMode;
 	setCalculationMode: (mode: CannonMode) => void;
+	wizardMode: CannonMode;
+	setWizardMode: (mode: CannonMode) => void;
 	multiplierBitState: MultiplierBitInputState | undefined;
 	setMultiplierBitState: (state: MultiplierBitInputState | undefined) => void;
 	isMultiplierConfigSkipped: boolean;
@@ -88,6 +90,7 @@ export function ConfigurationStateProvider({
 	const [isBitConfigSkipped, setIsBitConfigSkipped] = useState(false);
 	const [calculationMode, setCalculationMode] =
 		useState<CannonMode>("Standard");
+	const [wizardMode, setWizardMode] = useState<CannonMode>("Standard");
 	const [multiplierBitState, setMultiplierBitState] = useState<
 		MultiplierBitInputState | undefined
 	>(undefined);
@@ -104,7 +107,7 @@ export function ConfigurationStateProvider({
 		setSavedPath(null);
 		setIsWizardActive(false);
 		setIsFinished(false);
-		setCalculationMode("Standard");
+		setWizardMode("Standard");
 		setMultiplierBitState(undefined);
 		setIsMultiplierConfigSkipped(false);
 	};
@@ -133,6 +136,8 @@ export function ConfigurationStateProvider({
 
 				calculationMode,
 				setCalculationMode,
+				wizardMode,
+				setWizardMode,
 				multiplierBitState,
 				setMultiplierBitState,
 				isMultiplierConfigSkipped,

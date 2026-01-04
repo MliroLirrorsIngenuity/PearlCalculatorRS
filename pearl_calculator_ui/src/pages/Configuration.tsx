@@ -48,9 +48,9 @@ export default function Configuration() {
 	const [current, setCurrent] = React.useState(0);
 	const [count, setCount] = React.useState(0);
 	const { t } = useTranslation();
-	const { calculationMode } = useConfigurationState();
-	const isVector3D = calculationMode === "Vector3D";
-	const isAccumulation = calculationMode === "Accumulation";
+	const { wizardMode } = useConfigurationState();
+	const isVector3D = wizardMode === "Vector3D";
+	const isAccumulation = wizardMode === "Accumulation";
 
 	const {
 		isConfiguring,
