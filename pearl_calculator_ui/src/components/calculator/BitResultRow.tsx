@@ -1,5 +1,5 @@
 import { ArrowLeft, ArrowRight } from "lucide-react";
-import { getThemeClasses, type ThemeColor } from "./bit-layout-utils";
+import { getThemeClasses, type ThemeColor } from "@/lib/bit-layout-utils";
 
 interface BitResultRowProps {
 	theme: ThemeColor;

@@ -1,5 +1,5 @@
 import { ArrowLeft, ArrowRight } from "lucide-react";
-import { ThemeColor } from "./bit-layout-utils";
+import { ThemeColor } from "@/lib/bit-layout-utils";
 import { BitCell } from "./BitCell";
 
 interface BitCellGroupProps {

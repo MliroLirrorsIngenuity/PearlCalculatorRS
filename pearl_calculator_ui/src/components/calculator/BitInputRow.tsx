@@ -8,7 +8,7 @@ import {
 	THEME_CLASSES,
 	ThemeColor,
 	calculateRowChunks,
-} from "./bit-layout-utils";
+} from "@/lib/bit-layout-utils";
 
 interface BitInputRowProps {
 	theme: ThemeColor;

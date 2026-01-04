@@ -4,7 +4,10 @@ import { Label } from "@/components/ui/label";
 import { useElementSize } from "@/hooks/use-element-size";
 import { BitCellGroup, HorizontalBitRow } from "./BitCellGroup";
 import { DirectionDisplay } from "./DirectionDisplay";
-import { type ThemeColor, calculateRequiredWidth } from "./bit-layout-utils";
+import {
+	type ThemeColor,
+	calculateRequiredWidth,
+} from "@/lib/bit-layout-utils";
 
 interface BitResultSectionProps {
 	sideCount: number;
