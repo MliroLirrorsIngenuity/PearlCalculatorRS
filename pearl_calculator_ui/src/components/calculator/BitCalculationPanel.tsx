@@ -74,6 +74,10 @@ export default function BitCalculationPanel() {
 	const [multiplierState, setMultiplierState] =
 		useState<MultiplierBitInputState>(initialMultiplierState);
 
+	const [isMultiplierEnabled, setIsMultiplierEnabled] = useState(
+		!!multiplierConfig,
+	);
+
 	useEffect(() => {
 		setInputState(configToInputState(bitTemplateConfig));
 	}, [bitTemplateConfig]);
@@ -82,6 +86,9 @@ export default function BitCalculationPanel() {
 		const newState = configToMultiplierInputState(multiplierConfig);
 		if (newState) {
 			setMultiplierState(newState);
+			setIsMultiplierEnabled(true);
+		} else {
+			setIsMultiplierEnabled(false);
 		}
 	}, [multiplierConfig]);
 
@@ -136,7 +143,7 @@ export default function BitCalculationPanel() {
 	const runCalculation = useCallback(() => {
 		if (!inputState || !traceTNT) return;
 
-		if (hasMultiplierSupport) {
+		if (hasMultiplierSupport && isMultiplierEnabled) {
 			const multiplierValues = parseMultiplierValues(multiplierState);
 
 			let blueTNT = traceTNT.blue;
@@ -211,6 +218,7 @@ export default function BitCalculationPanel() {
 		t,
 		hasMultiplierSupport,
 		multiplierState,
+		isMultiplierEnabled,
 	]);
 
 	useEffect(() => {
@@ -266,6 +274,8 @@ export default function BitCalculationPanel() {
 														<MultiplierBitInputSection
 															value={multiplierState}
 															onChange={handleMultiplierChange}
+															enabled={isMultiplierEnabled}
+															onToggle={setIsMultiplierEnabled}
 														/>
 													</CollapsibleContent>
 												</Collapsible>
@@ -316,6 +326,7 @@ export default function BitCalculationPanel() {
 										isSwapped={multiplierState.isSwapped}
 										label={t("calculator.multiplier_result")}
 										variant="multiplier"
+										disabled={!isMultiplierEnabled}
 									/>
 								)}
 

@@ -17,6 +17,7 @@ interface BitResultSectionProps {
 	isSwapped: boolean;
 	label?: string;
 	variant?: "default" | "multiplier";
+	disabled?: boolean;
 }
 
 export function BitResultSection({
@@ -27,6 +28,7 @@ export function BitResultSection({
 	isSwapped,
 	label,
 	variant = "default",
+	disabled,
 }: BitResultSectionProps) {
 	const { t } = useTranslation();
 	const { ref: containerRef, width: containerWidth } =
@@ -91,7 +93,10 @@ export function BitResultSection({
 				</div>
 			)}
 
-			<div className="flex flex-col justify-center items-center w-full gap-4 pt-2 pb-4">
+			<div
+				className={`flex flex-col justify-center items-center w-full gap-4 pt-2 pb-4 transition-opacity duration-200 ${disabled ? "opacity-50 pointer-events-none grayscale" : ""
+					}`}
+			>
 				{useHorizontalLayout ? (
 					<div className="flex justify-center items-center gap-2 w-full">
 						<HorizontalBitRow

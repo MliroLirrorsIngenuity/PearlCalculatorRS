@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { BitInputRow, type ThemeColor } from "./BitInputRow";
 
 function parsePastedValues(text: string): string[] | null {
@@ -32,6 +33,8 @@ export interface MultiplierBitInputState {
 interface MultiplierBitInputSectionProps {
 	value?: MultiplierBitInputState;
 	onChange?: (state: MultiplierBitInputState) => void;
+	enabled?: boolean;
+	onToggle?: (enabled: boolean) => void;
 }
 
 const DEFAULT_STATE: MultiplierBitInputState = {
@@ -44,6 +47,8 @@ const DEFAULT_STATE: MultiplierBitInputState = {
 export function MultiplierBitInputSection({
 	value,
 	onChange,
+	enabled = true,
+	onToggle,
 }: MultiplierBitInputSectionProps) {
 	const { t } = useTranslation();
 	const [internalState, setInternalState] =
@@ -97,9 +102,9 @@ export function MultiplierBitInputSection({
 			const newValues =
 				state.sideValues.length < state.sideCount
 					? [
-							...state.sideValues,
-							...Array(state.sideCount - state.sideValues.length).fill(""),
-						]
+						...state.sideValues,
+						...Array(state.sideCount - state.sideValues.length).fill(""),
+					]
 					: state.sideValues.slice(0, state.sideCount);
 			setState({ ...state, sideValues: newValues });
 		}
@@ -219,22 +224,12 @@ export function MultiplierBitInputSection({
 		<div className="space-y-4">
 			<div className="flex flex-wrap justify-between items-center gap-2">
 				<div className="flex items-center gap-2 px-3 py-1.5 rounded-2xl bg-slate-50 border border-slate-200">
-					<Label className="text-xs text-muted-foreground font-medium whitespace-nowrap">
-						{t("calculator.side_mode")}
-					</Label>
-					<Input
-						type="number"
-						value={sideInputValue}
-						onChange={(e) => setSideInputValue(e.target.value)}
-						onBlur={handleSideBlur}
-						onKeyDown={(e) => {
-							if (e.key === "Enter") e.currentTarget.blur();
-						}}
-						className="w-16 h-7 text-center text-xs font-medium"
+					<Switch
+						checked={enabled}
+						onCheckedChange={onToggle}
+						className="scale-75 data-[state=checked]:bg-amber-500"
 					/>
-				</div>
-
-				<div className="flex items-center gap-2 px-3 py-1.5 rounded-2xl bg-slate-50 border border-slate-200">
+					<div className="w-[1px] h-4 bg-slate-200 mx-1" />
 					<Label className="text-xs text-muted-foreground font-medium whitespace-nowrap">
 						{t("calculator.multiplier_label")}
 					</Label>
@@ -247,12 +242,30 @@ export function MultiplierBitInputSection({
 						onKeyDown={(e) => {
 							if (e.key === "Enter") e.currentTarget.blur();
 						}}
-						className="w-20 h-7 text-center text-xs font-medium"
+						disabled={!enabled}
+						className="w-20 h-7 text-center text-xs font-medium disabled:opacity-50"
+					/>
+				</div>
+
+				<div className="flex items-center gap-2 px-3 py-1.5 rounded-2xl bg-slate-50 border border-slate-200">
+					<Label className="text-xs text-muted-foreground font-medium whitespace-nowrap">
+						{t("calculator.side_mode")}
+					</Label>
+					<Input
+						type="number"
+						value={sideInputValue}
+						onChange={(e) => setSideInputValue(e.target.value)}
+						onBlur={handleSideBlur}
+						onKeyDown={(e) => {
+							if (e.key === "Enter") e.currentTarget.blur();
+						}}
+						disabled={!enabled}
+						className="w-16 h-7 text-center text-xs font-medium disabled:opacity-50"
 					/>
 				</div>
 			</div>
 
-			<div className="space-y-2">
+			<div className={`space-y-2 transition-opacity duration-200 ${!enabled ? "opacity-50 pointer-events-none grayscale" : ""}`}>
 				<BitInputRow
 					theme={topTheme}
 					label={topLabel}
