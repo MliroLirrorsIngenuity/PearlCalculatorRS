@@ -6,6 +6,7 @@ pub struct SearchParams {
     pub max_vertical_tnt: Option<u32>,
     pub search_radius: i32,
     pub has_vertical: bool,
+    pub is_valid_3d: bool,
     pub cannon_mode: CannonMode,
 }
 
@@ -13,7 +14,11 @@ pub fn generate_candidates(
     theoretical_groups: HashMap<(i32, i32, i32), Vec<u32>>,
     params: &SearchParams,
 ) -> Vec<((u32, u32, u32), Vec<u32>)> {
-    let v_range = if params.has_vertical { -1..=1 } else { 0..=0 };
+    let v_range = if params.has_vertical && params.is_valid_3d {
+        -1..=1
+    } else {
+        0..=0
+    };
     let mut unique_candidates: HashMap<(u32, u32, u32), Vec<u32>> = HashMap::new();
 
     for ((center_red, center_blue, center_vert), valid_ticks) in theoretical_groups {

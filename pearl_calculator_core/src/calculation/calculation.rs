@@ -37,11 +37,14 @@ pub fn calculate_tnt_amount(
     };
     let theoretical_groups = super::solver::solve_theoretical_tnt(&solver_input);
 
+    let is_valid_3d = vert_vec.length_sq() > FLOAT_PRECISION_EPSILON;
+
     let search_params = super::optimizer::SearchParams {
         max_tnt,
         max_vertical_tnt,
         search_radius: 5,
         has_vertical: cannon.vertical_tnt.is_some(),
+        is_valid_3d,
         cannon_mode: cannon.mode,
     };
     let candidates = super::optimizer::generate_candidates(theoretical_groups, &search_params);
