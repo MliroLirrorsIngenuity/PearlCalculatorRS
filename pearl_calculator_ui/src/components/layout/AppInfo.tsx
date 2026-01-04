@@ -62,7 +62,7 @@ export function AppInfo({ className }: { className?: string }) {
 
 						<div className="pt-2 flex items-center justify-between border-t border-border/50 mt-1">
 							<span className="text-[10px] text-muted-foreground">
-								© 2025 MliroLirrorsIngenuity
+								Copyright © 2025 MliroLirrorsIngenuity
 							</span>
 							<div className="flex items-center gap-1">
 								{pkg.repository?.url && (
