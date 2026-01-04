@@ -68,6 +68,33 @@ export default function Calculator() {
 		isFirstRender.current = false;
 	}, []);
 
+	const prevMode = useRef(calculationMode);
+
+	const getDefaultTickRange = (mode: string) => {
+		if (mode === "Vector3D" || mode === "Accumulation") {
+			return [0, 100];
+		}
+		return [0, 20];
+	};
+
+	useEffect(() => {
+		if (prevMode.current !== calculationMode) {
+			const currentRange = inputs.tickRange;
+			const previousDefault = getDefaultTickRange(prevMode.current);
+
+			const isDefault =
+				currentRange[0] === previousDefault[0] &&
+				currentRange[1] === previousDefault[1];
+
+			if (isDefault) {
+				const newDefault = getDefaultTickRange(calculationMode);
+				updateInput("tickRange", newDefault);
+			}
+
+			prevMode.current = calculationMode;
+		}
+	}, [calculationMode, inputs.tickRange, updateInput]);
+
 	const handleImport = async () => {
 		try {
 			const result = await loadConfiguration();
