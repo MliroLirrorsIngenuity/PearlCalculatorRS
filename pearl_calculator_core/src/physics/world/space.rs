@@ -40,6 +40,20 @@ impl Space3D {
         let delta_z = other.z - self.z;
         utils::to_degrees((-delta_x).atan2(delta_z))
     }
+
+    #[inline]
+    pub fn dot(&self, other: Space3D) -> f64 {
+        self.x * other.x + self.y * other.y + self.z * other.z
+    }
+
+    #[inline]
+    pub fn cross(&self, other: Space3D) -> Space3D {
+        Space3D {
+            x: self.y * other.z - self.z * other.y,
+            y: self.z * other.x - self.x * other.z,
+            z: self.x * other.y - self.y * other.x,
+        }
+    }
 }
 
 impl Add for Space3D {
