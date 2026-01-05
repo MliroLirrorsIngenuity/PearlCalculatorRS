@@ -90,6 +90,7 @@
 			"trace_blue": "蓝: {{value}}",
 			"trace_red": "红: {{value}}",
 			"trace_total": "总计: {{value}}",
+			"trace_vertical_tnt": "垂直 TNT:",
 			"trace_closest_approach": "最近接近点:",
 			"trace_approach_tick": "接近 Tick:",
 			"trace_distance_target": "距离目标:",

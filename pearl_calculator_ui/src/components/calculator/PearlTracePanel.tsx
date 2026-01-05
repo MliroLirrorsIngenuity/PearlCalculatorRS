@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCalculatorState } from "@/context/CalculatorStateContext";
+import { useConfigurationState } from "@/context/ConfigurationStateContext";
 import { useDirectionLabel } from "@/hooks/use-direction-label";
 import type { PearlTraceResult, TraceTNT } from "@/types/domain";
 
@@ -30,6 +31,7 @@ export default function PearlTracePanel({
 	const closestApproach = pearlTraceData?.closest_approach;
 	const traceDataPanelRef = useRef<DataTableRef>(null);
 	const { updateBitCalculation } = useCalculatorState();
+	const { calculationMode } = useConfigurationState();
 
 	const handleJumpToTick = () => {
 		if (closestApproach && traceDataPanelRef.current) {
@@ -89,6 +91,14 @@ export default function PearlTracePanel({
 								</span>
 							</div>
 						</div>
+						{calculationMode === "Vector3D" && traceTNT?.vertical !== undefined && (
+							<div className="flex flex-col gap-1">
+								<span className="text-muted-foreground">
+									{t("calculator.trace_vertical_tnt")}
+								</span>
+								<span className="font-medium">{traceTNT.vertical}</span>
+							</div>
+						)}
 						{closestApproach && (
 							<>
 								<div className="flex flex-col gap-1">

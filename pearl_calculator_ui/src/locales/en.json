@@ -90,6 +90,7 @@
 			"trace_blue": "Blue: {{value}}",
 			"trace_red": "Red: {{value}}",
 			"trace_total": "Total: {{value}}",
+			"trace_vertical_tnt": "Vertical TNT:",
 			"trace_closest_approach": "Closest Approach:",
 			"trace_approach_tick": "Approach at Tick:",
 			"trace_distance_target": "Distance to Target:",

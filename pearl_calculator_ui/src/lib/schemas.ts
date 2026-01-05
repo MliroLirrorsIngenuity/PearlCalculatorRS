@@ -75,6 +75,7 @@ export const TraceTNTSchema = z.object({
 	blue: z.number(),
 	red: z.number(),
 	total: z.number(),
+	vertical: z.number().optional(),
 });
 
 export const GeneralConfigSchema = z.object({

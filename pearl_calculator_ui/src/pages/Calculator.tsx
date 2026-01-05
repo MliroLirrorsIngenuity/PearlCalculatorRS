@@ -200,7 +200,7 @@ export default function Calculator() {
 			updateDefaultTrace({
 				data: result,
 				direction,
-				tnt: { blue, red, total: blue + red },
+				tnt: { blue, red, total: blue + red, vertical },
 				show: true,
 			});
 		}
