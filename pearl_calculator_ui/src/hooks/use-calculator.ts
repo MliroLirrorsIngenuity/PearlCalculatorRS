@@ -58,7 +58,8 @@ export function useTNTCalculator() {
 
 		setIsCalculating(true);
 		try {
-			const verticalTnt = config.vertical_tnt;
+			const verticalTnt = mode === "Vector3D" ? config.vertical_tnt : undefined;
+			const maxVerticalTnt = mode === "Vector3D" ? (config.max_vertical_tnt ?? 0) : 0;
 			const backendMode = toBackendMode(mode);
 
 			const calculationInput = {
@@ -84,7 +85,7 @@ export function useTNTCalculator() {
 				destinationY: inputs.destY ? parseFloat(inputs.destY) || 0 : 0,
 				destinationZ: destZ,
 				maxTnt: config.max_tnt,
-				maxVerticalTnt: config.max_vertical_tnt ?? 0,
+				maxVerticalTnt: maxVerticalTnt,
 				maxTicks: 10000,
 				maxDistance: 50.0,
 				version: version,

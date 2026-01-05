@@ -69,8 +69,8 @@ export function usePearlTrace() {
 				southWestTnt: configData.south_west_tnt,
 				southEastTnt: configData.south_east_tnt,
 
-				verticalTntAmount: tntResult.vertical,
-				verticalTnt: configData.vertical_tnt,
+				verticalTntAmount: calculationMode === "Vector3D" ? tntResult.vertical : undefined,
+				verticalTnt: calculationMode === "Vector3D" ? configData.vertical_tnt : undefined,
 
 				defaultRedDirection: configData.default_red_tnt_position,
 				defaultBlueDirection: configData.default_blue_tnt_position,
