@@ -32,7 +32,7 @@ impl Direction {
     }
 
     pub fn from_angle_with_fallbacks(angle: f64) -> Vec<Direction> {
-        const BOUNDARY_EPSILON: f64 = 1e-9;
+        const BOUNDARY_EPSILON: f64 = 2.0;
 
         let is_near = |boundary: f64| (angle - boundary).abs() < BOUNDARY_EPSILON;
 
