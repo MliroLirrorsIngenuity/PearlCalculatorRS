@@ -20,6 +20,7 @@ pub fn validate_candidates(
     destination: Space3D,
     max_distance_sq: f64,
     version: PearlVersion,
+    calculation_direction: Direction,
 ) -> Vec<TNTResult> {
     let pearl_start_absolute_pos = pearl_position + pearl_offset;
     let check_3d = vert_vec.length_sq() > FLOAT_PRECISION_EPSILON;
@@ -76,7 +77,7 @@ pub fn validate_candidates(
                 let yaw = (-flight.x).atan2(flight.z).to_degrees();
                 let pitch = (-flight.y).atan2(h_dist).to_degrees();
 
-                let out_dir = Direction::from_angle(yaw);
+                let out_dir = calculation_direction;
 
                 results.push(TNTResult {
                     distance: best_hit.distance,
