@@ -1,0 +1,45 @@
+{
+    "CannonSettings": [
+        {
+            "NorthEastTNT": {
+                "X": 0.884999990463,
+                "Y": 36.5,
+                "Z": -0.884999990463
+            },
+            "NorthWestTNT": {
+                "X": -0.884999990463,
+                "Y": 36.5,
+                "Z": -0.884999990463
+            },
+            "SouthEastTNT": {
+                "X": 0.884999990463,
+                "Y": 36.5,
+                "Z": 0.884999990463
+            },
+            "SouthWestTNT": {
+                "X": -0.884999990463,
+                "Y": 36.5,
+                "Z": 0.884999990463
+            },
+            "Offset": {
+                "X": 0,
+                "Z": 0
+            },
+            "Pearl": {
+                "Position": {
+                    "X": 0,
+                    "Y": 36.34875,
+                    "Z": 0
+                },
+                "Motion": {
+                    "X": 0,
+                    "Y": 0.371773,
+                    "Z": 0
+                }
+            },
+            "MaxTNT": 3360,
+            "DefaultRedDirection": "NorthWest",
+            "DefaultBlueDirection": "SouthEast"
+        }
+    ]
+}
