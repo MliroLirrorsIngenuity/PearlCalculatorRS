@@ -1,0 +1,66 @@
+{
+    "name": "case_a",
+    "cannon": {
+        "pearl": {
+            "position": {
+                "X": -11.0,
+                "Y": 168.34908458345382,
+                "Z": 45.0
+            },
+            "motion": {
+                "X": 0.0,
+                "Y": 1.0,
+                "Z": 0.0
+            },
+            "offset": {
+                "X": 0.0,
+                "Y": 0.0,
+                "Z": 0.1349999999999909
+            }
+        },
+        "north_west_tnt": {
+            "X": -0.6349999904632568,
+            "Y": 168.5,
+            "Z": -0.49000000953674316
+        },
+        "north_east_tnt": {
+            "X": 0.6349999904632568,
+            "Y": 168.5,
+            "Z": -0.49000000953674316
+        },
+        "south_west_tnt": {
+            "X": -0.6349999904632568,
+            "Y": 168.5,
+            "Z": 0.7599999904632568
+        },
+        "south_east_tnt": {
+            "X": 0.6349999904632568,
+            "Y": 168.5,
+            "Z": 0.7599999904632568
+        },
+        "vertical_tnt": null,
+        "default_red_duper": "SouthWest",
+        "default_blue_duper": "NorthEast",
+        "mode": "Standard"
+    },
+    "test_cases": [
+        {
+            "version": "Post1212",
+            "red": 6049997,
+            "blue": 47970,
+            "direction": "South"
+        },
+        {
+            "version": "Post1205",
+            "red": 5989497,
+            "blue": 47491,
+            "direction": "South"
+        },
+        {
+            "version": "Legacy",
+            "red": 5989497,
+            "blue": 47491,
+            "direction": "South"
+        }
+    ]
+}

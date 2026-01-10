@@ -1,0 +1,149 @@
+[
+  {
+    "id": 0,
+    "source_file": "case_a",
+    "case_name": "Post1212_R6049997_B47970_V0",
+    "version": "Post1212",
+    "input_red": 6049997,
+    "input_blue": 47970,
+    "input_vertical": 0,
+    "input_direction": "South",
+    "expected_landing_pos": {
+      "X": 262733141.26937196,
+      "Y": 140735.0486373076,
+      "Z": 262729222.9527226
+    },
+    "expected_ticks": 120,
+    "tick_10_checkpoint": {
+      "X": 35856819.9177775,
+      "Y": 19371.302860572916,
+      "Z": 35856333.63458799
+    }
+  },
+  {
+    "id": 1,
+    "source_file": "case_a",
+    "case_name": "Post1205_R5989497_B47491_V0",
+    "version": "Post1205",
+    "input_red": 5989497,
+    "input_blue": 47491,
+    "input_vertical": 0,
+    "input_direction": "South",
+    "expected_landing_pos": {
+      "X": 262733108.9915221,
+      "Y": 140736.34756541857,
+      "Z": 262729252.111066
+    },
+    "expected_ticks": 120,
+    "tick_10_checkpoint": {
+      "X": 35856815.51261814,
+      "Y": 19371.67144782747,
+      "Z": 35856337.61400886
+    }
+  },
+  {
+    "id": 2,
+    "source_file": "case_a",
+    "case_name": "Legacy_R5989497_B47491_V0",
+    "version": "Legacy",
+    "input_red": 5989497,
+    "input_blue": 47491,
+    "input_vertical": 0,
+    "input_direction": "South",
+    "expected_landing_pos": {
+      "X": 262733270.94365096,
+      "Y": 140736.30486255963,
+      "Z": 262729360.47786677
+    },
+    "expected_ticks": 120,
+    "tick_10_checkpoint": {
+      "X": 35856819.193650976,
+      "Y": 19371.672660411194,
+      "Z": 35856337.97786679
+    }
+  },
+  {
+    "id": 3,
+    "source_file": "case_b",
+    "case_name": "Post1212_R160_B100_V0",
+    "version": "Post1212",
+    "input_red": 160,
+    "input_blue": 100,
+    "input_vertical": 0,
+    "input_direction": "South",
+    "expected_landing_pos": {
+      "X": -2154.495669209947,
+      "Y": -4058.1639313668684,
+      "Z": 11067.022899909769
+    },
+    "expected_ticks": 120,
+    "tick_10_checkpoint": {
+      "X": -92.78244510972854,
+      "Y": -478.7438310244179,
+      "Z": 2132.9322621421575
+    }
+  },
+  {
+    "id": 4,
+    "source_file": "case_b",
+    "case_name": "Post1212_R420_B80_V0",
+    "version": "Post1212",
+    "input_red": 420,
+    "input_blue": 80,
+    "input_vertical": 0,
+    "input_direction": "East",
+    "expected_landing_pos": {
+      "X": 20129.380576749536,
+      "Y": -7705.249789818737,
+      "Z": -12808.558792189695
+    },
+    "expected_ticks": 120,
+    "tick_10_checkpoint": {
+      "X": 2948.4370425810716,
+      "Y": -976.48437057783,
+      "Z": -1125.5171889551284
+    }
+  },
+  {
+    "id": 5,
+    "source_file": "case_b",
+    "case_name": "Post1205_R160_B100_V0",
+    "version": "Post1205",
+    "input_red": 160,
+    "input_blue": 100,
+    "input_vertical": 0,
+    "input_direction": "South",
+    "expected_landing_pos": {
+      "X": -2178.612418393886,
+      "Y": -4097.710543059663,
+      "Z": 11171.528813040171
+    },
+    "expected_ticks": 120,
+    "tick_10_checkpoint": {
+      "X": -96.073808191645,
+      "Y": -483.9496891789839,
+      "Z": 2147.194835497129
+    }
+  },
+  {
+    "id": 6,
+    "source_file": "case_b",
+    "case_name": "Legacy_R160_B100_V0",
+    "version": "Legacy",
+    "input_red": 160,
+    "input_blue": 100,
+    "input_vertical": 0,
+    "input_direction": "South",
+    "expected_landing_pos": {
+      "X": -2178.61281730838,
+      "Y": -4097.709347536378,
+      "Z": 11171.531728358388
+    },
+    "expected_ticks": 120,
+    "tick_10_checkpoint": {
+      "X": -96.0738129825134,
+      "Y": -483.9496505759284,
+      "Z": 2147.1949211074116
+    }
+  }
+]
