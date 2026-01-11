@@ -102,9 +102,9 @@ export function MultiplierBitInputSection({
 			const newValues =
 				state.sideValues.length < state.sideCount
 					? [
-						...state.sideValues,
-						...Array(state.sideCount - state.sideValues.length).fill(""),
-					]
+							...state.sideValues,
+							...Array(state.sideCount - state.sideValues.length).fill(""),
+						]
 					: state.sideValues.slice(0, state.sideCount);
 			setState({ ...state, sideValues: newValues });
 		}
@@ -265,7 +265,9 @@ export function MultiplierBitInputSection({
 				</div>
 			</div>
 
-			<div className={`space-y-2 transition-opacity duration-200 ${!enabled ? "opacity-50 pointer-events-none grayscale" : ""}`}>
+			<div
+				className={`space-y-2 transition-opacity duration-200 ${!enabled ? "opacity-50 pointer-events-none grayscale" : ""}`}
+			>
 				<BitInputRow
 					theme={topTheme}
 					label={topLabel}

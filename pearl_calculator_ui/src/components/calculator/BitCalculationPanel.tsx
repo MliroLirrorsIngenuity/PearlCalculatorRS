@@ -54,22 +54,12 @@ function BitSectionCollapsible({
 			? "bg-amber-50 hover:bg-amber-100/80 border-amber-200"
 			: "bg-violet-50 hover:bg-violet-100/80 border-violet-200";
 
-	const textClass =
-		variant === "amber"
-			? "text-amber-600"
-			: "text-violet-500";
+	const textClass = variant === "amber" ? "text-amber-600" : "text-violet-500";
 
-	const iconClass =
-		variant === "amber"
-			? "text-amber-500"
-			: "text-violet-400";
+	const iconClass = variant === "amber" ? "text-amber-500" : "text-violet-400";
 
 	return (
-		<Collapsible
-			open={open}
-			onOpenChange={onOpenChange}
-			className="space-y-2"
-		>
+		<Collapsible open={open} onOpenChange={onOpenChange} className="space-y-2">
 			<CollapsibleTrigger
 				className={`group flex w-full items-center justify-center gap-2 py-1.5 px-3 rounded-lg border transition-colors ${triggerClass}`}
 			>

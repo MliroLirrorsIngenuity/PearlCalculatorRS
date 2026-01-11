@@ -97,7 +97,12 @@ export function useConfigurationController() {
 		multiplierBitState,
 		setMultiplierBitState,
 	} = useConfigurationState();
-	const { setConfigData, setHasConfig, setBitTemplateConfig, setMultiplierConfig } = useConfig();
+	const {
+		setConfigData,
+		setHasConfig,
+		setBitTemplateConfig,
+		setMultiplierConfig,
+	} = useConfig();
 	const { updateDefaultInput } = useCalculatorState();
 	const { showSuccess, showError } = useToastNotifications();
 
@@ -178,9 +183,9 @@ export function useConfigurationController() {
 						.with(
 							P.nullish,
 							() =>
-							(newErrors.bit_template_empty = t(
-								"error.configuration_page.validation.required",
-							)),
+								(newErrors.bit_template_empty = t(
+									"error.configuration_page.validation.required",
+								)),
 						)
 						.with(
 							{
@@ -189,22 +194,22 @@ export function useConfigurationController() {
 								),
 							},
 							() =>
-							(newErrors.bit_values_incomplete = t(
-								"error.configuration_page.validation.required",
-							)),
+								(newErrors.bit_values_incomplete = t(
+									"error.configuration_page.validation.required",
+								)),
 						)
 						.with(
 							{ masks: P.when((m) => m.some((mask) => !mask.direction)) },
 							() =>
-							(newErrors.bit_masks_incomplete = t(
-								"error.configuration_page.validation.required",
-							)),
+								(newErrors.bit_masks_incomplete = t(
+									"error.configuration_page.validation.required",
+								)),
 						)
 						.otherwise(
 							() =>
-							(newErrors.bit_template_empty = t(
-								"error.configuration_page.validation.required",
-							)),
+								(newErrors.bit_template_empty = t(
+									"error.configuration_page.validation.required",
+								)),
 						);
 					return;
 				}

@@ -59,7 +59,8 @@ export function useTNTCalculator() {
 		setIsCalculating(true);
 		try {
 			const verticalTnt = mode === "Vector3D" ? config.vertical_tnt : undefined;
-			const maxVerticalTnt = mode === "Vector3D" ? (config.max_vertical_tnt ?? 0) : 0;
+			const maxVerticalTnt =
+				mode === "Vector3D" ? (config.max_vertical_tnt ?? 0) : 0;
 			const backendMode = toBackendMode(mode);
 
 			const calculationInput = {
