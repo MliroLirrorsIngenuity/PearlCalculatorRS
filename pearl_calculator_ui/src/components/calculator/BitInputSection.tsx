@@ -215,7 +215,7 @@ export function BitInputSection({
 
 	return (
 		<div className="space-y-4">
-			<div className="flex flex-wrap justify-between items-center gap-2">
+			<div className="hidden min-[1176px]:flex flex-wrap justify-between items-center gap-2">
 				<div className="flex items-center gap-2 px-3 py-1.5 rounded-2xl bg-slate-50 border border-slate-200">
 					<Label className="text-xs text-muted-foreground font-medium whitespace-nowrap">
 						{t("calculator.side_mode")}
@@ -238,6 +238,33 @@ export function BitInputSection({
 						onDirectionChange={(v) => handleDirectionChange(gIdx, v)}
 					/>
 				))}
+			</div>
+
+			<div className="min-[1176px]:hidden space-y-2">
+				<div className="flex items-center gap-2 px-3 py-1.5 rounded-2xl bg-slate-50 border border-slate-200 w-fit">
+					<Label className="text-xs text-muted-foreground font-medium whitespace-nowrap">
+						{t("calculator.side_mode")}
+					</Label>
+					<Input
+						type="number"
+						value={inputValue}
+						onChange={(e) => setInputValue(e.target.value)}
+						onBlur={handleBlur}
+						onKeyDown={(e) => {
+							if (e.key === "Enter") e.currentTarget.blur();
+						}}
+						className="w-16 h-7 text-center text-xs font-medium"
+					/>
+				</div>
+				<div className="grid grid-cols-2 gap-2">
+					{state.masks.map((mask, gIdx) => (
+						<MaskGroupInput
+							key={gIdx}
+							mask={mask}
+							onDirectionChange={(v) => handleDirectionChange(gIdx, v)}
+						/>
+					))}
+				</div>
 			</div>
 
 			<div className="space-y-2">

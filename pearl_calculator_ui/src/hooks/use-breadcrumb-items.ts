@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useCalculatorState } from "@/context/CalculatorStateContext";
 import { useConfig } from "@/context/ConfigContext";
 import { useConfigurationState } from "@/context/ConfigurationStateContext";
+import { useMobileViewOptional } from "@/context/MobileViewContext";
 
 export interface BreadcrumbItemType {
 	label: string | undefined;
@@ -23,6 +24,11 @@ export function useBreadcrumbItems() {
 
 	const showPearlTrace = defaultCalculator.trace.show;
 	const showBitCalculation = defaultCalculator.trace.bitCalculation?.show;
+
+	const mobileViewContext = useMobileViewOptional();
+	const isMobileResults =
+		mobileViewContext?.isMobile && mobileViewContext?.mobileView === "results";
+	const showInput = mobileViewContext?.showInput;
 
 	const resetConfig = () => {
 		updateBitCalculation({ show: false });
@@ -49,10 +55,22 @@ export function useBreadcrumbItems() {
 			.with({ hasConfig: false }, () => [
 				{ label: t("breadcrumb.select_config"), href: "/", active: true },
 			])
-			.with({ showPearlTrace: false }, () => [
-				{ label: t("breadcrumb.select_config"), onClick: resetConfig },
-				{ label: t("breadcrumb.calculator"), href: "/", active: true },
-			])
+			.with({ showPearlTrace: false }, () => {
+				if (isMobileResults) {
+					return [
+						{ label: t("breadcrumb.select_config"), onClick: resetConfig },
+						{
+							label: t("breadcrumb.calculator"),
+							onClick: () => showInput?.(),
+						},
+						{ label: t("breadcrumb.results"), href: "/", active: true },
+					];
+				}
+				return [
+					{ label: t("breadcrumb.select_config"), onClick: resetConfig },
+					{ label: t("breadcrumb.calculator"), href: "/", active: true },
+				];
+			})
 			.with({ showBitCalculation: false }, () => [
 				{ label: t("breadcrumb.select_config"), onClick: resetConfig },
 				{ label: t("breadcrumb.calculator"), href: "/", onClick: resetTrace },
@@ -96,9 +114,20 @@ export function useBreadcrumbItems() {
 
 	return match(location.pathname)
 		.with("/", () => getHomeBreadcrumbs())
-		.with("/simulator", () => [
-			{ label: t("breadcrumb.simulator"), href: "/simulator", active: true },
-		])
+		.with("/simulator", () => {
+			if (isMobileResults) {
+				return [
+					{
+						label: t("breadcrumb.simulator"),
+						onClick: () => showInput?.(),
+					},
+					{ label: t("breadcrumb.results"), href: "/simulator", active: true },
+				];
+			}
+			return [
+				{ label: t("breadcrumb.simulator"), href: "/simulator", active: true },
+			];
+		})
 		.with("/configuration", () => getConfigBreadcrumbs())
 		.with("/settings", () => [
 			{ label: t("breadcrumb.settings"), href: "/settings", active: true },

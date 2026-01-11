@@ -217,7 +217,7 @@ export default function Configuration() {
 								</ScrollArea>
 							</CarouselItem>
 							<CarouselItem className="h-full">
-								<ScrollArea className="h-full">
+								<ScrollArea className="h-full" orientation="both">
 									<TNTConfigurationStep errors={errors} />
 								</ScrollArea>
 							</CarouselItem>

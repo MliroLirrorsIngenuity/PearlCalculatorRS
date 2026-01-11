@@ -91,14 +91,15 @@ export default function PearlTracePanel({
 								</span>
 							</div>
 						</div>
-						{calculationMode === "Vector3D" && traceTNT?.vertical !== undefined && (
-							<div className="flex flex-col gap-1">
-								<span className="text-muted-foreground">
-									{t("calculator.trace_vertical_tnt")}
-								</span>
-								<span className="font-medium">{traceTNT.vertical}</span>
-							</div>
-						)}
+						{calculationMode === "Vector3D" &&
+							traceTNT?.vertical !== undefined && (
+								<div className="flex flex-col gap-1">
+									<span className="text-muted-foreground">
+										{t("calculator.trace_vertical_tnt")}
+									</span>
+									<span className="font-medium">{traceTNT.vertical}</span>
+								</div>
+							)}
 						{closestApproach && (
 							<>
 								<div className="flex flex-col gap-1">

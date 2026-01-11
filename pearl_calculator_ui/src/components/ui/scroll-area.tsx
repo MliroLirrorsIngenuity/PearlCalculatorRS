@@ -7,11 +7,20 @@ function ScrollArea({
 	children,
 	viewportRef,
 	onScroll,
+	orientation = "vertical",
 	...props
 }: React.ComponentProps<typeof ScrollAreaPrimitive.Root> & {
 	viewportRef?: React.RefObject<HTMLDivElement | null>;
 	onScroll?: React.UIEventHandler<HTMLDivElement>;
+	orientation?: "vertical" | "horizontal" | "both";
 }) {
+	const viewportClassName = cn(
+		"focus-visible:ring-ring/50 size-full rounded-[inherit] transition-[color,box-shadow] outline-none focus-visible:ring-[3px] focus-visible:outline-1",
+		orientation === "vertical" &&
+			"[&>div]:!min-h-full [&>div]:flex [&>div]:flex-col",
+		orientation === "horizontal" && "[&>div]:!min-w-max",
+	);
+
 	return (
 		<ScrollAreaPrimitive.Root
 			data-slot="scroll-area"
@@ -22,11 +31,16 @@ function ScrollArea({
 				data-slot="scroll-area-viewport"
 				ref={viewportRef}
 				onScroll={onScroll}
-				className="focus-visible:ring-ring/50 size-full rounded-[inherit] transition-[color,box-shadow] outline-none focus-visible:ring-[3px] focus-visible:outline-1 [&>div]:!min-h-full [&>div]:flex [&>div]:flex-col"
+				className={viewportClassName}
 			>
 				{children}
 			</ScrollAreaPrimitive.Viewport>
-			<ScrollBar />
+			{(orientation === "vertical" || orientation === "both") && (
+				<ScrollBar orientation="vertical" />
+			)}
+			{(orientation === "horizontal" || orientation === "both") && (
+				<ScrollBar orientation="horizontal" />
+			)}
 			<ScrollAreaPrimitive.Corner />
 		</ScrollAreaPrimitive.Root>
 	);

@@ -23,7 +23,8 @@
 			"new_config": "New Config",
 			"completed": "Completed",
 			"settings": "Settings",
-			"bit_calculation": "Bit Calculation"
+			"bit_calculation": "Bit Calculation",
+			"results": "Results"
 		},
 		"calculator": {
 			"no_configuration": "No Configuration",
@@ -111,7 +112,7 @@
 			"label_dest_y": "Destination Y",
 			"bit_calc_btn": "Bit Calculation",
 			"bit_calculate_btn": "Calculate",
-			"direction_label": "DIRECTION",
+			"direction_label": "DIR.",
 			"side_mode": "Side Mode",
 			"import_code_btn": "Import Code",
 			"toast_code_imported": "Configuration imported from code",

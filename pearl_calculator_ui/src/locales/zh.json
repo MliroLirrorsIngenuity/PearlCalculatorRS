@@ -23,7 +23,8 @@
 			"new_config": "新配置",
 			"completed": "已完成",
 			"settings": "设置",
-			"bit_calculation": "Bit计算"
+			"bit_calculation": "Bit计算",
+			"results": "结果"
 		},
 		"calculator": {
 			"no_configuration": "无配置",

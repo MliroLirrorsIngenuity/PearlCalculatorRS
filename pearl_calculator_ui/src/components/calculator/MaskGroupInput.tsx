@@ -42,7 +42,7 @@ export function MaskGroupInput({
 				value={mask.direction || undefined}
 				onValueChange={onDirectionChange}
 			>
-				<SelectTrigger className="w-[88px] h-7 text-xs px-2 rounded-xl">
+				<SelectTrigger className="w-[72px] h-7 text-xs px-2 rounded-xl">
 					<SelectValue placeholder={t("calculator.direction_label")} />
 				</SelectTrigger>
 				<SelectContent>

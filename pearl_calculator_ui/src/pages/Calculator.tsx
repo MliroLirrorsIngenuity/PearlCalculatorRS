@@ -16,6 +16,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useCalculatorState } from "@/context/CalculatorStateContext";
 import { useConfig } from "@/context/ConfigContext";
 import { useConfigurationState } from "@/context/ConfigurationStateContext";
+import { useMobileView } from "@/context/MobileViewContext";
 import { useTNTCalculator } from "@/hooks/use-calculator";
 import { usePearlTrace } from "@/hooks/use-pearl-trace";
 import { useToastNotifications } from "@/hooks/use-toast-notifications";
@@ -23,7 +24,7 @@ import { loadConfiguration } from "@/lib/config-service";
 import { decodeConfig } from "@/lib/config-codec";
 import type { CalculatorInputs } from "@/types/domain";
 
-export default function Calculator() {
+function CalculatorContent() {
 	const {
 		hasConfig,
 		setHasConfig,
@@ -63,6 +64,7 @@ export default function Calculator() {
 	const { calculatePearlTrace } = usePearlTrace();
 	const { showSuccess, showError } = useToastNotifications();
 	const { calculationMode, setCalculationMode } = useConfigurationState();
+	const { isMobile, mobileView, showResults } = useMobileView();
 
 	useEffect(() => {
 		isFirstRender.current = false;
@@ -177,6 +179,9 @@ export default function Calculator() {
 			showSuccess(
 				t("calculator.toast_found_configs", { count: result.data.length }),
 			);
+			if (isMobile) {
+				showResults();
+			}
 		} else {
 			showError(t("error.calculator.calc_failed"), result.error);
 		}
@@ -286,82 +291,182 @@ export default function Calculator() {
 							)}
 						</AnimatePresence>
 
-						<CardContent className="flex h-full w-full p-0">
-							<div className="h-full w-[46.7%] pt-2 px-6 pb-2 flex flex-col isolate">
-								<Tabs
-									defaultValue="general"
-									className="flex-1 flex flex-col min-h-0"
-								>
-									<TabsList className="grid w-full grid-cols-3">
-										<TabsTrigger value="general">
-											{t("calculator.tab_general")}
-										</TabsTrigger>
-										<TabsTrigger value="config">
-											{t("calculator.tab_configuration")}
-										</TabsTrigger>
-										<TabsTrigger value="advanced">
-											{t("calculator.tab_advanced")}
-										</TabsTrigger>
-									</TabsList>
+						<CardContent className="flex h-full w-full p-0 relative">
+							{!isMobile && (
+								<>
+									<div className="h-full w-[46.7%] pt-2 px-6 pb-2 flex flex-col isolate">
+										<Tabs
+											defaultValue="general"
+											className="flex-1 flex flex-col min-h-0"
+										>
+											<TabsList className="grid w-full grid-cols-3">
+												<TabsTrigger value="general">
+													{t("calculator.tab_general")}
+												</TabsTrigger>
+												<TabsTrigger value="config">
+													{t("calculator.tab_configuration")}
+												</TabsTrigger>
+												<TabsTrigger value="advanced">
+													{t("calculator.tab_advanced")}
+												</TabsTrigger>
+											</TabsList>
 
-									<TabsContent
-										value="general"
-										className="flex-1 overflow-hidden min-h-0"
-									>
-										<TNTCalculationForm
-											inputs={inputs}
-											onInputChange={updateInput}
+											<TabsContent
+												value="general"
+												className="flex-1 overflow-hidden min-h-0"
+											>
+												<TNTCalculationForm
+													inputs={inputs}
+													onInputChange={updateInput}
+												/>
+											</TabsContent>
+
+											<TabsContent
+												value="config"
+												className="flex-1 overflow-hidden min-h-0"
+											>
+												<ConfigurationDataForm
+													config={configData}
+													cannonYDisplay={inputs.cannonY}
+													onConfigChange={setConfigData}
+													onCannonYChange={(v) => updateInput("cannonY", v)}
+												/>
+											</TabsContent>
+
+											<TabsContent
+												value="advanced"
+												className="flex-1 overflow-hidden min-h-0"
+											>
+												<AdvancedSettingsForm
+													inputs={inputs}
+													onInputChange={updateInput}
+												/>
+											</TabsContent>
+										</Tabs>
+
+										<Button
+											className="w-full mt-2"
+											onClick={handleRunCalculation}
+											disabled={isCalculating}
+										>
+											{isCalculating ? (
+												<SpinnerCircle1 />
+											) : (
+												t("calculator.calculate_btn")
+											)}
+										</Button>
+									</div>
+									<div className="h-full w-[53.2%]">
+										<RightPanel
+											results={calculationResults}
+											tickRange={inputs.tickRange}
+											distanceRange={inputs.distanceRange}
+											onTrace={handlePearlTrace}
 										/>
-									</TabsContent>
+									</div>
+								</>
+							)}
 
-									<TabsContent
-										value="config"
-										className="flex-1 overflow-hidden min-h-0"
-									>
-										<ConfigurationDataForm
-											config={configData}
-											cannonYDisplay={inputs.cannonY}
-											onConfigChange={setConfigData}
-											onCannonYChange={(v) => updateInput("cannonY", v)}
-										/>
-									</TabsContent>
+							{isMobile && (
+								<AnimatePresence mode="wait">
+									{mobileView === "input" && (
+										<motion.div
+											key="mobile-input"
+											initial={{ opacity: 0, x: -20 }}
+											animate={{ opacity: 1, x: 0 }}
+											exit={{ opacity: 0, x: -20 }}
+											transition={{ duration: 0.025, ease: "easeOut" }}
+											className="h-full w-full pt-2 px-6 pb-2 flex flex-col isolate absolute inset-0"
+										>
+											<Tabs
+												defaultValue="general"
+												className="flex-1 flex flex-col min-h-0"
+											>
+												<TabsList className="grid w-full grid-cols-3">
+													<TabsTrigger value="general">
+														{t("calculator.tab_general")}
+													</TabsTrigger>
+													<TabsTrigger value="config">
+														{t("calculator.tab_configuration")}
+													</TabsTrigger>
+													<TabsTrigger value="advanced">
+														{t("calculator.tab_advanced")}
+													</TabsTrigger>
+												</TabsList>
 
-									<TabsContent
-										value="advanced"
-										className="flex-1 overflow-hidden min-h-0"
-									>
-										<AdvancedSettingsForm
-											inputs={inputs}
-											onInputChange={updateInput}
-										/>
-									</TabsContent>
-								</Tabs>
+												<TabsContent
+													value="general"
+													className="flex-1 overflow-hidden min-h-0"
+												>
+													<TNTCalculationForm
+														inputs={inputs}
+														onInputChange={updateInput}
+													/>
+												</TabsContent>
 
-								<Button
-									className="w-full mt-2"
-									onClick={handleRunCalculation}
-									disabled={isCalculating}
-								>
-									{isCalculating ? (
-										<SpinnerCircle1 />
-									) : (
-										t("calculator.calculate_btn")
+												<TabsContent
+													value="config"
+													className="flex-1 overflow-hidden min-h-0"
+												>
+													<ConfigurationDataForm
+														config={configData}
+														cannonYDisplay={inputs.cannonY}
+														onConfigChange={setConfigData}
+														onCannonYChange={(v) => updateInput("cannonY", v)}
+													/>
+												</TabsContent>
+
+												<TabsContent
+													value="advanced"
+													className="flex-1 overflow-hidden min-h-0"
+												>
+													<AdvancedSettingsForm
+														inputs={inputs}
+														onInputChange={updateInput}
+													/>
+												</TabsContent>
+											</Tabs>
+
+											<Button
+												className="w-full mt-2"
+												onClick={handleRunCalculation}
+												disabled={isCalculating}
+											>
+												{isCalculating ? (
+													<SpinnerCircle1 />
+												) : (
+													t("calculator.calculate_btn")
+												)}
+											</Button>
+										</motion.div>
 									)}
-								</Button>
-							</div>
-
-							<div className="h-full w-[53.2%]">
-								<RightPanel
-									results={calculationResults}
-									tickRange={inputs.tickRange}
-									distanceRange={inputs.distanceRange}
-									onTrace={handlePearlTrace}
-								/>
-							</div>
+									{mobileView === "results" && (
+										<motion.div
+											key="mobile-results"
+											initial={{ opacity: 0, x: 20 }}
+											animate={{ opacity: 1, x: 0 }}
+											exit={{ opacity: 0, x: 20 }}
+											transition={{ duration: 0.2, ease: "easeOut" }}
+											className="h-full w-full absolute inset-0"
+										>
+											<RightPanel
+												results={calculationResults}
+												tickRange={inputs.tickRange}
+												distanceRange={inputs.distanceRange}
+												onTrace={handlePearlTrace}
+											/>
+										</motion.div>
+									)}
+								</AnimatePresence>
+							)}
 						</CardContent>
 					</Card>
 				</motion.div>
 			</AnimatePresence>
 		</div>
 	);
+}
+
+export default function Calculator() {
+	return <CalculatorContent />;
 }
