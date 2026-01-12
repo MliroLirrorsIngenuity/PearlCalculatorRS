@@ -154,6 +154,12 @@ jobs:
           git diff --staged --quiet || git commit -m "chore: Bump version to $VERSION"
           git push origin HEAD:main
 
+      # ===== Android-specific init (before icon restore) =====
+      - name: Initialize Android Project
+        if: matrix.target == 'android'
+        working-directory: pearl_calculator_ui
+        run: pnpm tauri android init
+
       - name: Restore Icon
         working-directory: pearl_calculator_ui
         shell: bash
@@ -173,10 +179,6 @@ jobs:
           fi
 
       # ===== Android-specific build =====
-      - name: Initialize Android Project
-        if: matrix.target == 'android'
-        working-directory: pearl_calculator_ui
-        run: pnpm tauri android init
 
       - name: Setup Android Signing
         if: matrix.target == 'android'
