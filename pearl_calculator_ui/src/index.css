@@ -136,11 +136,6 @@
         @apply bg-background text-foreground;
         user-select: none;
         -webkit-user-select: none;
-        /* 支持安全区域（刘海屏、打孔屏等） */
-        padding-top: var(--safe-area-inset-top);
-        padding-left: var(--safe-area-inset-left);
-        padding-right: var(--safe-area-inset-right);
-        padding-bottom: var(--safe-area-inset-bottom);
         /* 动态视口高度 */
         min-height: 100dvh;
         height: 100%;
