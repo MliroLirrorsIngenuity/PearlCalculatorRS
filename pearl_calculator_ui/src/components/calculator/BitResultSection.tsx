@@ -94,9 +94,8 @@ export function BitResultSection({
 			)}
 
 			<div
-				className={`flex flex-col justify-center items-center w-full gap-4 pt-2 pb-4 transition-opacity duration-200 ${
-					disabled ? "opacity-50 pointer-events-none grayscale" : ""
-				}`}
+				className={`flex flex-col justify-center items-center w-full gap-4 pt-2 pb-4 transition-opacity duration-200 ${disabled ? "opacity-50 pointer-events-none grayscale" : ""
+					}`}
 			>
 				{useHorizontalLayout ? (
 					<div className="flex justify-center items-center gap-2 w-full">
@@ -119,7 +118,7 @@ export function BitResultSection({
 						{direction && (
 							<DirectionDisplay
 								direction={direction}
-								label={t("calculator.direction_label")}
+								label={t("calculator.direction_label_full")}
 							/>
 						)}
 						<div className="space-y-2 w-full">

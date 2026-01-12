@@ -113,6 +113,7 @@
 			"bit_calc_btn": "Bit计算",
 			"bit_calculate_btn": "开始计算",
 			"direction_label": "方向",
+			"direction_label_full": "方向",
 			"side_mode": "位数",
 			"import_code_btn": "导入代码",
 			"toast_code_imported": "已从代码导入配置",

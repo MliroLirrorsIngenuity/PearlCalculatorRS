@@ -113,6 +113,7 @@
 			"bit_calc_btn": "Bit Calculation",
 			"bit_calculate_btn": "Calculate",
 			"direction_label": "DIR.",
+			"direction_label_full": "Direction",
 			"side_mode": "Side Mode",
 			"import_code_btn": "Import Code",
 			"toast_code_imported": "Configuration imported from code",
