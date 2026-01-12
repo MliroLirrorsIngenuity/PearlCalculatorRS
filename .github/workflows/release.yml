@@ -226,7 +226,7 @@ jobs:
       - name: Build Android APK
         if: matrix.target == 'android'
         working-directory: pearl_calculator_ui
-        run: pnpm tauri android build --apk
+        run: pnpm tauri android build --apk true
 
       # ===== Desktop build =====
       - name: Build Desktop
