@@ -3,6 +3,14 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Safe area for notch, punchHole, rounded corners(四角切割) */
+:root {
+    --safe-area-inset-top: env(safe-area-inset-top, 0px);
+    --safe-area-inset-right: env(safe-area-inset-right, 0px);
+    --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+    --safe-area-inset-left: env(safe-area-inset-left, 0px);
+}
+
 @theme inline {
     --radius-sm: calc(var(--radius) - 4px);
     --radius-md: calc(var(--radius) - 2px);
@@ -123,6 +131,15 @@
         @apply bg-background text-foreground;
         user-select: none;
         -webkit-user-select: none;
+        /* 支持安全区域（刘海屏、打孔屏等） */
+        padding-top: var(--safe-area-inset-top);
+        padding-left: var(--safe-area-inset-left);
+        padding-right: var(--safe-area-inset-right);
+        padding-bottom: var(--safe-area-inset-bottom);
+        /* 动态视口高度，避免导航栏遮挡 */
+        min-height: 100dvh;
+        /* 防止 iOS 橡皮筋滚动 */
+        overscroll-behavior: none;
     }
 
     input,

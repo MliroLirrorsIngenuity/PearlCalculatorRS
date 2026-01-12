@@ -29,12 +29,19 @@ export function MobileViewProvider({ children }: { children: ReactNode }) {
 
 	useEffect(() => {
 		const checkMobile = () => {
-			setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
+			// check is touch device or small screeen
+			const isTouchDevice = window.matchMedia("(hover: none) and (pointer: coarse)").matches;
+			const isSmallScreen = window.innerWidth < MOBILE_BREAKPOINT;
+			setIsMobile(isTouchDevice || isSmallScreen);
 		};
 
 		checkMobile();
 		window.addEventListener("resize", checkMobile);
-		return () => window.removeEventListener("resize", checkMobile);
+		window.addEventListener("orientationchange", checkMobile);
+		return () => {
+			window.removeEventListener("resize", checkMobile);
+			window.removeEventListener("orientationchange", checkMobile);
+		};
 	}, []);
 
 	useEffect(() => {
