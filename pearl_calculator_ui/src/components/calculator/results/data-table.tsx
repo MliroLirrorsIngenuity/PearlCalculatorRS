@@ -66,7 +66,7 @@ const DataTableRow = React.memo(
 				}}
 			>
 				{row.getVisibleCells().map((cell) => (
-					<TableCell key={cell.id} className="py-1">
+					<TableCell key={cell.id} className="py-1 overflow-hidden">
 						{flexRender(cell.column.columnDef.cell, cell.getContext())}
 					</TableCell>
 				))}
