@@ -126,16 +126,36 @@
         cursor: default;
     }
 
+    /* 防止 body 在弹窗/菜单打开时滚动到顶部 */
+    html {
+        overflow: hidden;
+        height: 100%;
+    }
+
     body {
         @apply bg-background text-foreground;
         user-select: none;
         -webkit-user-select: none;
+        /* 支持安全区域（刘海屏、打孔屏等） */
         padding-top: var(--safe-area-inset-top);
         padding-left: var(--safe-area-inset-left);
         padding-right: var(--safe-area-inset-right);
         padding-bottom: var(--safe-area-inset-bottom);
+        /* 动态视口高度，避免导航栏遮挡 */
         min-height: 100dvh;
+        height: 100%;
+        overflow: hidden;
+        /* 防止 iOS 橡皮筋滚动 */
         overscroll-behavior: none;
+        /* 确保 position: fixed 元素正常工作 */
+        position: fixed;
+        width: 100%;
+    }
+
+    /* 应用根容器需要可滚动 */
+    #root {
+        height: 100%;
+        overflow: auto;
     }
 
     input,
