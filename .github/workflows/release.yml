@@ -154,6 +154,12 @@ jobs:
           git diff --staged --quiet || git commit -m "chore: Bump version to $VERSION"
           git push origin HEAD:main
 
+      # ===== Android-specific init (before icon restore) =====
+      - name: Initialize Android Project
+        if: matrix.target == 'android'
+        working-directory: pearl_calculator_ui
+        run: pnpm tauri android init
+
       - name: Restore Icon
         working-directory: pearl_calculator_ui
         shell: bash
@@ -173,10 +179,6 @@ jobs:
           fi
 
       # ===== Android-specific build =====
-      - name: Initialize Android Project
-        if: matrix.target == 'android'
-        working-directory: pearl_calculator_ui
-        run: pnpm tauri android init
 
       - name: Setup Android Signing
         if: matrix.target == 'android'
@@ -202,31 +204,40 @@ jobs:
         run: |
           BUILD_GRADLE="app/build.gradle.kts"
           
-          sed -i '1i import java.io.FileInputStream' "$BUILD_GRADLE"
-          sed -i '2i import java.util.Properties' "$BUILD_GRADLE"
+          if ! grep -q "import java.io.FileInputStream" "$BUILD_GRADLE"; then
+            sed -i '1i import java.io.FileInputStream' "$BUILD_GRADLE"
+          fi
           
-          sed -i '/^[[:space:]]*buildTypes[[:space:]]*{/i \
-              signingConfigs {\
-                  create("release") {\
-                      val keystorePropertiesFile = rootProject.file("keystore.properties")\
-                      val keystoreProperties = Properties()\
-                      if (keystorePropertiesFile.exists()) {\
-                          keystoreProperties.load(FileInputStream(keystorePropertiesFile))\
-                      }\
-                      keyAlias = keystoreProperties["keyAlias"] as String?\
-                      keyPassword = keystoreProperties["password"] as String?\
-                      storeFile = keystoreProperties["storeFile"]?.let { file(it as String) }\
-                      storePassword = keystoreProperties["password"] as String?\
-                  }\
-              }\
-          ' "$BUILD_GRADLE"
-          
-          sed -i '/getByName("release")/a \            signingConfig = signingConfigs.getByName("release")' "$BUILD_GRADLE"
+          if ! grep -q "import java.util.Properties" "$BUILD_GRADLE"; then
+            sed -i '1i import java.util.Properties' "$BUILD_GRADLE"
+          fi
+
+          if ! grep -q "signingConfigs {" "$BUILD_GRADLE"; then
+            sed -i '/^[[:space:]]*buildTypes[[:space:]]*{/i \
+                signingConfigs {\
+                    create("release") {\
+                        val keystorePropertiesFile = rootProject.file("keystore.properties")\
+                        val keystoreProperties = Properties()\
+                        if (keystorePropertiesFile.exists()) {\
+                            keystoreProperties.load(FileInputStream(keystorePropertiesFile))\
+                        }\
+                        keyAlias = keystoreProperties["keyAlias"] as String?\
+                        keyPassword = keystoreProperties["password"] as String?\
+                        storeFile = keystoreProperties["storeFile"]?.let { file(it as String) }\
+                        storePassword = keystoreProperties["password"] as String?\
+                    }\
+                }\
+            ' "$BUILD_GRADLE"
+          fi
+
+          if ! grep -q "signingConfig = signingConfigs.getByName" "$BUILD_GRADLE"; then
+            sed -i '/getByName("release")/a \            signingConfig = signingConfigs.getByName("release")' "$BUILD_GRADLE"
+          fi
 
       - name: Build Android APK
         if: matrix.target == 'android'
         working-directory: pearl_calculator_ui
-        run: pnpm tauri android build --apk
+        run: pnpm tauri android build --apk true
 
       # ===== Desktop build =====
       - name: Build Desktop
