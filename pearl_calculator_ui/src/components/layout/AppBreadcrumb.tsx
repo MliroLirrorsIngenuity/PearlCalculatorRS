@@ -1,5 +1,11 @@
 import { match, P } from "ts-pattern";
-import { ArrowLeftRight, ChevronLeft, ChevronsRight, Menu } from "lucide-react";
+import {
+	ArrowLeftRight,
+	ChevronLeft,
+	ChevronsRight,
+	Ellipsis,
+	Menu,
+} from "lucide-react";
 import { Fragment } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -73,43 +79,90 @@ export function AppBreadcrumb() {
 				</Button>
 				<Breadcrumb>
 					<BreadcrumbList>
-						{items.map((item, index) => (
-							<Fragment key={index}>
-								{index > 0 && (
-									<BreadcrumbSeparator>
-										<ChevronsRight />
-									</BreadcrumbSeparator>
-								)}
-								<BreadcrumbItem>
-									{item.active ? (
-										<BreadcrumbPage>
-											<Badge className="shadow-none rounded-full">
-												{item.label}
-											</Badge>
-										</BreadcrumbPage>
-									) : (
-										<BreadcrumbLink
-											className={
-												item.onClick ? "cursor-pointer" : "cursor-default"
-											}
-											onClick={(e) => {
-												if (item.onClick) {
-													e.preventDefault();
-													item.onClick();
-												}
-											}}
-										>
-											<Badge
-												variant="outline"
-												className="font-medium shadow-none rounded-full"
-											>
-												{item.label}
-											</Badge>
-										</BreadcrumbLink>
+						{(() => {
+							const shouldCollapse = isMobile && items.length > 2;
+							const visibleItems = shouldCollapse
+								? [items[items.length - 1]]
+								: items;
+							const collapsedItems = shouldCollapse ? items.slice(0, -1) : [];
+
+							return (
+								<>
+									{shouldCollapse && collapsedItems.length > 0 && (
+										<>
+											<BreadcrumbItem>
+												<DropdownMenu>
+													<DropdownMenuTrigger asChild>
+														<Button
+															variant="ghost"
+															size="sm"
+															className="h-6 w-6 p-0"
+														>
+															<Ellipsis className="h-4 w-4" />
+														</Button>
+													</DropdownMenuTrigger>
+													<DropdownMenuContent align="start">
+														{collapsedItems.map((item, idx) => (
+															<DropdownMenuItem
+																key={idx}
+																onClick={() => item.onClick?.()}
+																className={
+																	item.onClick
+																		? "cursor-pointer"
+																		: "cursor-default"
+																}
+															>
+																{item.label}
+															</DropdownMenuItem>
+														))}
+													</DropdownMenuContent>
+												</DropdownMenu>
+											</BreadcrumbItem>
+											<BreadcrumbSeparator>
+												<ChevronsRight />
+											</BreadcrumbSeparator>
+										</>
 									)}
-								</BreadcrumbItem>
-							</Fragment>
-						))}
+									{visibleItems.map((item, index) => (
+										<Fragment key={shouldCollapse ? "last" : index}>
+											{!shouldCollapse && index > 0 && (
+												<BreadcrumbSeparator>
+													<ChevronsRight />
+												</BreadcrumbSeparator>
+											)}
+											<BreadcrumbItem>
+												{item.active ? (
+													<BreadcrumbPage>
+														<Badge className="shadow-none rounded-full">
+															{item.label}
+														</Badge>
+													</BreadcrumbPage>
+												) : (
+													<BreadcrumbLink
+														className={
+															item.onClick ? "cursor-pointer" : "cursor-default"
+														}
+														onClick={(e) => {
+															if (item.onClick) {
+																e.preventDefault();
+																item.onClick();
+															}
+														}}
+													>
+														<Badge
+															variant="outline"
+															className="font-medium shadow-none rounded-full"
+														>
+															{item.label}
+														</Badge>
+													</BreadcrumbLink>
+												)}
+											</BreadcrumbItem>
+										</Fragment>
+									))}
+								</>
+							);
+						})()}
 					</BreadcrumbList>
 				</Breadcrumb>
 			</div>
