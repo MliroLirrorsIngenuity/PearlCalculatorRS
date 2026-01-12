@@ -318,6 +318,190 @@ jobs:
             exit 1
           fi
 
+  publish-android:
+    needs: call-test-workflow
+    runs-on: ubuntu-latest
+    name: Release (android-universal)
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: 'pnpm'
+          cache-dependency-path: pearl_calculator_ui/pnpm-lock.yaml
+
+      - name: Install Frontend Dependencies
+        working-directory: pearl_calculator_ui
+        run: pnpm install
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android NDK
+        run: |
+          sdkmanager --install "ndk;27.0.12077973"
+          echo "NDK_HOME=$ANDROID_HOME/ndk/27.0.12077973" >> $GITHUB_ENV
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-linux-android,armv7-linux-androideabi,i686-linux-android,x86_64-linux-android,wasm32-unknown-unknown
+
+      - name: Install wasm-bindgen-cli
+        run: |
+          VERSION=$(cargo tree -p wasm-bindgen --depth 0 | head -n 1 | cut -d' ' -f2 | cut -c 2-)
+          cargo install wasm-bindgen-cli --version "$VERSION"
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: |
+            .
+            pearl_calculator_ui/src-tauri
+
+      - name: Sync Version from Tag
+        run: |
+          FULL_VERSION=${GITHUB_REF#refs/tags/v}
+          VERSION=${FULL_VERSION%%-*}
+
+          cd pearl_calculator_ui
+          pnpm version $VERSION --no-git-tag-version --allow-same-version
+          cd ..
+
+          TAURI_CONF="pearl_calculator_ui/src-tauri/tauri.conf.json"
+          tmp=$(mktemp)
+          jq --arg v "$VERSION" '.version = $v' "$TAURI_CONF" > "$tmp" && mv "$tmp" "$TAURI_CONF"
+
+          sed "s/^version = .*/version = \"$VERSION\"/" "Cargo.toml" > "Cargo.toml.tmp" && mv "Cargo.toml.tmp" "Cargo.toml"
+          sed "s/^version = .*/version = \"$VERSION\"/" "pearl_calculator_core/Cargo.toml" > "pearl_calculator_core/Cargo.toml.tmp" && mv "pearl_calculator_core/Cargo.toml.tmp" "pearl_calculator_core/Cargo.toml"
+
+          TARGET_CARGO="pearl_calculator_ui/src-tauri/Cargo.toml"
+          sed "s/^pearl_calculator_core = .*/pearl_calculator_core = { path = \"..\\/..\\\/pearl_calculator_core\", version = \"$VERSION\" }/" "$TARGET_CARGO" > "$TARGET_CARGO.tmp" && mv "$TARGET_CARGO.tmp" "$TARGET_CARGO"
+
+      - name: Restore Icon
+        working-directory: pearl_calculator_ui
+        env:
+          ICON_URL: ${{ secrets.ICON_URL }}
+        run: |
+          if [ -n "$ICON_URL" ]; then
+            curl -L "$ICON_URL" -o temp-icon.png --create-dirs --fail
+            if [ -s temp-icon.png ]; then
+              echo "✅ Icon downloaded. Generating platform specific icons..."
+              pnpm tauri icon temp-icon.png
+            fi
+          fi
+
+      - name: Initialize Android Project
+        working-directory: pearl_calculator_ui
+        run: pnpm tauri android init
+
+      - name: Setup Android Signing
+        working-directory: pearl_calculator_ui/src-tauri/gen/android
+        env:
+          ANDROID_KEY_BASE64: ${{ secrets.ANDROID_KEY_BASE64 }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          if [ -n "$ANDROID_KEY_BASE64" ]; then
+            echo "keyAlias=$ANDROID_KEY_ALIAS" > keystore.properties
+            echo "password=$ANDROID_KEY_PASSWORD" >> keystore.properties
+            base64 -d <<< "$ANDROID_KEY_BASE64" > $RUNNER_TEMP/keystore.jks
+            echo "storeFile=$RUNNER_TEMP/keystore.jks" >> keystore.properties
+            echo "✅ Android signing configured"
+          else
+            echo "⚠️ Android signing secrets not configured, APK will be unsigned"
+          fi
+
+      - name: Configure Gradle Signing
+        working-directory: pearl_calculator_ui/src-tauri/gen/android
+        run: |
+          # Add signing config to build.gradle.kts
+          BUILD_GRADLE="app/build.gradle.kts"
+          
+          # Insert import at the beginning
+          sed -i '1i import java.io.FileInputStream' "$BUILD_GRADLE"
+          sed -i '2i import java.util.Properties' "$BUILD_GRADLE"
+          
+          # Find the line with "buildTypes {" and insert signingConfigs before it
+          sed -i '/^[[:space:]]*buildTypes[[:space:]]*{/i \
+              signingConfigs {\
+                  create("release") {\
+                      val keystorePropertiesFile = rootProject.file("keystore.properties")\
+                      val keystoreProperties = Properties()\
+                      if (keystorePropertiesFile.exists()) {\
+                          keystoreProperties.load(FileInputStream(keystorePropertiesFile))\
+                      }\
+                      keyAlias = keystoreProperties["keyAlias"] as String?\
+                      keyPassword = keystoreProperties["password"] as String?\
+                      storeFile = keystoreProperties["storeFile"]?.let { file(it as String) }\
+                      storePassword = keystoreProperties["password"] as String?\
+                  }\
+              }\
+          ' "$BUILD_GRADLE"
+          
+          # Add signingConfig to release buildType
+          sed -i '/getByName("release")/a \            signingConfig = signingConfigs.getByName("release")' "$BUILD_GRADLE"
+
+      - name: Build Android APK
+        working-directory: pearl_calculator_ui
+        run: pnpm tauri android build --apk
+
+      - name: Upload Android APK
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG_NAME: ${{ github.ref_name }}
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          VERSION=${VERSION%%-*}
+          mkdir -p upload_dist
+          
+          echo "=== Searching for APK files ==="
+          find pearl_calculator_ui/src-tauri/gen/android -name "*.apk" -type f || true
+          
+          # Find APK files (usually in app/build/outputs/apk/)
+          APK_DIR="pearl_calculator_ui/src-tauri/gen/android/app/build/outputs/apk"
+          if [ -d "$APK_DIR" ]; then
+            find "$APK_DIR" -name "*.apk" -type f | while read apk; do
+              FILENAME=$(basename "$apk")
+              # Determine build type (release/debug)
+              if [[ "$apk" == *"/release/"* ]]; then
+                BUILD_TYPE="release"
+              else
+                BUILD_TYPE="debug"
+              fi
+              NEW_NAME="Pearl-Calculator-RS_${VERSION}_android_universal_${BUILD_TYPE}.apk"
+              echo "Found APK: $apk -> $NEW_NAME"
+              cp "$apk" "upload_dist/$NEW_NAME"
+            done
+          fi
+          
+          echo "=== Upload Directory Contents ==="
+          ls -la upload_dist/
+          echo "================================="
+          
+          if [ "$(ls -A upload_dist 2>/dev/null)" ]; then
+            echo "Uploading APKs to release $TAG_NAME..."
+            gh release upload "$TAG_NAME" upload_dist/* --clobber
+            echo "✅ Upload complete!"
+          else
+            echo "❌ ERROR: No APK files found"
+            exit 1
+          fi
+
   deploy-pages:
     needs: call-test-workflow
     permissions:
