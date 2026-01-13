@@ -11,7 +11,15 @@ import tauriConf from "../../../src-tauri/tauri.conf.json";
 
 export function AppInfo({ className }: { className?: string }) {
 	return (
-		<div className={className}>
+		<div
+			className={className}
+			style={{
+				paddingTop: "env(safe-area-inset-top)",
+				paddingBottom: "env(safe-area-inset-bottom)",
+				paddingLeft: "env(safe-area-inset-left)",
+				paddingRight: "env(safe-area-inset-right)",
+			}}
+		>
 			<HoverCard openDelay={0} closeDelay={0}>
 				<HoverCardTrigger asChild>
 					<Button
