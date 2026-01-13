@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -5,11 +6,32 @@ import {
 	HoverCardContent,
 	HoverCardTrigger,
 } from "@/components/ui/hover-card";
+import { useMobileViewOptional } from "@/context/MobileViewContext";
 import { BadgeInfo, Github } from "lucide-react";
 import pkg from "../../../package.json";
 import tauriConf from "../../../src-tauri/tauri.conf.json";
 
 export function AppInfo({ className }: { className?: string }) {
+	const mobileViewContext = useMobileViewOptional();
+	const isMobile = mobileViewContext?.isMobile ?? false;
+	const [isOpen, setIsOpen] = useState(false);
+
+	const hoverCardProps = isMobile
+		? {
+			open: isOpen,
+			onOpenChange: () => { },
+		}
+		: {
+			openDelay: 0,
+			closeDelay: 0,
+		};
+
+	const handleContentInteractOutside = () => {
+		if (isMobile) {
+			setIsOpen(false);
+		}
+	};
+
 	return (
 		<div
 			className={className}
@@ -20,12 +42,18 @@ export function AppInfo({ className }: { className?: string }) {
 				paddingRight: "env(safe-area-inset-right)",
 			}}
 		>
-			<HoverCard openDelay={0} closeDelay={0}>
+			<HoverCard {...hoverCardProps}>
 				<HoverCardTrigger asChild>
 					<Button
 						variant="ghost"
 						size="icon"
 						className="h-4 w-4 rounded-full text-muted-foreground hover:text-foreground"
+						style={{ touchAction: "manipulation" }}
+						onPointerDown={() => {
+							if (isMobile) {
+								setIsOpen((prev) => !prev);
+							}
+						}}
 					>
 						<BadgeInfo className="h-3.5 w-3.5" />
 					</Button>
@@ -33,10 +61,12 @@ export function AppInfo({ className }: { className?: string }) {
 				<HoverCardContent
 					className="w-80 p-4 pb-2 rounded-xl select-none"
 					align="start"
-					side="right"
+					side={isMobile ? "bottom" : "right"}
+					collisionPadding={16}
+					onInteractOutside={handleContentInteractOutside}
 					style={{
 						marginTop: "env(safe-area-inset-top)",
-						marginLeft: "env(safe-area-inset-left)",
+						marginLeft: isMobile ? undefined : "env(safe-area-inset-left)",
 					}}
 				>
 					<div className="flex flex-col gap-3">
