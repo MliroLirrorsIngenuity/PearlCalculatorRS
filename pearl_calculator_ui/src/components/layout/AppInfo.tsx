@@ -34,6 +34,10 @@ export function AppInfo({ className }: { className?: string }) {
 					className="w-80 p-4 pb-2 rounded-xl select-none"
 					align="start"
 					side="right"
+					style={{
+						marginTop: "env(safe-area-inset-top)",
+						marginLeft: "env(safe-area-inset-left)",
+					}}
 				>
 					<div className="flex flex-col gap-3">
 						<div className="flex items-center justify-between">
