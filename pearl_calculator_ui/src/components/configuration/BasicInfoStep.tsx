@@ -29,7 +29,7 @@ export function BasicInfoStep({ errors, onForceNext }: BasicInfoStepProps) {
 	const { t } = useTranslation();
 
 	return (
-		<div className="min-h-full flex items-center justify-center p-4">
+		<div className="flex-1 flex items-center justify-center p-4">
 			<Card className="w-full max-w-[450px]">
 				<CardHeader>
 					<CardTitle>{t("configuration_page.basic_info_title")}</CardTitle>

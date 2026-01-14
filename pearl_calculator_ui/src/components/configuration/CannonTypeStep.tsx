@@ -45,7 +45,7 @@ export function CannonTypeStep() {
 	const { t } = useTranslation();
 
 	return (
-		<div className="min-h-full flex items-center justify-center px-4 pb-4 pt-15">
+		<div className="flex-1 flex items-center justify-center px-4 pb-4">
 			<Card className="w-full max-w-[500px]">
 				<CardHeader>
 					<CardTitle>{t("configuration_page.cannon_type_title")}</CardTitle>

@@ -25,7 +25,7 @@ export function BitConfigurationStep({ errors }: BitConfigurationStepProps) {
 	const hasMasksError = errors.bit_masks_incomplete;
 
 	return (
-		<div className="h-full min-h-[500px] flex flex-col items-center justify-center px-4 pb-4 gap-6">
+		<div className="flex-1 flex flex-col items-center justify-center px-4 pb-4 gap-6">
 			<div className="text-center space-y-1.5">
 				<h3 className="font-semibold leading-none tracking-tight">
 					{t("configuration_page.bit_config_title")}

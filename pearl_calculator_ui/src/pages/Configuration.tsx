@@ -12,6 +12,7 @@ import { AnimatePresence, motion } from "motion/react";
 import * as React from "react";
 import { useTranslation } from "react-i18next";
 import { OnboardingPanel } from "@/components/common/OnboardingPanel";
+import { CenteredScrollArea } from "@/components/common/CenteredScrollArea";
 import { BasicInfoStep } from "@/components/configuration/BasicInfoStep";
 import { BitConfigurationStep } from "@/components/configuration/BitConfigurationStep";
 import { CannonTypeStep } from "@/components/configuration/CannonTypeStep";
@@ -38,7 +39,6 @@ import {
 	CarouselItem,
 } from "@/components/ui/carousel";
 import { Progress } from "@/components/ui/progress";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { useConfigurationState } from "@/context/ConfigurationStateContext";
 import { useConfigurationController } from "@/hooks/use-configuration-controller";
 import { isTauri } from "@/services";
@@ -223,46 +223,46 @@ export default function Configuration() {
 					>
 						<CarouselContent className="h-full">
 							<CarouselItem className="h-full">
-								<ScrollArea className="h-full">
+								<CenteredScrollArea className="h-full">
 									<CannonTypeStep />
-								</ScrollArea>
+								</CenteredScrollArea>
 							</CarouselItem>
 							<CarouselItem className="h-full">
-								<ScrollArea className="h-full">
+								<CenteredScrollArea className="h-full">
 									<BasicInfoStep
 										errors={errors}
 										onForceNext={handleForceNext}
 									/>
-								</ScrollArea>
+								</CenteredScrollArea>
 							</CarouselItem>
 							<CarouselItem className="h-full">
-								<ScrollArea className="h-full" orientation="both">
+								<CenteredScrollArea className="h-full">
 									<TNTConfigurationStep errors={errors} />
-								</ScrollArea>
+								</CenteredScrollArea>
 							</CarouselItem>
 							{isVector3D && (
 								<CarouselItem className="h-full">
-									<ScrollArea className="h-full">
+									<CenteredScrollArea className="h-full">
 										<VerticalTNTStep errors={errors} />
-									</ScrollArea>
+									</CenteredScrollArea>
 								</CarouselItem>
 							)}
 							<CarouselItem className="h-full">
-								<ScrollArea className="h-full">
+								<CenteredScrollArea className="h-full">
 									<BitConfigurationStep errors={errors} />
-								</ScrollArea>
+								</CenteredScrollArea>
 							</CarouselItem>
 							{isAccumulation && (
 								<CarouselItem className="h-full">
-									<ScrollArea className="h-full">
+									<CenteredScrollArea className="h-full">
 										<MultiplierConfigurationStep errors={errors} />
-									</ScrollArea>
+									</CenteredScrollArea>
 								</CarouselItem>
 							)}
 							<CarouselItem className="h-full">
-								<ScrollArea className="h-full">
+								<CenteredScrollArea className="h-full">
 									<PreviewStep />
-								</ScrollArea>
+								</CenteredScrollArea>
 							</CarouselItem>
 						</CarouselContent>
 						<div className="relative flex items-center justify-between gap-2 mt-4 px-1">

@@ -19,7 +19,7 @@ export function PreviewStep() {
 	const { isMobile } = useMobileView();
 
 	return (
-		<div className="min-h-full flex items-center justify-center px-4 pb-4 pt-20">
+		<div className="flex-1 flex items-center justify-center px-4 pb-4">
 			<Card className="w-full max-w-[800px]">
 				<CardHeader>
 					<CardTitle>{t("configuration_page.preview_title")}</CardTitle>

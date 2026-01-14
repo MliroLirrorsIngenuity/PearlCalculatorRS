@@ -11,7 +11,7 @@ export function VerticalTNTStep({ errors }: VerticalTNTStepProps) {
 	const { t } = useTranslation();
 
 	return (
-		<div className="min-h-full flex flex-col items-center justify-center px-4 pb-4 pt-32 gap-8">
+		<div className="flex-1 flex flex-col items-center justify-center px-4 pb-4 gap-8">
 			<div className="text-center space-y-1.5 z-20">
 				<h3 className="font-semibold leading-none tracking-tight">
 					{t("configuration_page.vertical_tnt_config_title")}
