@@ -126,7 +126,6 @@
         cursor: default;
     }
 
-    /* 防止弹窗/菜单打开时页面滚动到顶部 */
     html {
         overflow: hidden;
         height: 100%;
@@ -136,12 +135,10 @@
         @apply bg-background text-foreground;
         user-select: none;
         -webkit-user-select: none;
-        /* 动态视口高度 */
         min-height: 100dvh;
         height: 100%;
         overflow: hidden;
         overscroll-behavior: none;
-        /* 固定 body 防止滚动跳转 */
         position: fixed;
         width: 100%;
     }
@@ -161,5 +158,48 @@
     button,
     [role="button"] {
         cursor: default;
+    }
+}
+
+@layer utilities {
+    .safe-area-inset-all {
+        padding-top: var(--safe-area-inset-top);
+        padding-right: var(--safe-area-inset-right);
+        padding-bottom: var(--safe-area-inset-bottom);
+        padding-left: var(--safe-area-inset-left);
+    }
+
+    .safe-area-inset-x {
+        padding-left: var(--safe-area-inset-left);
+        padding-right: var(--safe-area-inset-right);
+    }
+
+    .safe-area-inset-y {
+        padding-top: var(--safe-area-inset-top);
+        padding-bottom: var(--safe-area-inset-bottom);
+    }
+
+    .safe-area-pt {
+        padding-top: var(--safe-area-inset-top);
+    }
+
+    .safe-area-pr {
+        padding-right: var(--safe-area-inset-right);
+    }
+
+    .safe-area-pb {
+        padding-bottom: var(--safe-area-inset-bottom);
+    }
+
+    .safe-area-pl {
+        padding-left: var(--safe-area-inset-left);
+    }
+
+    .safe-area-mt {
+        margin-top: var(--safe-area-inset-top);
+    }
+
+    .safe-area-ml {
+        margin-left: var(--safe-area-inset-left);
     }
 }

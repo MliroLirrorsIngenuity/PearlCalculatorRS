@@ -7,6 +7,7 @@ import {
 	HoverCardTrigger,
 } from "@/components/ui/hover-card";
 import { useMobileViewOptional } from "@/context/MobileViewContext";
+import { cn } from "@/lib/utils";
 import { BadgeInfo, Github } from "lucide-react";
 import pkg from "../../../package.json";
 import tauriConf from "../../../src-tauri/tauri.conf.json";
@@ -33,15 +34,7 @@ export function AppInfo({ className }: { className?: string }) {
 	};
 
 	return (
-		<div
-			className={className}
-			style={{
-				paddingTop: "env(safe-area-inset-top)",
-				paddingBottom: "env(safe-area-inset-bottom)",
-				paddingLeft: "env(safe-area-inset-left)",
-				paddingRight: "env(safe-area-inset-right)",
-			}}
-		>
+		<div className={cn("safe-area-inset-all", className)}>
 			<HoverCard {...hoverCardProps}>
 				<HoverCardTrigger asChild>
 					<Button
@@ -59,15 +52,15 @@ export function AppInfo({ className }: { className?: string }) {
 					</Button>
 				</HoverCardTrigger>
 				<HoverCardContent
-					className="w-80 p-4 pb-2 rounded-xl select-none"
+					className={cn(
+						"w-80 p-4 pb-2 rounded-xl select-none",
+						"safe-area-mt",
+						!isMobile && "safe-area-ml",
+					)}
 					align="start"
 					side={isMobile ? "bottom" : "right"}
 					collisionPadding={16}
 					onInteractOutside={handleContentInteractOutside}
-					style={{
-						marginTop: "env(safe-area-inset-top)",
-						marginLeft: isMobile ? undefined : "env(safe-area-inset-left)",
-					}}
 				>
 					<div className="flex flex-col gap-3">
 						<div className="flex items-center justify-between">

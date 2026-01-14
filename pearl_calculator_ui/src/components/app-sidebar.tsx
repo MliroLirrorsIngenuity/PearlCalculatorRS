@@ -27,6 +27,7 @@ import {
 	SidebarMenu,
 	SidebarMenuButton,
 	SidebarMenuItem,
+	useSidebar,
 } from "@/components/ui/sidebar";
 import { useConfig } from "@/context/ConfigContext";
 import type { PearlVersion } from "@/types/domain";
@@ -61,6 +62,7 @@ export function AppSidebar() {
 	const location = useLocation();
 	const { t, i18n } = useTranslation();
 	const { version, setVersion } = useConfig();
+	const { isMobile } = useSidebar();
 	const [selectedLanguage, setSelectedLanguage] = useState(
 		languages.find((l) => i18n.language.startsWith(l.code)) || languages[0],
 	);
@@ -136,7 +138,7 @@ export function AppSidebar() {
 							<DropdownMenuContent
 								className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
 								align="start"
-								side="right"
+								side={isMobile ? "top" : "right"}
 								sideOffset={4}
 							>
 								<DropdownMenuLabel className="text-xs text-muted-foreground">
@@ -177,7 +179,7 @@ export function AppSidebar() {
 							<DropdownMenuContent
 								className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
 								align="start"
-								side="right"
+								side={isMobile ? "top" : "right"}
 								sideOffset={4}
 							>
 								<DropdownMenuLabel className="text-xs text-muted-foreground">
