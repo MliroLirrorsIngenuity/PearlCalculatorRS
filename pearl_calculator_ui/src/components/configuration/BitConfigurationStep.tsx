@@ -9,10 +9,15 @@ interface BitConfigurationStepProps {
 
 export function BitConfigurationStep({ errors }: BitConfigurationStepProps) {
 	const { t } = useTranslation();
-	const { bitTemplateState, setBitTemplateState } = useConfigurationState();
+	const {
+		bitTemplateState,
+		setBitTemplateState,
+		setIsBitConfigSkipped,
+	} = useConfigurationState();
 
 	const handleChange = (state: BitInputState) => {
 		setBitTemplateState(state);
+		setIsBitConfigSkipped(false);
 	};
 
 	const hasValuesError =

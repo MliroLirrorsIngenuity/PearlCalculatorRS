@@ -70,6 +70,8 @@ export default function Configuration() {
 		handleImportFromClipboard,
 		handleImportFromFile,
 		handleSkipBitConfiguration,
+		setIsBitConfigSkipped,
+		setIsMultiplierConfigSkipped,
 	} = useConfigurationController();
 
 	React.useEffect(() => {
@@ -101,6 +103,23 @@ export default function Configuration() {
 			setCurrent(api.selectedScrollSnap() + 1);
 		});
 	}, [api, shouldRestoreLastPage, setShouldRestoreLastPage]);
+
+	React.useEffect(() => {
+		const bitStepIndex = isVector3D ? 5 : 4;
+		if (current === bitStepIndex) {
+			setIsBitConfigSkipped(false);
+		}
+
+		if (isAccumulation && current === 5) {
+			setIsMultiplierConfigSkipped(false);
+		}
+	}, [
+		current,
+		isVector3D,
+		isAccumulation,
+		setIsBitConfigSkipped,
+		setIsMultiplierConfigSkipped,
+	]);
 
 	const progress = count > 0 ? (current / count) * 100 : 0;
 

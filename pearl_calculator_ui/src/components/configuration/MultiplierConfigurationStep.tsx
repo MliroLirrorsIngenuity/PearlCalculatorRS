@@ -11,10 +11,15 @@ export function MultiplierConfigurationStep({
 	errors,
 }: MultiplierConfigurationStepProps) {
 	const { t } = useTranslation();
-	const { multiplierBitState, setMultiplierBitState } = useConfigurationState();
+	const {
+		multiplierBitState,
+		setMultiplierBitState,
+		setIsMultiplierConfigSkipped,
+	} = useConfigurationState();
 
 	const handleChange = (state: MultiplierBitInputState) => {
 		setMultiplierBitState(state);
+		setIsMultiplierConfigSkipped(false);
 	};
 
 	const hasValuesError =
