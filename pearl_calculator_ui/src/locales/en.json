@@ -13,7 +13,12 @@
 			"mode": {
 				"Standard": "Standard (2D)",
 				"Accumulation": "Accumulation (Lazy Loaded)",
-				"Vector3D": "Vector (3D)"
+				"Vector3D": "Vector (3D)",
+				"short": {
+					"Standard": "Std (2D)",
+					"Accumulation": "Acc",
+					"Vector3D": "3D"
+				}
 			},
 			"select_config": "Select Config",
 			"calculator": "Calculator",

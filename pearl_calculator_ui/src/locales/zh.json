@@ -13,7 +13,12 @@
 			"mode": {
 				"Standard": "标准模式 (2D)",
 				"Accumulation": "堆叠模式 (弱加载)",
-				"Vector3D": "矢量模式 (3D)"
+				"Vector3D": "矢量模式 (3D)",
+				"short": {
+					"Standard": "标准",
+					"Accumulation": "堆叠",
+					"Vector3D": "矢量"
+				}
 			},
 			"select_config": "选择配置",
 			"calculator": "TNT 计算",

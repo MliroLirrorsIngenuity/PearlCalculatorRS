@@ -3,7 +3,6 @@ import {
 	ArrowLeftRight,
 	ChevronLeft,
 	ChevronsRight,
-	Ellipsis,
 	Menu,
 } from "lucide-react";
 import { Fragment } from "react";
@@ -48,7 +47,7 @@ export function AppBreadcrumb() {
 		match(prev)
 			.with({ onClick: P.nonNullable }, (item) => item.onClick())
 			.with({ href: P.string }, (item) => navigate(item.href))
-			.otherwise(() => {});
+			.otherwise(() => { });
 	};
 
 	const handleModeChange = (mode: CannonMode) => {
@@ -57,7 +56,7 @@ export function AppBreadcrumb() {
 
 	return (
 		<div className="flex items-center gap-2 w-full justify-between">
-			<div className="flex items-center gap-2">
+			<div className="flex items-center gap-2 min-w-0 overflow-hidden">
 				{isMobile && (
 					<Button
 						variant="ghost"
@@ -77,91 +76,61 @@ export function AppBreadcrumb() {
 					<ChevronLeft className="h-3.5 w-3.5" />
 					<span className="text-xs">{t("breadcrumb.back")}</span>
 				</Button>
-				<Breadcrumb>
-					<BreadcrumbList>
+				<Breadcrumb className="min-w-0">
+					<BreadcrumbList className="flex-nowrap">
 						{(() => {
-							const shouldCollapse = isMobile && items.length > 2;
-							const visibleItems = shouldCollapse
-								? [items[items.length - 1]]
-								: items;
-							const collapsedItems = shouldCollapse ? items.slice(0, -1) : [];
 
-							return (
-								<>
-									{shouldCollapse && collapsedItems.length > 0 && (
-										<>
-											<BreadcrumbItem>
-												<DropdownMenu>
-													<DropdownMenuTrigger asChild>
-														<Button
-															variant="ghost"
-															size="sm"
-															className="h-6 w-6 p-0"
-														>
-															<Ellipsis className="h-4 w-4" />
-														</Button>
-													</DropdownMenuTrigger>
-													<DropdownMenuContent align="start">
-														{collapsedItems.map((item, idx) => (
-															<DropdownMenuItem
-																key={idx}
-																onClick={() => item.onClick?.()}
-																className={
-																	item.onClick
-																		? "cursor-pointer"
-																		: "cursor-default"
-																}
-															>
-																{item.label}
-															</DropdownMenuItem>
-														))}
-													</DropdownMenuContent>
-												</DropdownMenu>
-											</BreadcrumbItem>
-											<BreadcrumbSeparator>
-												<ChevronsRight />
-											</BreadcrumbSeparator>
-										</>
+							if (isMobile) {
+								const currentItem = items[items.length - 1];
+								if (!currentItem) return null;
+								return (
+									<BreadcrumbItem className="min-w-0">
+										<BreadcrumbPage>
+											<Badge className="shadow-none rounded-full whitespace-nowrap">
+												{currentItem.label}
+											</Badge>
+										</BreadcrumbPage>
+									</BreadcrumbItem>
+								);
+							}
+
+							return items.map((item, index) => (
+								<Fragment key={index}>
+									{index > 0 && (
+										<BreadcrumbSeparator>
+											<ChevronsRight />
+										</BreadcrumbSeparator>
 									)}
-									{visibleItems.map((item, index) => (
-										<Fragment key={shouldCollapse ? "last" : index}>
-											{!shouldCollapse && index > 0 && (
-												<BreadcrumbSeparator>
-													<ChevronsRight />
-												</BreadcrumbSeparator>
-											)}
-											<BreadcrumbItem>
-												{item.active ? (
-													<BreadcrumbPage>
-														<Badge className="shadow-none rounded-full">
-															{item.label}
-														</Badge>
-													</BreadcrumbPage>
-												) : (
-													<BreadcrumbLink
-														className={
-															item.onClick ? "cursor-pointer" : "cursor-default"
-														}
-														onClick={(e) => {
-															if (item.onClick) {
-																e.preventDefault();
-																item.onClick();
-															}
-														}}
-													>
-														<Badge
-															variant="outline"
-															className="font-medium shadow-none rounded-full"
-														>
-															{item.label}
-														</Badge>
-													</BreadcrumbLink>
-												)}
-											</BreadcrumbItem>
-										</Fragment>
-									))}
-								</>
-							);
+									<BreadcrumbItem>
+										{item.active ? (
+											<BreadcrumbPage>
+												<Badge className="shadow-none rounded-full">
+													{item.label}
+												</Badge>
+											</BreadcrumbPage>
+										) : (
+											<BreadcrumbLink
+												className={
+													item.onClick ? "cursor-pointer" : "cursor-default"
+												}
+												onClick={(e) => {
+													if (item.onClick) {
+														e.preventDefault();
+														item.onClick();
+													}
+												}}
+											>
+												<Badge
+													variant="outline"
+													className="font-medium shadow-none rounded-full"
+												>
+													{item.label}
+												</Badge>
+											</BreadcrumbLink>
+										)}
+									</BreadcrumbItem>
+								</Fragment>
+							));
 						})()}
 					</BreadcrumbList>
 				</Breadcrumb>
@@ -170,13 +139,19 @@ export function AppBreadcrumb() {
 			{showModeSwitcher && (
 				<DropdownMenu>
 					<DropdownMenuTrigger asChild>
-						<Button variant="ghost" size="sm" className="h-8 gap-1">
+						<Button
+							variant="ghost"
+							size="sm"
+							className="h-8 gap-1 shrink-0"
+						>
 							<ArrowLeftRight
-								className="h-3.5 w-3.5"
+								className="h-3.5 w-3.5 shrink-0"
 								style={{ transform: "translateY(-0.5px)" }}
 							/>
-							<span className="text-xs font-medium">
-								{t(`breadcrumb.mode.${calculationMode}`)}
+							<span className="text-xs font-medium whitespace-nowrap">
+								{isMobile
+									? t(`breadcrumb.mode.short.${calculationMode}`)
+									: t(`breadcrumb.mode.${calculationMode}`)}
 							</span>
 						</Button>
 					</DropdownMenuTrigger>
