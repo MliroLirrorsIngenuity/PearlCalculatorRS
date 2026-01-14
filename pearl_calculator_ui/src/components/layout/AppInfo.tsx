@@ -19,13 +19,13 @@ export function AppInfo({ className }: { className?: string }) {
 
 	const hoverCardProps = isMobile
 		? {
-			open: isOpen,
-			onOpenChange: () => { },
-		}
+				open: isOpen,
+				onOpenChange: () => {},
+			}
 		: {
-			openDelay: 0,
-			closeDelay: 0,
-		};
+				openDelay: 0,
+				closeDelay: 0,
+			};
 
 	const handleContentInteractOutside = () => {
 		if (isMobile) {

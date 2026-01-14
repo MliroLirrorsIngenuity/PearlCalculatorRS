@@ -141,13 +141,18 @@ export function PreviewStep() {
 								{t("configuration_page.tnt_config_title")}
 							</Label>
 							<div className="grid grid-cols-2 gap-3">
-								<div className={`p-3 rounded-lg border bg-muted/50 overflow-hidden relative ${isMobile ? 'pb-8' : ''}`}>
+								<div
+									className={`p-3 rounded-lg border bg-muted/50 overflow-hidden relative ${isMobile ? "pb-8" : ""}`}
+								>
 									<div className="flex items-center gap-2 mb-2">
 										<span className="text-sm font-bold">
 											{t("configuration_page.nw_short")}
 										</span>
 										{!isMobile && redTNTLocation === "NorthWest" && (
-											<Badge variant="destructive" className="h-5 px-1.5 text-[10px]">
+											<Badge
+												variant="destructive"
+												className="h-5 px-1.5 text-[10px]"
+											>
 												Red
 											</Badge>
 										)}
@@ -159,17 +164,29 @@ export function PreviewStep() {
 									</div>
 									<div className="flex flex-col gap-0.5 text-[11px] md:text-xs font-mono">
 										<div className="text-muted-foreground truncate">
-											X: <span className="text-foreground">{draftConfig.north_west_tnt.x}</span>
+											X:{" "}
+											<span className="text-foreground">
+												{draftConfig.north_west_tnt.x}
+											</span>
 										</div>
 										<div className="text-muted-foreground truncate">
-											Y: <span className="text-foreground">{draftConfig.north_west_tnt.y}</span>
+											Y:{" "}
+											<span className="text-foreground">
+												{draftConfig.north_west_tnt.y}
+											</span>
 										</div>
 										<div className="text-muted-foreground truncate">
-											Z: <span className="text-foreground">{draftConfig.north_west_tnt.z}</span>
+											Z:{" "}
+											<span className="text-foreground">
+												{draftConfig.north_west_tnt.z}
+											</span>
 										</div>
 									</div>
 									{isMobile && redTNTLocation === "NorthWest" && (
-										<Badge variant="destructive" className="absolute bottom-2 right-2 h-5 px-1.5 text-[10px]">
+										<Badge
+											variant="destructive"
+											className="absolute bottom-2 right-2 h-5 px-1.5 text-[10px]"
+										>
 											Red
 										</Badge>
 									)}
@@ -179,13 +196,18 @@ export function PreviewStep() {
 										</Badge>
 									)}
 								</div>
-								<div className={`p-3 rounded-lg border bg-muted/50 overflow-hidden relative ${isMobile ? 'pb-8' : ''}`}>
+								<div
+									className={`p-3 rounded-lg border bg-muted/50 overflow-hidden relative ${isMobile ? "pb-8" : ""}`}
+								>
 									<div className="flex items-center gap-2 mb-2">
 										<span className="text-sm font-bold">
 											{t("configuration_page.ne_short")}
 										</span>
 										{!isMobile && redTNTLocation === "NorthEast" && (
-											<Badge variant="destructive" className="h-5 px-1.5 text-[10px]">
+											<Badge
+												variant="destructive"
+												className="h-5 px-1.5 text-[10px]"
+											>
 												Red
 											</Badge>
 										)}
@@ -197,17 +219,29 @@ export function PreviewStep() {
 									</div>
 									<div className="flex flex-col gap-0.5 text-[11px] md:text-xs font-mono">
 										<div className="text-muted-foreground truncate">
-											X: <span className="text-foreground">{draftConfig.north_east_tnt.x}</span>
+											X:{" "}
+											<span className="text-foreground">
+												{draftConfig.north_east_tnt.x}
+											</span>
 										</div>
 										<div className="text-muted-foreground truncate">
-											Y: <span className="text-foreground">{draftConfig.north_east_tnt.y}</span>
+											Y:{" "}
+											<span className="text-foreground">
+												{draftConfig.north_east_tnt.y}
+											</span>
 										</div>
 										<div className="text-muted-foreground truncate">
-											Z: <span className="text-foreground">{draftConfig.north_east_tnt.z}</span>
+											Z:{" "}
+											<span className="text-foreground">
+												{draftConfig.north_east_tnt.z}
+											</span>
 										</div>
 									</div>
 									{isMobile && redTNTLocation === "NorthEast" && (
-										<Badge variant="destructive" className="absolute bottom-2 right-2 h-5 px-1.5 text-[10px]">
+										<Badge
+											variant="destructive"
+											className="absolute bottom-2 right-2 h-5 px-1.5 text-[10px]"
+										>
 											Red
 										</Badge>
 									)}
@@ -217,13 +251,18 @@ export function PreviewStep() {
 										</Badge>
 									)}
 								</div>
-								<div className={`p-3 rounded-lg border bg-muted/50 overflow-hidden relative ${isMobile ? 'pb-8' : ''}`}>
+								<div
+									className={`p-3 rounded-lg border bg-muted/50 overflow-hidden relative ${isMobile ? "pb-8" : ""}`}
+								>
 									<div className="flex items-center gap-2 mb-2">
 										<span className="text-sm font-bold">
 											{t("configuration_page.sw_short")}
 										</span>
 										{!isMobile && redTNTLocation === "SouthWest" && (
-											<Badge variant="destructive" className="h-5 px-1.5 text-[10px]">
+											<Badge
+												variant="destructive"
+												className="h-5 px-1.5 text-[10px]"
+											>
 												Red
 											</Badge>
 										)}
@@ -235,17 +274,29 @@ export function PreviewStep() {
 									</div>
 									<div className="flex flex-col gap-0.5 text-[11px] md:text-xs font-mono">
 										<div className="text-muted-foreground truncate">
-											X: <span className="text-foreground">{draftConfig.south_west_tnt.x}</span>
+											X:{" "}
+											<span className="text-foreground">
+												{draftConfig.south_west_tnt.x}
+											</span>
 										</div>
 										<div className="text-muted-foreground truncate">
-											Y: <span className="text-foreground">{draftConfig.south_west_tnt.y}</span>
+											Y:{" "}
+											<span className="text-foreground">
+												{draftConfig.south_west_tnt.y}
+											</span>
 										</div>
 										<div className="text-muted-foreground truncate">
-											Z: <span className="text-foreground">{draftConfig.south_west_tnt.z}</span>
+											Z:{" "}
+											<span className="text-foreground">
+												{draftConfig.south_west_tnt.z}
+											</span>
 										</div>
 									</div>
 									{isMobile && redTNTLocation === "SouthWest" && (
-										<Badge variant="destructive" className="absolute bottom-2 right-2 h-5 px-1.5 text-[10px]">
+										<Badge
+											variant="destructive"
+											className="absolute bottom-2 right-2 h-5 px-1.5 text-[10px]"
+										>
 											Red
 										</Badge>
 									)}
@@ -255,13 +306,18 @@ export function PreviewStep() {
 										</Badge>
 									)}
 								</div>
-								<div className={`p-3 rounded-lg border bg-muted/50 overflow-hidden relative ${isMobile ? 'pb-8' : ''}`}>
+								<div
+									className={`p-3 rounded-lg border bg-muted/50 overflow-hidden relative ${isMobile ? "pb-8" : ""}`}
+								>
 									<div className="flex items-center gap-2 mb-2">
 										<span className="text-sm font-bold">
 											{t("configuration_page.se_short")}
 										</span>
 										{!isMobile && redTNTLocation === "SouthEast" && (
-											<Badge variant="destructive" className="h-5 px-1.5 text-[10px]">
+											<Badge
+												variant="destructive"
+												className="h-5 px-1.5 text-[10px]"
+											>
 												Red
 											</Badge>
 										)}
@@ -273,17 +329,29 @@ export function PreviewStep() {
 									</div>
 									<div className="flex flex-col gap-0.5 text-[11px] md:text-xs font-mono">
 										<div className="text-muted-foreground truncate">
-											X: <span className="text-foreground">{draftConfig.south_east_tnt.x}</span>
+											X:{" "}
+											<span className="text-foreground">
+												{draftConfig.south_east_tnt.x}
+											</span>
 										</div>
 										<div className="text-muted-foreground truncate">
-											Y: <span className="text-foreground">{draftConfig.south_east_tnt.y}</span>
+											Y:{" "}
+											<span className="text-foreground">
+												{draftConfig.south_east_tnt.y}
+											</span>
 										</div>
 										<div className="text-muted-foreground truncate">
-											Z: <span className="text-foreground">{draftConfig.south_east_tnt.z}</span>
+											Z:{" "}
+											<span className="text-foreground">
+												{draftConfig.south_east_tnt.z}
+											</span>
 										</div>
 									</div>
 									{isMobile && redTNTLocation === "SouthEast" && (
-										<Badge variant="destructive" className="absolute bottom-2 right-2 h-5 px-1.5 text-[10px]">
+										<Badge
+											variant="destructive"
+											className="absolute bottom-2 right-2 h-5 px-1.5 text-[10px]"
+										>
 											Red
 										</Badge>
 									)}

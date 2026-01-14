@@ -13,13 +13,13 @@ import type { CannonMode } from "@/types/domain";
 interface ModeOption {
 	value: CannonMode;
 	titleKey:
-	| "configuration_page.mode_standard_title"
-	| "configuration_page.mode_accumulation_title"
-	| "configuration_page.mode_vector3d_title";
+		| "configuration_page.mode_standard_title"
+		| "configuration_page.mode_accumulation_title"
+		| "configuration_page.mode_vector3d_title";
 	descKey:
-	| "configuration_page.mode_standard_desc"
-	| "configuration_page.mode_accumulation_desc"
-	| "configuration_page.mode_vector3d_desc";
+		| "configuration_page.mode_standard_desc"
+		| "configuration_page.mode_accumulation_desc"
+		| "configuration_page.mode_vector3d_desc";
 }
 
 const CANNON_MODES: ModeOption[] = [

@@ -1,46 +1,39 @@
 {
-  "$schema": "https://schema.tauri.app/config/2",
-  "productName": "Pearl Calculator RS",
-  "version": "2.1.0",
-  "identifier": "best.lolicon.pearl-calculator-rs",
-  "build": {
-    "beforeDevCommand": "pnpm dev:wasm",
-    "devUrl": "http://localhost:1420",
-    "beforeBuildCommand": "pnpm build",
-    "frontendDist": "../dist"
-  },
-  "app": {
-    "windows": [
-      {
-        "title": "Pearl Calculator RS",
-        "width": 1280,
-        "height": 720,
-        "minWidth": 780,
-        "minHeight": 450
-      }
-    ],
-    "security": {
-      "csp": null
-    }
-  },
-  "bundle": {
-    "active": true,
-    "targets": [
-      "nsis",
-      "appimage",
-      "deb",
-      "rpm",
-      "dmg",
-      "app"
-    ],
-    "copyright": "Copyright © 2025-Present MliroLirrorsIngenuity.",
-    "publisher": "MliroLirrorsIngenuity",
-    "icon": [
-      "icons/32x32.png",
-      "icons/128x128.png",
-      "icons/128x128@2x.png",
-      "icons/icon.icns",
-      "icons/icon.ico"
-    ]
-  }
+	"$schema": "https://schema.tauri.app/config/2",
+	"productName": "Pearl Calculator RS",
+	"version": "2.1.0",
+	"identifier": "best.lolicon.pearl-calculator-rs",
+	"build": {
+		"beforeDevCommand": "pnpm dev:wasm",
+		"devUrl": "http://localhost:1420",
+		"beforeBuildCommand": "pnpm build",
+		"frontendDist": "../dist"
+	},
+	"app": {
+		"windows": [
+			{
+				"title": "Pearl Calculator RS",
+				"width": 1280,
+				"height": 720,
+				"minWidth": 780,
+				"minHeight": 450
+			}
+		],
+		"security": {
+			"csp": null
+		}
+	},
+	"bundle": {
+		"active": true,
+		"targets": ["nsis", "appimage", "deb", "rpm", "dmg", "app"],
+		"copyright": "Copyright © 2025-Present MliroLirrorsIngenuity.",
+		"publisher": "MliroLirrorsIngenuity",
+		"icon": [
+			"icons/32x32.png",
+			"icons/128x128.png",
+			"icons/128x128@2x.png",
+			"icons/icon.icns",
+			"icons/icon.ico"
+		]
+	}
 }

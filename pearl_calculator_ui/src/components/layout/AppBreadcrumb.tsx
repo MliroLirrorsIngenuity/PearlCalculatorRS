@@ -1,10 +1,5 @@
 import { match, P } from "ts-pattern";
-import {
-	ArrowLeftRight,
-	ChevronLeft,
-	ChevronsRight,
-	Menu,
-} from "lucide-react";
+import { ArrowLeftRight, ChevronLeft, ChevronsRight, Menu } from "lucide-react";
 import { Fragment } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -47,7 +42,7 @@ export function AppBreadcrumb() {
 		match(prev)
 			.with({ onClick: P.nonNullable }, (item) => item.onClick())
 			.with({ href: P.string }, (item) => navigate(item.href))
-			.otherwise(() => { });
+			.otherwise(() => {});
 	};
 
 	const handleModeChange = (mode: CannonMode) => {
@@ -79,7 +74,6 @@ export function AppBreadcrumb() {
 				<Breadcrumb className="min-w-0">
 					<BreadcrumbList className="flex-nowrap">
 						{(() => {
-
 							if (isMobile) {
 								const currentItem = items[items.length - 1];
 								if (!currentItem) return null;
@@ -139,11 +133,7 @@ export function AppBreadcrumb() {
 			{showModeSwitcher && (
 				<DropdownMenu>
 					<DropdownMenuTrigger asChild>
-						<Button
-							variant="ghost"
-							size="sm"
-							className="h-8 gap-1 shrink-0"
-						>
+						<Button variant="ghost" size="sm" className="h-8 gap-1 shrink-0">
 							<ArrowLeftRight
 								className="h-3.5 w-3.5 shrink-0"
 								style={{ transform: "translateY(-0.5px)" }}

@@ -29,8 +29,9 @@ export function MobileViewProvider({ children }: { children: ReactNode }) {
 
 	useEffect(() => {
 		const checkMobile = () => {
-			// check is touch device or small screeen
-			const isTouchDevice = window.matchMedia("(hover: none) and (pointer: coarse)").matches;
+			const isTouchDevice = window.matchMedia(
+				"(hover: none) and (pointer: coarse)",
+			).matches;
 			const isSmallScreen = window.innerWidth < MOBILE_BREAKPOINT;
 			setIsMobile(isTouchDevice || isSmallScreen);
 		};
