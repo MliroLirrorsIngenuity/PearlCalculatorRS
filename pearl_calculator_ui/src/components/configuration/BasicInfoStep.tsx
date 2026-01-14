@@ -30,7 +30,7 @@ export function BasicInfoStep({ errors, onForceNext }: BasicInfoStepProps) {
 
 	return (
 		<div className="min-h-full flex items-center justify-center p-4">
-			<Card className="w-[450px]">
+			<Card className="w-full max-w-[450px]">
 				<CardHeader>
 					<CardTitle>{t("configuration_page.basic_info_title")}</CardTitle>
 					<CardDescription>
@@ -56,7 +56,7 @@ export function BasicInfoStep({ errors, onForceNext }: BasicInfoStepProps) {
 										className={cn(
 											"h-7 text-xs font-mono px-2 py-0 shadow-none",
 											errors.cannon_x &&
-												"border-destructive focus-visible:ring-destructive placeholder:text-destructive/60",
+											"border-destructive focus-visible:ring-destructive placeholder:text-destructive/60",
 										)}
 									/>
 								</div>
@@ -74,7 +74,7 @@ export function BasicInfoStep({ errors, onForceNext }: BasicInfoStepProps) {
 										className={cn(
 											"h-7 text-xs font-mono px-2 py-0 shadow-none",
 											errors.cannon_z &&
-												"border-destructive focus-visible:ring-destructive placeholder:text-destructive/60",
+											"border-destructive focus-visible:ring-destructive placeholder:text-destructive/60",
 										)}
 									/>
 								</div>
@@ -104,7 +104,7 @@ export function BasicInfoStep({ errors, onForceNext }: BasicInfoStepProps) {
 										className={cn(
 											"h-7 text-xs font-mono px-2 py-0 shadow-none",
 											errors.pearl_x &&
-												"border-destructive focus-visible:ring-destructive placeholder:text-destructive/60",
+											"border-destructive focus-visible:ring-destructive placeholder:text-destructive/60",
 										)}
 									/>
 								</div>
@@ -125,7 +125,7 @@ export function BasicInfoStep({ errors, onForceNext }: BasicInfoStepProps) {
 										className={cn(
 											"h-7 text-xs font-mono px-2 py-0 shadow-none",
 											errors.pearl_y &&
-												"border-destructive focus-visible:ring-destructive placeholder:text-destructive/60",
+											"border-destructive focus-visible:ring-destructive placeholder:text-destructive/60",
 										)}
 									/>
 								</div>
@@ -146,7 +146,7 @@ export function BasicInfoStep({ errors, onForceNext }: BasicInfoStepProps) {
 										className={cn(
 											"h-7 text-xs font-mono px-2 py-0 shadow-none",
 											errors.pearl_z &&
-												"border-destructive focus-visible:ring-destructive placeholder:text-destructive/60",
+											"border-destructive focus-visible:ring-destructive placeholder:text-destructive/60",
 										)}
 									/>
 								</div>
@@ -173,7 +173,7 @@ export function BasicInfoStep({ errors, onForceNext }: BasicInfoStepProps) {
 										className={cn(
 											"h-7 text-xs font-mono px-2 py-0 shadow-none",
 											errors.momentum_x &&
-												"border-destructive focus-visible:ring-destructive placeholder:text-destructive/60",
+											"border-destructive focus-visible:ring-destructive placeholder:text-destructive/60",
 										)}
 									/>
 								</div>
@@ -195,7 +195,7 @@ export function BasicInfoStep({ errors, onForceNext }: BasicInfoStepProps) {
 										className={cn(
 											"h-7 text-xs font-mono px-2 py-0 shadow-none",
 											errors.momentum_y &&
-												"border-destructive focus-visible:ring-destructive placeholder:text-destructive/60",
+											"border-destructive focus-visible:ring-destructive placeholder:text-destructive/60",
 										)}
 									/>
 								</div>
@@ -213,7 +213,7 @@ export function BasicInfoStep({ errors, onForceNext }: BasicInfoStepProps) {
 										className={cn(
 											"h-7 text-xs font-mono px-2 py-0 shadow-none",
 											errors.momentum_z &&
-												"border-destructive focus-visible:ring-destructive placeholder:text-destructive/60",
+											"border-destructive focus-visible:ring-destructive placeholder:text-destructive/60",
 										)}
 									/>
 								</div>
@@ -245,7 +245,7 @@ export function BasicInfoStep({ errors, onForceNext }: BasicInfoStepProps) {
 									className={cn(
 										"h-7 text-xs font-mono px-2 py-0 shadow-none",
 										errors.max_vertical_tnt &&
-											"border-destructive focus-visible:ring-destructive placeholder:text-destructive/60",
+										"border-destructive focus-visible:ring-destructive placeholder:text-destructive/60",
 									)}
 								/>
 								<p className="text-[0.8rem] text-muted-foreground">
@@ -271,7 +271,7 @@ export function BasicInfoStep({ errors, onForceNext }: BasicInfoStepProps) {
 									className={cn(
 										"h-7 text-xs font-mono px-2 py-0 shadow-none",
 										errors.max_tnt &&
-											"border-destructive focus-visible:ring-destructive placeholder:text-destructive/60",
+										"border-destructive focus-visible:ring-destructive placeholder:text-destructive/60",
 									)}
 								/>
 								<p className="text-[0.8rem] text-muted-foreground">

@@ -246,8 +246,8 @@ export default function Configuration() {
 								</ScrollArea>
 							</CarouselItem>
 						</CarouselContent>
-						<div className="grid grid-cols-3 items-center mt-4 px-1">
-							<div className="flex items-center justify-start gap-2">
+						<div className="relative flex items-center justify-between gap-2 mt-4 px-1">
+							<div className="flex items-center gap-2 shrink-0">
 								<Button
 									variant="outline"
 									onClick={() => api?.scrollPrev()}
@@ -290,10 +290,10 @@ export default function Configuration() {
 									</AlertDialog>
 								)}
 							</div>
-							<div className="flex justify-center">
-								<Progress value={progress} className="w-2/3" />
+							<div className="absolute left-1/2 -translate-x-1/2 -top-1 -translate-y-full sm:top-auto sm:translate-y-0 w-24 sm:w-40 pointer-events-none">
+								<Progress value={progress} className="w-full" />
 							</div>
-							<div className="flex justify-end">
+							<div className="flex items-center gap-2 shrink-0">
 								{current === count ? (
 									<Button onClick={handleFinish}>
 										{t("configuration_page.finish_btn")}
