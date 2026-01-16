@@ -34,7 +34,7 @@ export function AppInfo({ className }: { className?: string }) {
 	};
 
 	return (
-		<div className={cn("safe-area-inset-all", className)}>
+		<div className={className}>
 			<HoverCard {...hoverCardProps}>
 				<HoverCardTrigger asChild>
 					<Button
