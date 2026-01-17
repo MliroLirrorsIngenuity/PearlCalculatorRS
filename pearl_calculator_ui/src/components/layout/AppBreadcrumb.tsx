@@ -2,7 +2,7 @@ import { match, P } from "ts-pattern";
 import { ArrowLeftRight, ChevronLeft, ChevronsRight, Menu } from "lucide-react";
 import { Fragment } from "react";
 import { useTranslation } from "react-i18next";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router";
 import { Badge } from "@/components/ui/badge";
 
 import {
@@ -42,7 +42,7 @@ export function AppBreadcrumb() {
 		match(prev)
 			.with({ onClick: P.nonNullable }, (item) => item.onClick())
 			.with({ href: P.string }, (item) => navigate(item.href))
-			.otherwise(() => {});
+			.otherwise(() => { });
 	};
 
 	const handleModeChange = (mode: CannonMode) => {

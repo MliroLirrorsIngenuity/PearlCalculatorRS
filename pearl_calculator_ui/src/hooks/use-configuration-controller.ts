@@ -9,7 +9,7 @@ import {
 import { z } from "zod";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 import { useCalculatorState } from "@/context/CalculatorStateContext";
 import { useConfig } from "@/context/ConfigContext";
 import { useConfigurationState } from "@/context/ConfigurationStateContext";
@@ -184,9 +184,9 @@ export function useConfigurationController() {
 						.with(
 							P.nullish,
 							() =>
-								(newErrors.bit_template_empty = t(
-									"error.configuration_page.validation.required",
-								)),
+							(newErrors.bit_template_empty = t(
+								"error.configuration_page.validation.required",
+							)),
 						)
 						.with(
 							{
@@ -195,22 +195,22 @@ export function useConfigurationController() {
 								),
 							},
 							() =>
-								(newErrors.bit_values_incomplete = t(
-									"error.configuration_page.validation.required",
-								)),
+							(newErrors.bit_values_incomplete = t(
+								"error.configuration_page.validation.required",
+							)),
 						)
 						.with(
 							{ masks: P.when((m) => m.some((mask) => !mask.direction)) },
 							() =>
-								(newErrors.bit_masks_incomplete = t(
-									"error.configuration_page.validation.required",
-								)),
+							(newErrors.bit_masks_incomplete = t(
+								"error.configuration_page.validation.required",
+							)),
 						)
 						.otherwise(
 							() =>
-								(newErrors.bit_template_empty = t(
-									"error.configuration_page.validation.required",
-								)),
+							(newErrors.bit_template_empty = t(
+								"error.configuration_page.validation.required",
+							)),
 						);
 					return;
 				}

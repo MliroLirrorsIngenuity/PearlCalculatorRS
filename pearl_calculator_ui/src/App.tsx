@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes } from "react-router";
 import Layout from "@/components/layout/Layout";
 import { CalculatorStateProvider } from "@/context/CalculatorStateContext";
 import { ConfigProvider } from "@/context/ConfigContext";
