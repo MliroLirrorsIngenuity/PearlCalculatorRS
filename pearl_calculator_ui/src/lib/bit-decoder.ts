@@ -157,6 +157,19 @@ export function calculateBits(
 		return { error: validation };
 	}
 
+	const maxCapacity = values.reduce((sum, v) => sum + v, 0);
+
+	const maxTarget = Math.max(blueTNT, redTNT);
+	if (maxTarget > maxCapacity) {
+		return {
+			error: {
+				isValid: false,
+				errorKey: "error.configuration_page.bit_validation.gap",
+				errorParams: { gap: maxTarget, sum: maxCapacity },
+			},
+		};
+	}
+
 	const blueResult = decodeBitValue(values, blueTNT);
 	const redResult = decodeBitValue(values, redTNT);
 	const directionBits = getDirectionBits(state.masks, direction);

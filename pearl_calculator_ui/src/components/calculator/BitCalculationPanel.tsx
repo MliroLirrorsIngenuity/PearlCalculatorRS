@@ -281,9 +281,9 @@ export default function BitCalculationPanel() {
 				(v) => v && v.trim() !== "",
 			);
 			if (allValuesPresent) {
-				hasAutoCalculated.current = true;
 				runCalculation();
 			}
+			hasAutoCalculated.current = true;
 		}
 	}, [inputState, traceTNT, runCalculation]);
 
