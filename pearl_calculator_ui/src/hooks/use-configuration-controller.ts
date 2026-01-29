@@ -73,7 +73,6 @@ export function useConfigurationController() {
 	const {
 		draftConfig,
 		cannonCenter,
-		pearlMomentum,
 		redTNTLocation,
 		bitTemplateState,
 		resetDraft,
@@ -83,7 +82,6 @@ export function useConfigurationController() {
 		setIsFinished,
 		setDraftConfig,
 		setCannonCenter,
-		setPearlMomentum,
 		setRedTNTLocation,
 		setBitTemplateState,
 		isBitConfigSkipped,
@@ -124,9 +122,9 @@ export function useConfigurationController() {
 						z: draftConfig.pearl_z_position,
 					},
 					pearlMomentum: {
-						x: pearlMomentum.x,
+						x: draftConfig.pearl_x_motion,
 						y: draftConfig.pearl_y_motion,
-						z: pearlMomentum.z,
+						z: draftConfig.pearl_z_motion,
 					},
 					maxTNT: wizardMode === "Vector3D" ? "1" : draftConfig.max_tnt,
 					maxVerticalTNT:
@@ -300,7 +298,6 @@ export function useConfigurationController() {
 			const config = buildExportConfig(
 				draftConfig,
 				cannonCenter,
-				pearlMomentum,
 				redTNTLocation,
 				bitTemplateState,
 				wizardMode,
@@ -334,11 +331,10 @@ export function useConfigurationController() {
 		path: string | null = null,
 		multiplierTemplate?: MultiplierConfig | null,
 	) => {
-		const { draft, center, momentum, redLocation } =
+		const { draft, center, redLocation } =
 			convertConfigToDraft(config);
 		setDraftConfig(draft);
 		setCannonCenter(center);
-		setPearlMomentum(momentum);
 		setRedTNTLocation(redLocation);
 
 		const bitInput = configToInputState(bitTemplate);
@@ -400,7 +396,6 @@ export function useConfigurationController() {
 			const config = buildExportConfig(
 				draftConfig,
 				cannonCenter,
-				pearlMomentum,
 				redTNTLocation,
 				bitTemplateState,
 				calculationMode,

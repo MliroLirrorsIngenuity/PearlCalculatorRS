@@ -67,9 +67,9 @@ export function useTNTCalculator() {
 				pearlX: parseOrConfig(inputs.pearlX, config.pearl_x_position),
 				pearlY: config.pearl_y_position,
 				pearlZ: parseOrConfig(inputs.pearlZ, config.pearl_z_position),
-				pearlMotionX: 0.0,
+				pearlMotionX: config.pearl_x_motion,
 				pearlMotionY: config.pearl_y_motion,
-				pearlMotionZ: 0.0,
+				pearlMotionZ: config.pearl_z_motion,
 				offsetX: parseOrZero(inputs.offsetX),
 				offsetZ: parseOrZero(inputs.offsetZ),
 				cannonY: parseOrConfig(

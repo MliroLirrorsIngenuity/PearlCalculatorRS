@@ -40,9 +40,9 @@ function TNTBlock({
 	yOffset: number;
 }) {
 	return (
-		<div className="space-y-1.5">
+		<div className="space-y-1">
 			<div className="text-xs font-bold text-foreground/80">{title}</div>
-			<div className="grid gap-1.5">
+			<div className="grid gap-1">
 				<CompactInput
 					label="X"
 					labelClassName="w-3 text-left pr-0"
@@ -183,7 +183,7 @@ export default function ConfigurationDataForm({
 	return (
 		<ScrollArea className="h-full">
 			<div className="pl-1 pr-3">
-				<FieldSet className="w-full space-y-3 pb-4">
+				<FieldSet className="w-full space-y-2 pb-1">
 					<FieldLegend className="text-lg font-semibold flex items-center justify-between w-full">
 						<div className="flex items-center gap-2">
 							{t("calculator.configuration_legend")}
@@ -232,7 +232,7 @@ export default function ConfigurationDataForm({
 						</div>
 					</FieldLegend>
 
-					<div className="grid grid-cols-2 gap-x-2 gap-y-3">
+					<div className="grid grid-cols-2 gap-x-2 gap-y-2">
 						<TNTBlock
 							title={t("calculator.direction_nw")}
 							data={config.north_west_tnt}
@@ -336,22 +336,12 @@ export default function ConfigurationDataForm({
 							</div>
 						)}
 
-						<div className="col-span-2 space-y-1.5">
+						<div className="col-span-2 space-y-1">
 							<div className="text-xs font-bold text-foreground/80">
 								{t("calculator.pearl_properties")}
 							</div>
-							<div className="grid grid-cols-2 gap-x-2">
-								<CompactInput
-									label="M"
-									labelClassName={alignedLabelClass}
-									value={config.pearl_y_motion}
-									onChange={(v) =>
-										onConfigChange({
-											...config,
-											pearl_y_motion: parseFloat(v) || 0,
-										})
-									}
-								/>
+							<div className="grid grid-cols-2 gap-x-2 gap-y-1">
+
 								<CompactInput
 									label="Y"
 									labelClassName={alignedLabelClass}
@@ -374,10 +364,43 @@ export default function ConfigurationDataForm({
 										onConfigChange({ ...config, pearl_y_position: newPearlY });
 									}}
 								/>
+								<CompactInput
+									label="MX"
+									labelClassName={alignedLabelClass}
+									value={config.pearl_x_motion ?? 0}
+									onChange={(v) =>
+										onConfigChange({
+											...config,
+											pearl_x_motion: parseFloat(v) || 0,
+										})
+									}
+								/>
+								<CompactInput
+									label="MY"
+									labelClassName={alignedLabelClass}
+									value={config.pearl_y_motion}
+									onChange={(v) =>
+										onConfigChange({
+											...config,
+											pearl_y_motion: parseFloat(v) || 0,
+										})
+									}
+								/>
+								<CompactInput
+									label="MZ"
+									labelClassName={alignedLabelClass}
+									value={config.pearl_z_motion ?? 0}
+									onChange={(v) =>
+										onConfigChange({
+											...config,
+											pearl_z_motion: parseFloat(v) || 0,
+										})
+									}
+								/>
 							</div>
 						</div>
 
-						<div className="col-span-2 space-y-1.5">
+						<div className="col-span-2 space-y-1">
 							<div className="text-xs font-bold text-foreground/80">
 								{t("calculator.default_positions")}
 							</div>

@@ -273,7 +273,9 @@ export function decodeConfig(input: string): DecodedConfig {
 	const pearlPosX = floatValues[14];
 	const pearlPosY = floatValues[15];
 	const pearlPosZ = floatValues[16];
+	const pearlMotX = floatValues[17];
 	const pearlMotY = floatValues[18];
+	const pearlMotZ = floatValues[19];
 
 	const dirs = iter.next().value!;
 	const defaultRedDir = DIR_MAP_REV[(dirs >> 4) & 0x0f] || "SouthEast";
@@ -315,7 +317,9 @@ export function decodeConfig(input: string): DecodedConfig {
 		pearl_x_position: pearlPosX,
 		pearl_y_position: pearlPosY,
 		pearl_z_position: pearlPosZ,
+		pearl_x_motion: pearlMotX,
 		pearl_y_motion: pearlMotY,
+		pearl_z_motion: pearlMotZ,
 		default_red_tnt_position: validateDir(defaultRedDir),
 		default_blue_tnt_position: validateDir(defaultBlueDir),
 		offset_x: offsetX,
@@ -367,7 +371,11 @@ export function buildEncodableConfig(
 				Y: config.pearl_y_position,
 				Z: config.pearl_z_position,
 			},
-			Motion: { X: 0, Y: config.pearl_y_motion, Z: 0 },
+			Motion: {
+				X: config.pearl_x_motion ?? 0,
+				Y: config.pearl_y_motion,
+				Z: config.pearl_z_motion ?? 0,
+			},
 		},
 		MaxTNT: config.max_tnt,
 		DefaultRedTNTDirection: config.default_red_tnt_position,
@@ -375,11 +383,11 @@ export function buildEncodableConfig(
 		SideMode: bitTemplate?.SideMode ?? 0,
 		DirectionMasks: bitTemplate?.DirectionMasks
 			? Object.fromEntries(
-					Object.entries(bitTemplate.DirectionMasks).map(([k, v]) => [
-						k,
-						v ?? "",
-					]),
-				)
+				Object.entries(bitTemplate.DirectionMasks).map(([k, v]) => [
+					k,
+					v ?? "",
+				]),
+			)
 			: {},
 		RedValues: bitTemplate?.RedValues ?? [],
 		IsRedArrowCenter: bitTemplate?.IsRedArrowCenter ?? false,

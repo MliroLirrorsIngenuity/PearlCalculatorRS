@@ -19,7 +19,9 @@ export interface DraftConfig {
 	pearl_x_position: string;
 	pearl_y_position: string;
 	pearl_z_position: string;
+	pearl_x_motion: string;
 	pearl_y_motion: string;
+	pearl_z_motion: string;
 	max_tnt: string;
 	north_west_tnt: { x: string; y: string; z: string };
 	north_east_tnt: { x: string; y: string; z: string };
@@ -100,7 +102,9 @@ export function convertDraftToConfig(
 		south_east_tnt: getRelativeTNT(draftConfig.south_east_tnt, cx, cz),
 		south_west_tnt: getRelativeTNT(draftConfig.south_west_tnt, cx, cz),
 		pearl_x_position: 0,
+		pearl_x_motion: parseNumber(draftConfig.pearl_x_motion),
 		pearl_y_motion: parseNumber(draftConfig.pearl_y_motion),
+		pearl_z_motion: parseNumber(draftConfig.pearl_z_motion),
 		pearl_y_position: parseNumber(draftConfig.pearl_y_position),
 		pearl_z_position: 0,
 		max_tnt: parseNumber(draftConfig.max_tnt),
@@ -125,7 +129,6 @@ export function convertDraftToConfig(
 export function buildExportConfig(
 	draftConfig: DraftConfig,
 	cannonCenter: CannonCenter,
-	pearlMomentum: PearlMomentum,
 	redTNTLocation: string | undefined,
 	bitTemplateState: BitInputState | undefined,
 	mode?: CannonMode,
@@ -152,9 +155,9 @@ export function buildExportConfig(
 				Z: 0,
 			},
 			Motion: {
-				X: parseNumber(pearlMomentum.x),
+				X: parseNumber(draftConfig.pearl_x_motion),
 				Y: parseNumber(draftConfig.pearl_y_motion),
-				Z: parseNumber(pearlMomentum.z),
+				Z: parseNumber(draftConfig.pearl_z_motion),
 			},
 		},
 		MaxTNT: parseNumber(draftConfig.max_tnt),
@@ -225,9 +228,9 @@ export function convertConfigToDraft(config: GeneralConfig): {
 	};
 
 	const momentum = {
-		x: "0",
+		x: config.pearl_x_motion.toString(),
 		y: config.pearl_y_motion.toString(),
-		z: "0",
+		z: config.pearl_z_motion.toString(),
 	};
 
 	const redLocation = config.default_red_tnt_position;
@@ -256,16 +259,18 @@ export function convertConfigToDraft(config: GeneralConfig): {
 		},
 		vertical_tnt: config.vertical_tnt
 			? {
-					x: config.vertical_tnt.x.toString(),
-					y: config.vertical_tnt.y.toString(),
-					z: config.vertical_tnt.z.toString(),
-				}
+				x: config.vertical_tnt.x.toString(),
+				y: config.vertical_tnt.y.toString(),
+				z: config.vertical_tnt.z.toString(),
+			}
 			: { x: "", y: "", z: "" },
 		max_vertical_tnt: config.max_vertical_tnt?.toString() ?? "",
 		pearl_x_position: config.pearl_x_position.toString(),
 		pearl_y_position: config.pearl_y_position.toString(),
 		pearl_z_position: config.pearl_z_position.toString(),
+		pearl_x_motion: config.pearl_x_motion.toString(),
 		pearl_y_motion: config.pearl_y_motion.toString(),
+		pearl_z_motion: config.pearl_z_motion.toString(),
 	};
 
 	return { draft, center, momentum, redLocation };

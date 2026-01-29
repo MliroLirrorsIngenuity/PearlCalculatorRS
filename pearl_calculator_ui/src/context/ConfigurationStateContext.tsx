@@ -14,7 +14,9 @@ export interface DraftConfig {
 	vertical_tnt: { x: string; y: string; z: string };
 	max_vertical_tnt: string;
 	pearl_x_position: string;
+	pearl_x_motion: string;
 	pearl_y_motion: string;
+	pearl_z_motion: string;
 	pearl_y_position: string;
 	pearl_z_position: string;
 }
@@ -28,7 +30,9 @@ export const emptyDraftConfig: DraftConfig = {
 	vertical_tnt: { x: "", y: "", z: "" },
 	max_vertical_tnt: "",
 	pearl_x_position: "",
+	pearl_x_motion: "",
 	pearl_y_motion: "",
+	pearl_z_motion: "",
 	pearl_y_position: "",
 	pearl_z_position: "",
 };

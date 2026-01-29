@@ -22,8 +22,6 @@ export function BasicInfoStep({ errors, onForceNext }: BasicInfoStepProps) {
 		setDraftConfig,
 		cannonCenter,
 		setCannonCenter,
-		pearlMomentum,
-		setPearlMomentum,
 		wizardMode,
 	} = useConfigurationState();
 	const { t } = useTranslation();
@@ -56,7 +54,7 @@ export function BasicInfoStep({ errors, onForceNext }: BasicInfoStepProps) {
 										className={cn(
 											"h-7 text-xs font-mono px-2 py-0 shadow-none",
 											errors.cannon_x &&
-												"border-destructive focus-visible:ring-destructive placeholder:text-destructive/60",
+											"border-destructive focus-visible:ring-destructive placeholder:text-destructive/60",
 										)}
 									/>
 								</div>
@@ -74,7 +72,7 @@ export function BasicInfoStep({ errors, onForceNext }: BasicInfoStepProps) {
 										className={cn(
 											"h-7 text-xs font-mono px-2 py-0 shadow-none",
 											errors.cannon_z &&
-												"border-destructive focus-visible:ring-destructive placeholder:text-destructive/60",
+											"border-destructive focus-visible:ring-destructive placeholder:text-destructive/60",
 										)}
 									/>
 								</div>
@@ -104,7 +102,7 @@ export function BasicInfoStep({ errors, onForceNext }: BasicInfoStepProps) {
 										className={cn(
 											"h-7 text-xs font-mono px-2 py-0 shadow-none",
 											errors.pearl_x &&
-												"border-destructive focus-visible:ring-destructive placeholder:text-destructive/60",
+											"border-destructive focus-visible:ring-destructive placeholder:text-destructive/60",
 										)}
 									/>
 								</div>
@@ -125,7 +123,7 @@ export function BasicInfoStep({ errors, onForceNext }: BasicInfoStepProps) {
 										className={cn(
 											"h-7 text-xs font-mono px-2 py-0 shadow-none",
 											errors.pearl_y &&
-												"border-destructive focus-visible:ring-destructive placeholder:text-destructive/60",
+											"border-destructive focus-visible:ring-destructive placeholder:text-destructive/60",
 										)}
 									/>
 								</div>
@@ -146,7 +144,7 @@ export function BasicInfoStep({ errors, onForceNext }: BasicInfoStepProps) {
 										className={cn(
 											"h-7 text-xs font-mono px-2 py-0 shadow-none",
 											errors.pearl_z &&
-												"border-destructive focus-visible:ring-destructive placeholder:text-destructive/60",
+											"border-destructive focus-visible:ring-destructive placeholder:text-destructive/60",
 										)}
 									/>
 								</div>
@@ -165,15 +163,18 @@ export function BasicInfoStep({ errors, onForceNext }: BasicInfoStepProps) {
 									</Label>
 									<Input
 										type="number"
-										value={pearlMomentum.x}
+										value={draftConfig.pearl_x_motion}
 										onChange={(e) =>
-											setPearlMomentum({ ...pearlMomentum, x: e.target.value })
+											setDraftConfig({
+												...draftConfig,
+												pearl_x_motion: e.target.value,
+											})
 										}
 										placeholder={errors.momentum_x}
 										className={cn(
 											"h-7 text-xs font-mono px-2 py-0 shadow-none",
 											errors.momentum_x &&
-												"border-destructive focus-visible:ring-destructive placeholder:text-destructive/60",
+											"border-destructive focus-visible:ring-destructive placeholder:text-destructive/60",
 										)}
 									/>
 								</div>
@@ -189,13 +190,12 @@ export function BasicInfoStep({ errors, onForceNext }: BasicInfoStepProps) {
 												...draftConfig,
 												pearl_y_motion: e.target.value,
 											});
-											setPearlMomentum({ ...pearlMomentum, y: e.target.value });
 										}}
 										placeholder={errors.momentum_y}
 										className={cn(
 											"h-7 text-xs font-mono px-2 py-0 shadow-none",
 											errors.momentum_y &&
-												"border-destructive focus-visible:ring-destructive placeholder:text-destructive/60",
+											"border-destructive focus-visible:ring-destructive placeholder:text-destructive/60",
 										)}
 									/>
 								</div>
@@ -205,15 +205,18 @@ export function BasicInfoStep({ errors, onForceNext }: BasicInfoStepProps) {
 									</Label>
 									<Input
 										type="number"
-										value={pearlMomentum.z}
+										value={draftConfig.pearl_z_motion}
 										onChange={(e) =>
-											setPearlMomentum({ ...pearlMomentum, z: e.target.value })
+											setDraftConfig({
+												...draftConfig,
+												pearl_z_motion: e.target.value,
+											})
 										}
 										placeholder={errors.momentum_z}
 										className={cn(
 											"h-7 text-xs font-mono px-2 py-0 shadow-none",
 											errors.momentum_z &&
-												"border-destructive focus-visible:ring-destructive placeholder:text-destructive/60",
+											"border-destructive focus-visible:ring-destructive placeholder:text-destructive/60",
 										)}
 									/>
 								</div>
@@ -245,7 +248,7 @@ export function BasicInfoStep({ errors, onForceNext }: BasicInfoStepProps) {
 									className={cn(
 										"h-7 text-xs font-mono px-2 py-0 shadow-none",
 										errors.max_vertical_tnt &&
-											"border-destructive focus-visible:ring-destructive placeholder:text-destructive/60",
+										"border-destructive focus-visible:ring-destructive placeholder:text-destructive/60",
 									)}
 								/>
 								<p className="text-[0.8rem] text-muted-foreground">
@@ -271,7 +274,7 @@ export function BasicInfoStep({ errors, onForceNext }: BasicInfoStepProps) {
 									className={cn(
 										"h-7 text-xs font-mono px-2 py-0 shadow-none",
 										errors.max_tnt &&
-											"border-destructive focus-visible:ring-destructive placeholder:text-destructive/60",
+										"border-destructive focus-visible:ring-destructive placeholder:text-destructive/60",
 									)}
 								/>
 								<p className="text-[0.8rem] text-muted-foreground">
