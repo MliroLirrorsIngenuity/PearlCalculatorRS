@@ -1,0 +1,55 @@
+{
+    "name": "case_c_high_momentum",
+    "cannon": {
+        "pearl": {
+            "position": {
+                "X": 0.0,
+                "Y": 254.24378615509798,
+                "Z": 0.0
+            },
+            "motion": {
+                "X": -9.268668969441547,
+                "Y": 13.273270007836157,
+                "Z": 6.488068038180491
+            },
+            "offset": {
+                "X": -0.135,
+                "Y": 0.0,
+                "Z": -0.135
+            }
+        },
+        "north_west_tnt": {
+            "X": -0.76,
+            "Y": 254.395,
+            "Z": -0.76
+        },
+        "north_east_tnt": {
+            "X": 0.49,
+            "Y": 254.395,
+            "Z": -0.76
+        },
+        "south_west_tnt": {
+            "X": -0.76,
+            "Y": 254.395,
+            "Z": 0.49
+        },
+        "south_east_tnt": {
+            "X": 0.49,
+            "Y": 254.395,
+            "Z": 0.49
+        },
+        "vertical_tnt": null,
+        "default_red_duper": "SouthEast",
+        "default_blue_duper": "NorthWest",
+        "mode": "Standard"
+    },
+    "test_cases": [
+        {
+            "version": "Post1212",
+            "red": 45310,
+            "blue": 46670,
+            "vertical": 0,
+            "direction": "North"
+        }
+    ]
+}

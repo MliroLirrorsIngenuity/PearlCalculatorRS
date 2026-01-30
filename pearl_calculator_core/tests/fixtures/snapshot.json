@@ -145,5 +145,26 @@
       "Y": -483.9496505759284,
       "Z": 2147.1949211074116
     }
+  },
+  {
+    "id": 7,
+    "source_file": "case_c_high_momentum",
+    "case_name": "Post1212_R45310_B46670_V0",
+    "version": "Post1212",
+    "input_red": 45310,
+    "input_blue": 46670,
+    "input_vertical": 0,
+    "input_direction": "North",
+    "expected_landing_pos": {
+      "X": 58479.804337789836,
+      "Y": 1255.811338700004,
+      "Z": -3998165.992717772
+    },
+    "expected_ticks": 120,
+    "tick_10_checkpoint": {
+      "X": 7980.986829525063,
+      "Y": 409.8740823238434,
+      "Z": -545654.7503506849
+    }
   }
 ]
