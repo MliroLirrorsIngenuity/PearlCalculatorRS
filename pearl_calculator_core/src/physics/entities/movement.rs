@@ -32,6 +32,22 @@ impl PearlVersion {
             PearlVersion::Post1212 => drag,
         }
     }
+
+    #[inline]
+    pub fn apply_motion_tick(&self, velocity: f64, drag: f64) -> (f64, f64) {
+        match self {
+            PearlVersion::Legacy | PearlVersion::Post1205 => {
+                let displacement = velocity;
+                let new_velocity = velocity * drag;
+                (new_velocity, displacement)
+            }
+            PearlVersion::Post1212 => {
+                let new_velocity = velocity * drag;
+                let displacement = new_velocity;
+                (new_velocity, displacement)
+            }
+        }
+    }
 }
 
 pub trait PearlMovement {

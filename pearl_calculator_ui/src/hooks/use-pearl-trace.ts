@@ -52,9 +52,9 @@ export function usePearlTrace() {
 				pearlX: parseOrConfig(inputs.pearlX, configData.pearl_x_position),
 				pearlY: configData.pearl_y_position,
 				pearlZ: parseOrConfig(inputs.pearlZ, configData.pearl_z_position),
-				pearlMotionX: 0,
+				pearlMotionX: configData.pearl_x_motion,
 				pearlMotionY: configData.pearl_y_motion,
-				pearlMotionZ: 0,
+				pearlMotionZ: configData.pearl_z_motion,
 				offsetX: parseOrZero(inputs.offsetX),
 				offsetZ: parseOrZero(inputs.offsetZ),
 				cannonY: parseOrConfig(

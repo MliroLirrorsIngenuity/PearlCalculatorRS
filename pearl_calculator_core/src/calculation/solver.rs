@@ -41,8 +41,17 @@ pub fn solve_theoretical_tnt(input: &SolverInput) -> HashMap<(i32, i32, i32), Ve
             .apply_grav_drag_tick(sim_grav_vel, gravity, drag_multiplier);
         sim_grav_pos += sim_grav_vel;
 
-        sim_motion_vel *= drag_multiplier;
-        sim_motion_pos += sim_motion_vel;
+        let (new_vx, dx) = input
+            .version
+            .apply_motion_tick(sim_motion_vel.x, drag_multiplier);
+        let (new_vy, dy) = input
+            .version
+            .apply_motion_tick(sim_motion_vel.y, drag_multiplier);
+        let (new_vz, dz) = input
+            .version
+            .apply_motion_tick(sim_motion_vel.z, drag_multiplier);
+        sim_motion_vel = Space3D::new(new_vx, new_vy, new_vz);
+        sim_motion_pos += Space3D::new(dx, dy, dz);
 
         let mut compensated_distance = true_distance;
         compensated_distance.y -= sim_grav_pos + sim_motion_pos.y;
