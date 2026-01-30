@@ -2606,7 +2606,7 @@ checksum = "df94ce210e5bc13cb6651479fa48d14f601d9858cfe0467f43ae157023b938d3"
 
 [[package]]
 name = "pearl_calculator_bridge"
-version = "2.1.3"
+version = "2.1.4"
 dependencies = [
  "pearl_calculator_core",
  "serde",
@@ -2614,7 +2614,7 @@ dependencies = [
 
 [[package]]
 name = "pearl_calculator_core"
-version = "2.1.3"
+version = "2.1.4"
 dependencies = [
  "rayon",
  "serde",
@@ -2623,7 +2623,7 @@ dependencies = [
 
 [[package]]
 name = "pearl_calculator_ui"
-version = "2.1.3"
+version = "2.1.4"
 dependencies = [
  "pearl_calculator_bridge",
  "pearl_calculator_core",
@@ -2638,7 +2638,7 @@ dependencies = [
 
 [[package]]
 name = "pearl_calculator_wasm"
-version = "2.1.3"
+version = "2.1.4"
 dependencies = [
  "pearl_calculator_bridge",
  "pearl_calculator_core",
