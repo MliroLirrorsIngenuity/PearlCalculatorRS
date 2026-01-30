@@ -8,6 +8,7 @@ pub struct SolverInput {
     pub blue_vec: Space3D,
     pub vert_vec: Space3D,
     pub start_pos: Space3D,
+    pub start_motion: Space3D,
     pub destination: Space3D,
     pub max_ticks: u32,
     pub version: PearlVersion,
@@ -31,14 +32,22 @@ pub fn solve_theoretical_tnt(input: &SolverInput) -> HashMap<(i32, i32, i32), Ve
     let mut sim_grav_vel = 0.0;
     let mut sim_grav_pos = 0.0;
 
+    let mut sim_motion_vel = input.start_motion;
+    let mut sim_motion_pos = Space3D::default();
+
     for tick in 1..=input.max_ticks {
         sim_grav_vel = input
             .version
             .apply_grav_drag_tick(sim_grav_vel, gravity, drag_multiplier);
         sim_grav_pos += sim_grav_vel;
 
+        sim_motion_vel *= drag_multiplier;
+        sim_motion_pos += sim_motion_vel;
+
         let mut compensated_distance = true_distance;
-        compensated_distance.y -= sim_grav_pos;
+        compensated_distance.y -= sim_grav_pos + sim_motion_pos.y;
+        compensated_distance.x -= sim_motion_pos.x;
+        compensated_distance.z -= sim_motion_pos.z;
 
         let numerator = 1.0 - drag_multiplier.powi(tick as i32);
         let divider = input.version.get_projection_multiplier(drag_multiplier) * numerator

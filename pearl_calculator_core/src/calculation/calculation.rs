@@ -36,6 +36,7 @@ pub fn calculate_tnt_amount(
             blue_vec,
             vert_vec,
             start_pos: pearl_start_absolute_pos,
+            start_motion: cannon.pearl.motion,
             destination,
             max_ticks,
             version,
