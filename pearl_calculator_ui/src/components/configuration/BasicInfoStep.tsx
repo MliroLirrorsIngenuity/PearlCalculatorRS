@@ -226,7 +226,7 @@ export function BasicInfoStep({ errors, onForceNext }: BasicInfoStepProps) {
 							</p>
 						</div>
 
-						{wizardMode === "Vector3D" ? (
+						{wizardMode === "Vector3D" && (
 							<div className="flex flex-col space-y-1.5">
 								<Label>{t("configuration_page.max_vertical_tnt_label")}</Label>
 								<Input
@@ -255,7 +255,8 @@ export function BasicInfoStep({ errors, onForceNext }: BasicInfoStepProps) {
 									{t("configuration_page.max_vertical_tnt_desc")}
 								</p>
 							</div>
-						) : (
+						)}
+						{wizardMode === "Standard" && (
 							<div className="flex flex-col space-y-1.5">
 								<Label>{t("configuration_page.max_tnt_label")}</Label>
 								<Input
