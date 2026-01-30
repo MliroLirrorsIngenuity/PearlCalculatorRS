@@ -126,12 +126,15 @@ export function useConfigurationController() {
 						y: draftConfig.pearl_y_motion,
 						z: draftConfig.pearl_z_motion,
 					},
-					maxTNT: wizardMode === "Vector3D" ? "1" : draftConfig.max_tnt,
+					maxTNT: draftConfig.max_tnt,
 					maxVerticalTNT:
 						wizardMode === "Vector3D"
 							? draftConfig.max_vertical_tnt
 							: undefined,
 				};
+				if (wizardMode === "Accumulation" || wizardMode === "Vector3D") {
+					return WizardBasicInfoSchema.omit({ maxTNT: true }).safeParse(baseData);
+				}
 				return WizardBasicInfoSchema.safeParse(baseData);
 			})
 			.with(3, () =>
