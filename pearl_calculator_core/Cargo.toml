@@ -1,6 +1,6 @@
 [package]
 name = "pearl_calculator_core"
-version = "2.1.4"
+version = "2.2.0"
 authors = ["MliroLirrorsIngenuity <admin@lolicon.best>", "Lemon_miaow <admin@lemonmiaow.xyz>"]
 edition = "2024"
 
