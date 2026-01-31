@@ -46,8 +46,7 @@ body = """
         {% endif -%}
     {% endfor -%}
 {% endfor -%}
-{%- if github -%}
-{% if github.contributors | filter(attribute="is_first_time", value=true) | length != 0 %}
+
 """
 
 # Footer
@@ -73,6 +72,11 @@ commit_parsers = [
     { body = ".*security", group = "<!-- 9 -->🔒 Security" },
     { message = "^revert", group = "<!-- 10 -->◀️ Revert" },
 ]
+
+# GitHub Integration
+[git.github]
+commits = true
+contributors = true
 
 # Ignore tags
 ignore_tags = "rc"
