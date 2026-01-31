@@ -79,23 +79,42 @@ function CalculatorContent() {
 		return [0, 20];
 	};
 
+	const getDefaultDistanceRange = (mode: string) => {
+		if (mode === "Vector3D" || mode === "Accumulation") {
+			return [0, 50];
+		}
+		return [0, 20];
+	};
+
 	useEffect(() => {
 		if (prevMode.current !== calculationMode) {
-			const currentRange = inputs.tickRange;
-			const previousDefault = getDefaultTickRange(prevMode.current);
+			const currentTickRange = inputs.tickRange;
+			const previousTickDefault = getDefaultTickRange(prevMode.current);
 
-			const isDefault =
-				currentRange[0] === previousDefault[0] &&
-				currentRange[1] === previousDefault[1];
+			const isTickDefault =
+				currentTickRange[0] === previousTickDefault[0] &&
+				currentTickRange[1] === previousTickDefault[1];
 
-			if (isDefault) {
-				const newDefault = getDefaultTickRange(calculationMode);
-				updateInput("tickRange", newDefault);
+			if (isTickDefault) {
+				const newTickDefault = getDefaultTickRange(calculationMode);
+				updateInput("tickRange", newTickDefault);
+			}
+
+			const currentDistanceRange = inputs.distanceRange;
+			const previousDistanceDefault = getDefaultDistanceRange(prevMode.current);
+
+			const isDistanceDefault =
+				currentDistanceRange[0] === previousDistanceDefault[0] &&
+				currentDistanceRange[1] === previousDistanceDefault[1];
+
+			if (isDistanceDefault) {
+				const newDistanceDefault = getDefaultDistanceRange(calculationMode);
+				updateInput("distanceRange", newDistanceDefault);
 			}
 
 			prevMode.current = calculationMode;
 		}
-	}, [calculationMode, inputs.tickRange, updateInput]);
+	}, [calculationMode, inputs.tickRange, inputs.distanceRange, updateInput]);
 
 	const handleImport = async () => {
 		try {
