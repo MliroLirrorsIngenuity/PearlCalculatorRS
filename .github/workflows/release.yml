@@ -250,42 +250,16 @@ jobs:
         run: pnpm tauri build ${{ matrix.args }}
 
       # ===== Release body generation (only on linux-x86_64) =====
-      - name: Generate Release Body
+      - name: Generate Release Body with git-cliff
         if: matrix.platform == 'linux-x86_64'
-        id: release-body
-        shell: bash
-        run: |
-          CURRENT_TAG=${GITHUB_REF#refs/tags/}
-          echo "Current Tag: $CURRENT_TAG"
-
-          if [[ "$CURRENT_TAG" != *"-"* ]]; then
-            PREV_TAG=$(git describe --tags --abbrev=0 --exclude="*-*" HEAD^ 2>/dev/null || echo "")
-          else
-            PREV_TAG=$(git describe --tags --abbrev=0 --exclude="$CURRENT_TAG" HEAD^ 2>/dev/null || echo "")
-          fi
-
-          echo "Previous Version determined as: ${PREV_TAG:-'Initial Commit'}"
-
-          if [ -z "$PREV_TAG" ]; then
-            RANGE="HEAD"
-          else
-            RANGE="$PREV_TAG..HEAD"
-          fi
-
-          LOG_FORMAT="* [\`%h\`](http://github.com/${{ github.repository }}/commit/%H) - %s by @%an"
-          FEAT_LOG=$(git log $RANGE --no-merges --grep="^feat" -i --pretty=format:"$LOG_FORMAT")
-          FIX_LOG=$(git log $RANGE --no-merges --grep="^fix" -i --pretty=format:"$LOG_FORMAT")
-          OTHER_LOG=$(git log $RANGE --no-merges --invert-grep --grep="^feat" --grep="^fix" --grep="^ci" -i --pretty=format:"$LOG_FORMAT")
-
-          {
-            echo "RELEASE_BODY<<EOF"
-            echo "## What's Changed"
-            echo ""
-            if [ -n "$FEAT_LOG" ]; then echo "### ✨ New Features"; echo "$FEAT_LOG"; echo ""; fi
-            if [ -n "$FIX_LOG" ]; then echo "### 🐛 Bug Fixes"; echo "$FIX_LOG"; echo ""; fi
-            if [ -n "$OTHER_LOG" ]; then echo "### 🛠 Other Changes"; echo "$OTHER_LOG"; fi
-            echo "EOF"
-          } >> "$GITHUB_ENV"
+        uses: orhun/git-cliff-action@v4
+        id: git-cliff
+        with:
+          config: .github/cliff.toml
+          args: --latest --strip header
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPO: ${{ github.repository }}
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
@@ -293,7 +267,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          body: ${{ env.RELEASE_BODY }}
+          body: ${{ steps.git-cliff.outputs.content }}
           draft: true
           prerelease: ${{ contains(github.ref_name, 'beta') }}
 
