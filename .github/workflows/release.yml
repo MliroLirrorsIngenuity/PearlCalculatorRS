@@ -73,7 +73,7 @@ jobs:
 
       - name: Setup Android SDK
         if: matrix.target == 'android'
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@v4
 
       - name: Install Android NDK
         if: matrix.target == 'android'
