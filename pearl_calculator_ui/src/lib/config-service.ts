@@ -1,211 +1,16 @@
 import { open, save } from "@tauri-apps/plugin-dialog";
 import { readTextFile, writeTextFile } from "@tauri-apps/plugin-fs";
-import { z } from "zod";
-import {
-	BitDirectionSchema,
-	BitTemplateConfigSchema,
-	GeneralConfigSchema,
-	MultiplierConfigSchema,
-	TNTDirectionSchema,
-} from "@/lib/schemas";
-import type {
-	BitTemplateConfig,
-	GeneralConfig,
-	MultiplierConfig,
-} from "@/types/domain";
+import { utilsRust, type ImportedConfiguration } from "@/lib/utils-rust";
 import { isTauri } from "@/services";
-
-const LooseConfigSchema = z
-	.object({
-		Version: z.string().optional(),
-		CannonSettings: z.array(z.any()).optional(),
-		MaxTNT: z.any().optional(),
-		NorthWestTNT: z.any().optional(),
-		NorthEastTNT: z.any().optional(),
-		SouthWestTNT: z.any().optional(),
-		SouthEastTNT: z.any().optional(),
-		VerticalTNT: z.any().optional(),
-		MaxVerticalTNT: z.any().optional(),
-		DefaultRedDirection: z.string().optional(),
-		DefaultRedTNTDirection: z.string().optional(),
-		DefaultBlueDirection: z.string().optional(),
-		DefaultBlueTNTDirection: z.string().optional(),
-		Pearl: z
-			.object({
-				Position: z
-					.object({
-						X: z.any().optional(),
-						Y: z.any().optional(),
-						Z: z.any().optional(),
-					})
-					.optional(),
-				Motion: z
-					.object({
-						X: z.any().optional(),
-						Y: z.any().optional(),
-						Z: z.any().optional(),
-					})
-					.optional(),
-			})
-			.optional(),
-		Offset: z
-			.object({ X: z.any().optional(), Z: z.any().optional() })
-			.optional(),
-		SideMode: z.number().optional(),
-		DirectionMasks: z.record(z.string(), z.any()).optional(),
-		RedValues: z.array(z.any()).optional(),
-		IsRedArrowCenter: z.boolean().optional(),
-		Mode: z.string().optional(),
-		MultiplierSideMode: z.number().optional(),
-		MultiplierValues: z.array(z.any()).optional(),
-		Multiplier: z.number().optional(),
-		MultiplierIsSwapped: z.boolean().optional(),
-	})
-	.passthrough();
-
-type DirtyConfig = z.infer<typeof LooseConfigSchema>;
-
-function normalizeConfig(dirty: DirtyConfig): GeneralConfig {
-	let root = dirty;
-	if (
-		dirty.CannonSettings &&
-		Array.isArray(dirty.CannonSettings) &&
-		dirty.CannonSettings.length > 0
-	) {
-		root = dirty.CannonSettings[0];
-	}
-
-	const readPos = (obj: any) => ({
-		x: Number(obj?.X ?? 0),
-		y: Number(obj?.Y ?? 0),
-		z: Number(obj?.Z ?? 0),
-	});
-
-	const redDirRaw =
-		root.DefaultRedDirection ?? root.DefaultRedTNTDirection ?? "SouthEast";
-	const blueDirRaw =
-		root.DefaultBlueDirection ?? root.DefaultBlueTNTDirection ?? "SouthEast";
-
-	const redDir = TNTDirectionSchema.safeParse(redDirRaw).data ?? "SouthEast";
-	const blueDir = TNTDirectionSchema.safeParse(blueDirRaw).data ?? "SouthEast";
-
-	const config = {
-		max_tnt: Number(root.MaxTNT ?? 0),
-		north_west_tnt: readPos(root.NorthWestTNT),
-		north_east_tnt: readPos(root.NorthEastTNT),
-		south_west_tnt: readPos(root.SouthWestTNT),
-		south_east_tnt: readPos(root.SouthEastTNT),
-		vertical_tnt: root.VerticalTNT ? readPos(root.VerticalTNT) : undefined,
-		pearl_x_position: Number(root.Pearl?.Position?.X ?? 0),
-		pearl_x_motion: Number(root.Pearl?.Motion?.X ?? 0),
-		pearl_y_motion: Number(root.Pearl?.Motion?.Y ?? 0),
-		pearl_z_motion: Number(root.Pearl?.Motion?.Z ?? 0),
-		pearl_y_position: Number(root.Pearl?.Position?.Y ?? 0),
-		pearl_z_position: Number(root.Pearl?.Position?.Z ?? 0),
-		default_red_tnt_position: redDir,
-		default_blue_tnt_position: blueDir,
-		offset_x: Number(root.Offset?.X ?? 0),
-		offset_z: Number(root.Offset?.Z ?? 0),
-		max_vertical_tnt: root.MaxVerticalTNT
-			? Number(root.MaxVerticalTNT)
-			: undefined,
-		mode: root.Mode,
-	};
-
-	return GeneralConfigSchema.parse(config);
-}
-
-function extractBitTemplateConfig(
-	dirty: DirtyConfig,
-): BitTemplateConfig | null {
-	let root = dirty;
-	if (
-		dirty.CannonSettings &&
-		Array.isArray(dirty.CannonSettings) &&
-		dirty.CannonSettings.length > 0
-	) {
-		root = dirty.CannonSettings[0];
-	}
-
-	if (!root.SideMode || !root.RedValues || !Array.isArray(root.RedValues)) {
-		return null;
-	}
-
-	const directionMasks: BitTemplateConfig["DirectionMasks"] = {};
-	if (root.DirectionMasks) {
-		const masks = ["00", "01", "10", "11"] as const;
-		masks.forEach((key) => {
-			const raw = root.DirectionMasks?.[key];
-			const parsed = BitDirectionSchema.safeParse(raw);
-			if (parsed.success) {
-				directionMasks[key] = parsed.data;
-			}
-		});
-	}
-
-	const template = {
-		SideMode: root.SideMode,
-		DirectionMasks: directionMasks,
-		RedValues: root.RedValues.map((v) => Number(v) || 0),
-		IsRedArrowCenter: root.IsRedArrowCenter ?? false,
-	};
-
-	return BitTemplateConfigSchema.parse(template);
-}
-
-function extractMultiplierConfig(dirty: DirtyConfig): MultiplierConfig | null {
-	let root = dirty;
-	if (
-		dirty.CannonSettings &&
-		Array.isArray(dirty.CannonSettings) &&
-		dirty.CannonSettings.length > 0
-	) {
-		root = dirty.CannonSettings[0];
-	}
-
-	if (
-		!root.MultiplierSideMode ||
-		!root.MultiplierValues ||
-		!Array.isArray(root.MultiplierValues)
-	) {
-		return null;
-	}
-
-	const config = {
-		MultiplierSideMode: root.MultiplierSideMode,
-		MultiplierValues: root.MultiplierValues.map((v) => Number(v) || 0),
-		Multiplier: root.Multiplier ?? 200,
-		MultiplierIsSwapped: root.MultiplierIsSwapped ?? false,
-	};
-
-	return MultiplierConfigSchema.parse(config);
-}
 
 export function parseConfigurationContent(
 	content: string,
 	path: string,
-): {
-	config: GeneralConfig;
-	bitTemplate: BitTemplateConfig | null;
-	multiplierTemplate: MultiplierConfig | null;
-	path: string;
-} {
-	const json = JSON.parse(content);
-	const dirty = LooseConfigSchema.parse(json);
-
-	const cleanConfig = normalizeConfig(dirty);
-	const bitTemplate = extractBitTemplateConfig(dirty);
-	const multiplierTemplate = extractMultiplierConfig(dirty);
-
-	return { config: cleanConfig, bitTemplate, multiplierTemplate, path };
+): ImportedConfiguration {
+	return utilsRust.parse_configuration_content(content, path);
 }
 
-export async function loadConfiguration(): Promise<{
-	config: GeneralConfig;
-	bitTemplate: BitTemplateConfig | null;
-	multiplierTemplate: MultiplierConfig | null;
-	path: string;
-} | null> {
+export async function loadConfiguration(): Promise<ImportedConfiguration | null> {
 	try {
 		if (isTauri) {
 			const selected = await open({
@@ -245,7 +50,9 @@ export async function loadConfiguration(): Promise<{
 	return null;
 }
 
-export async function exportConfiguration(config: any): Promise<string | null> {
+export async function exportConfiguration(
+	config: object,
+): Promise<string | null> {
 	try {
 		if (isTauri) {
 			const path = await save({

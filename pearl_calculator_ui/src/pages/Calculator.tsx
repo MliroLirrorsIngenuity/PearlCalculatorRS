@@ -22,7 +22,9 @@ import { usePearlTrace } from "@/hooks/use-pearl-trace";
 import { useToastNotifications } from "@/hooks/use-toast-notifications";
 import { loadConfiguration } from "@/lib/config-service";
 import { decodeConfig } from "@/lib/config-codec";
+import { dispatchTauriAppStateAction } from "@/lib/tauri-app-state";
 import type { CalculatorInputs } from "@/types/domain";
+import { isTauri } from "@/services";
 
 function CalculatorContent() {
 	const {
@@ -43,7 +45,7 @@ function CalculatorContent() {
 		defaultCalculator,
 		updateDefaultInput,
 		updateDefaultTrace,
-		setDefaultCalculator,
+		setDefaultResults,
 		resetDefaultCalculator,
 	} = useCalculatorState();
 
@@ -120,22 +122,32 @@ function CalculatorContent() {
 		try {
 			const result = await loadConfiguration();
 			if (result) {
-				setConfigData(result.config);
-				setConfigPath(result.path);
-				setBitTemplateConfig(result.bitTemplate);
-				setMultiplierConfig(result.multiplierTemplate);
-				setHasConfig(true);
+				if (isTauri) {
+					await dispatchTauriAppStateAction({
+						type: "applyConfigToCalculator",
+						config: result.config,
+						bitTemplate: result.bitTemplate,
+						multiplierTemplate: result.multiplierTemplate,
+						path: result.path,
+					});
+				} else {
+					setConfigData(result.config);
+					setConfigPath(result.path);
+					setBitTemplateConfig(result.bitTemplate);
+					setMultiplierConfig(result.multiplierTemplate);
+					setHasConfig(true);
 
-				updateDefaultInput("pearlX", result.config.pearl_x_position.toString());
-				updateDefaultInput("pearlZ", result.config.pearl_z_position.toString());
-				updateDefaultInput(
-					"cannonY",
-					Math.floor(result.config.pearl_y_position).toString(),
-				);
-				updateDefaultInput("offsetX", (result.config.offset_x ?? 0).toString());
-				updateDefaultInput("offsetZ", (result.config.offset_z ?? 0).toString());
+					updateDefaultInput("pearlX", result.config.pearl_x_position.toString());
+					updateDefaultInput("pearlZ", result.config.pearl_z_position.toString());
+					updateDefaultInput(
+						"cannonY",
+						Math.floor(result.config.pearl_y_position).toString(),
+					);
+					updateDefaultInput("offsetX", (result.config.offset_x ?? 0).toString());
+					updateDefaultInput("offsetZ", (result.config.offset_z ?? 0).toString());
 
-				setCalculationMode(result.config.mode ?? "Standard");
+					setCalculationMode(result.config.mode ?? "Standard");
+				}
 
 				showSuccess(t("calculator.toast_config_loaded"));
 			}
@@ -150,33 +162,43 @@ function CalculatorContent() {
 			const { calculatorService } = await import("@/services");
 			const text = await calculatorService.readFromClipboard();
 			const decoded = decodeConfig(text.trim());
-			setConfigData(decoded.generalConfig);
-			setBitTemplateConfig(decoded.bitTemplate);
-			setConfigPath("");
-			setHasConfig(true);
+			if (isTauri) {
+				await dispatchTauriAppStateAction({
+					type: "applyConfigToCalculator",
+					config: decoded.generalConfig,
+					bitTemplate: decoded.bitTemplate,
+					multiplierTemplate: null,
+					path: "",
+				});
+			} else {
+				setConfigData(decoded.generalConfig);
+				setBitTemplateConfig(decoded.bitTemplate);
+				setConfigPath("");
+				setHasConfig(true);
 
-			updateDefaultInput(
-				"pearlX",
-				decoded.generalConfig.pearl_x_position.toString(),
-			);
-			updateDefaultInput(
-				"pearlZ",
-				decoded.generalConfig.pearl_z_position.toString(),
-			);
-			updateDefaultInput(
-				"cannonY",
-				Math.floor(decoded.generalConfig.pearl_y_position).toString(),
-			);
-			updateDefaultInput(
-				"offsetX",
-				(decoded.generalConfig.offset_x ?? 0).toString(),
-			);
-			updateDefaultInput(
-				"offsetZ",
-				(decoded.generalConfig.offset_z ?? 0).toString(),
-			);
+				updateDefaultInput(
+					"pearlX",
+					decoded.generalConfig.pearl_x_position.toString(),
+				);
+				updateDefaultInput(
+					"pearlZ",
+					decoded.generalConfig.pearl_z_position.toString(),
+				);
+				updateDefaultInput(
+					"cannonY",
+					Math.floor(decoded.generalConfig.pearl_y_position).toString(),
+				);
+				updateDefaultInput(
+					"offsetX",
+					(decoded.generalConfig.offset_x ?? 0).toString(),
+				);
+				updateDefaultInput(
+					"offsetZ",
+					(decoded.generalConfig.offset_z ?? 0).toString(),
+				);
 
-			setCalculationMode(decoded.generalConfig.mode ?? "Standard");
+				setCalculationMode(decoded.generalConfig.mode ?? "Standard");
+			}
 
 			showSuccess(t("calculator.toast_code_imported"));
 		} catch (e) {
@@ -194,7 +216,7 @@ function CalculatorContent() {
 		);
 
 		if (result.success) {
-			setDefaultCalculator((prev) => ({ ...prev, results: result.data }));
+			setDefaultResults(result.data);
 			showSuccess(
 				t("calculator.toast_found_configs", { count: result.data.length }),
 			);

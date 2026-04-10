@@ -13,4 +13,4 @@ serde-wasm-bindgen = "0.6"
 
 pearl_calculator_core = { path = "../pearl_calculator_core", default-features = false }
 pearl_calculator_bridge = { path = "../pearl_calculator_bridge" }
-
+pearl_calculator_utils = { path = "../pearl_calculator_utils" }

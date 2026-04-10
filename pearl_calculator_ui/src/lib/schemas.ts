@@ -48,7 +48,7 @@ export const TNTResultSchema = z.object({
 	direction: z.string(),
 	vertical: z.number().optional(),
 	charges: z.number().optional(),
-});
+}).passthrough();
 
 export const PearlTraceResultSchema = z.object({
 	landing_position: z.object({ X: z.number(), Y: z.number(), Z: z.number() }),

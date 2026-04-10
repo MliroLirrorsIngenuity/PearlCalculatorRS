@@ -10,6 +10,7 @@ import { useToastNotifications } from "@/hooks/use-toast-notifications";
 import { configToInputState } from "@/lib/bit-template-utils";
 import { parseConfigurationContent } from "@/lib/config-service";
 import { convertConfigToDraft } from "@/lib/config-utils";
+import { dispatchTauriAppStateAction } from "@/lib/tauri-app-state";
 import { isTauri } from "@/services";
 
 export function useDragDrop() {
@@ -48,31 +49,51 @@ export function useDragDrop() {
 					locationRef.current.pathname === "/configuration";
 
 				if (currentlyOnConfigPage) {
-					const { draft, center, momentum, redLocation } =
-						convertConfigToDraft(config);
-					setDraftConfig(draft);
-					setCannonCenter(center);
-					setPearlMomentum(momentum);
-					setRedTNTLocation(redLocation);
+					if (isTauri) {
+						await dispatchTauriAppStateAction({
+							type: "applyConfigToWizard",
+							config,
+							bitTemplate,
+							multiplierTemplate: null,
+							path,
+						});
+					} else {
+						const { draft, center, momentum, redLocation } =
+							convertConfigToDraft(config);
+						setDraftConfig(draft);
+						setCannonCenter(center);
+						setPearlMomentum(momentum);
+						setRedTNTLocation(redLocation);
 
-					const bitInput = configToInputState(bitTemplate);
-					setBitTemplateState(bitInput);
-					setSavedPath(path);
-					setIsWizardActive(true);
+						const bitInput = configToInputState(bitTemplate);
+						setBitTemplateState(bitInput);
+						setSavedPath(path);
+						setIsWizardActive(true);
+					}
 					showSuccess(t("configuration_page.toast_imported"));
 				} else {
-					setConfigData(config);
-					setBitTemplateConfig(bitTemplate);
-					setHasConfig(true);
+					if (isTauri) {
+						await dispatchTauriAppStateAction({
+							type: "applyConfigToCalculator",
+							config,
+							bitTemplate,
+							multiplierTemplate: null,
+							path,
+						});
+					} else {
+						setConfigData(config);
+						setBitTemplateConfig(bitTemplate);
+						setHasConfig(true);
 
-					updateDefaultInput("pearlX", config.pearl_x_position.toString());
-					updateDefaultInput("pearlZ", config.pearl_z_position.toString());
-					updateDefaultInput(
-						"cannonY",
-						Math.floor(config.pearl_y_position).toString(),
-					);
-					updateDefaultInput("offsetX", (config.offset_x ?? 0).toString());
-					updateDefaultInput("offsetZ", (config.offset_z ?? 0).toString());
+						updateDefaultInput("pearlX", config.pearl_x_position.toString());
+						updateDefaultInput("pearlZ", config.pearl_z_position.toString());
+						updateDefaultInput(
+							"cannonY",
+							Math.floor(config.pearl_y_position).toString(),
+						);
+						updateDefaultInput("offsetX", (config.offset_x ?? 0).toString());
+						updateDefaultInput("offsetZ", (config.offset_z ?? 0).toString());
+					}
 
 					showSuccess(t("calculator.toast_config_loaded"));
 					if (locationRef.current.pathname !== "/") {

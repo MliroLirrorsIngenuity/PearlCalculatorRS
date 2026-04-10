@@ -31,6 +31,7 @@ import {
 	type EncodableConfig,
 	encodeConfig,
 } from "@/lib/config-codec";
+import { dispatchTauriAppStateAction } from "@/lib/tauri-app-state";
 import { isTauri } from "@/services";
 import type {
 	BitTemplateConfig,
@@ -259,6 +260,16 @@ export function useConfigurationController() {
 	};
 
 	const handleApplyToCalculator = () => {
+		if (isTauri) {
+			void (async () => {
+				await dispatchTauriAppStateAction({
+					type: "applyWizardToCalculator",
+				});
+				navigate("/");
+			})();
+			return;
+		}
+
 		const config = convertDraftToConfig(
 			draftConfig,
 			cannonCenter,
@@ -334,6 +345,17 @@ export function useConfigurationController() {
 		path: string | null = null,
 		multiplierTemplate?: MultiplierConfig | null,
 	) => {
+		if (isTauri) {
+			void dispatchTauriAppStateAction({
+				type: "applyConfigToWizard",
+				config,
+				bitTemplate,
+				multiplierTemplate: multiplierTemplate ?? null,
+				path,
+			});
+			return;
+		}
+
 		const { draft, center, redLocation } =
 			convertConfigToDraft(config);
 		setDraftConfig(draft);

@@ -1,4 +1,6 @@
 import { createContext, type ReactNode, useContext, useState } from "react";
+import { dispatchTauriAppStateAction, useTauriAppStateSlice } from "@/lib/tauri-app-state";
+import { isTauri } from "@/services";
 import type {
 	CalculatorInputs,
 	PearlTraceResult,
@@ -34,38 +36,20 @@ interface SimulatorState {
 
 interface CalculatorStateContextType {
 	defaultCalculator: CalculatorState;
-	setDefaultCalculator: React.Dispatch<React.SetStateAction<CalculatorState>>;
-
+	setDefaultResults: (results: TNTResult[]) => void;
 	simulator: SimulatorState;
-	setSimulator: React.Dispatch<React.SetStateAction<SimulatorState>>;
-
-	updateDefaultInput: (field: keyof CalculatorInputs, value: any) => void;
-
+	updateDefaultInput: (field: keyof CalculatorInputs, value: string | number[]) => void;
 	updateDefaultTrace: (data: Partial<CalculatorState["trace"]>) => void;
 	updateBitCalculation: (
 		data: Partial<CalculatorState["trace"]["bitCalculation"]>,
 	) => void;
 	resetDefaultCalculator: () => void;
-
-	updateSimulatorInput: (field: keyof CalculatorInputs, value: any) => void;
 	updateSimulatorConfig: (config: SimulatorConfig) => void;
 	updateSimulatorTrace: (data: Partial<SimulatorState["trace"]>) => void;
 	resetSimulatorConfig: () => void;
 }
 
 const initialDefaultInputs: CalculatorInputs = {
-	pearlX: "",
-	pearlZ: "",
-	destX: "",
-	destZ: "",
-	cannonY: "36",
-	offsetX: "0",
-	offsetZ: "0",
-	tickRange: [0, 20],
-	distanceRange: [0, 20],
-};
-
-const initialSimulatorInputs: CalculatorInputs = {
 	pearlX: "",
 	pearlZ: "",
 	destX: "",
@@ -116,7 +100,78 @@ const CalculatorStateContext = createContext<
 	CalculatorStateContextType | undefined
 >(undefined);
 
-export function CalculatorStateProvider({ children }: { children: ReactNode }) {
+function TauriCalculatorStateProvider({ children }: { children: ReactNode }) {
+	const defaultCalculator = useTauriAppStateSlice(
+		(snapshot) => snapshot.calculator.defaultCalculator,
+	);
+	const simulator = useTauriAppStateSlice(
+		(snapshot) => snapshot.calculator.simulator,
+	);
+
+	return (
+		<CalculatorStateContext.Provider
+			value={{
+				defaultCalculator,
+				setDefaultResults: (results) => {
+					void dispatchTauriAppStateAction({
+						type: "setDefaultResults",
+						results,
+					}).catch((error) => {
+						console.error("Failed to persist calculation results", error);
+					});
+				},
+				simulator,
+				updateDefaultInput: (field, value) => {
+					void dispatchTauriAppStateAction({
+						type: "updateDefaultInput",
+						field,
+						value,
+					});
+				},
+				updateDefaultTrace: (data) => {
+					void dispatchTauriAppStateAction({
+						type: "updateDefaultTrace",
+						patch: data,
+					});
+				},
+				updateBitCalculation: (data) => {
+					if (data.show !== undefined) {
+						void dispatchTauriAppStateAction({
+							type: "updateBitCalculation",
+							show: data.show,
+						});
+					}
+				},
+				resetDefaultCalculator: () => {
+					void dispatchTauriAppStateAction({
+						type: "resetDefaultCalculator",
+					});
+				},
+				updateSimulatorConfig: (config) => {
+					void dispatchTauriAppStateAction({
+						type: "setSimulatorConfig",
+						config,
+					});
+				},
+				updateSimulatorTrace: (data) => {
+					void dispatchTauriAppStateAction({
+						type: "updateSimulatorTrace",
+						patch: data,
+					});
+				},
+				resetSimulatorConfig: () => {
+					void dispatchTauriAppStateAction({
+						type: "resetSimulatorConfig",
+					});
+				},
+			}}
+		>
+			{children}
+		</CalculatorStateContext.Provider>
+	);
+}
+
+function WebCalculatorStateProvider({ children }: { children: ReactNode }) {
 	const [defaultCalculator, setDefaultCalculator] = useState<CalculatorState>({
 		inputs: initialDefaultInputs,
 		results: [],
@@ -132,7 +187,7 @@ export function CalculatorStateProvider({ children }: { children: ReactNode }) {
 	});
 
 	const [simulator, setSimulator] = useState<SimulatorState>({
-		inputs: initialSimulatorInputs,
+		inputs: initialDefaultInputs,
 		config: emptySimulatorConfig,
 		trace: {
 			data: null,
@@ -142,7 +197,10 @@ export function CalculatorStateProvider({ children }: { children: ReactNode }) {
 		},
 	});
 
-	const updateDefaultInput = (field: keyof CalculatorInputs, value: any) => {
+	const updateDefaultInput = (
+		field: keyof CalculatorInputs,
+		value: string | number[],
+	) => {
 		setDefaultCalculator((prev) => ({
 			...prev,
 			inputs: {
@@ -193,16 +251,6 @@ export function CalculatorStateProvider({ children }: { children: ReactNode }) {
 		});
 	};
 
-	const updateSimulatorInput = (field: keyof CalculatorInputs, value: any) => {
-		setSimulator((prev) => ({
-			...prev,
-			inputs: {
-				...prev.inputs,
-				[field]: value,
-			},
-		}));
-	};
-
 	const updateSimulatorConfig = (config: SimulatorConfig) => {
 		setSimulator((prev) => ({
 			...prev,
@@ -236,14 +284,14 @@ export function CalculatorStateProvider({ children }: { children: ReactNode }) {
 		<CalculatorStateContext.Provider
 			value={{
 				defaultCalculator,
-				setDefaultCalculator,
+				setDefaultResults: (results) => {
+					setDefaultCalculator((prev) => ({ ...prev, results }));
+				},
 				simulator,
-				setSimulator,
 				updateDefaultInput,
 				updateDefaultTrace,
 				updateBitCalculation,
 				resetDefaultCalculator,
-				updateSimulatorInput,
 				updateSimulatorConfig,
 				updateSimulatorTrace,
 				resetSimulatorConfig,
@@ -252,6 +300,14 @@ export function CalculatorStateProvider({ children }: { children: ReactNode }) {
 			{children}
 		</CalculatorStateContext.Provider>
 	);
+}
+
+export function CalculatorStateProvider({ children }: { children: ReactNode }) {
+	if (isTauri) {
+		return <TauriCalculatorStateProvider>{children}</TauriCalculatorStateProvider>;
+	}
+
+	return <WebCalculatorStateProvider>{children}</WebCalculatorStateProvider>;
 }
 
 export function useCalculatorState() {

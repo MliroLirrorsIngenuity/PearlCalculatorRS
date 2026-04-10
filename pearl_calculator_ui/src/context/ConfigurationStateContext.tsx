@@ -1,4 +1,6 @@
 import { createContext, type ReactNode, useContext, useState } from "react";
+import { dispatchTauriAppStateAction, useTauriAppStateSlice } from "@/lib/tauri-app-state";
+import { isTauri } from "@/services";
 import type {
 	BitInputState,
 	CannonMode,
@@ -56,7 +58,6 @@ interface ConfigurationStateContextType {
 	setIsBitConfigSkipped: (skipped: boolean) => void;
 	savedPath: string | null;
 	setSavedPath: (path: string | null) => void;
-
 	calculationMode: CannonMode;
 	setCalculationMode: (mode: CannonMode) => void;
 	wizardMode: CannonMode;
@@ -72,7 +73,122 @@ const ConfigurationStateContext = createContext<
 	ConfigurationStateContextType | undefined
 >(undefined);
 
-export function ConfigurationStateProvider({
+function TauriConfigurationStateProvider({
+	children,
+}: {
+	children: ReactNode;
+}) {
+	const configuration = useTauriAppStateSlice(
+		(snapshot) => snapshot.configuration,
+	);
+
+	return (
+		<ConfigurationStateContext.Provider
+			value={{
+				draftConfig: configuration.draftConfig,
+				setDraftConfig: (config) => {
+					void dispatchTauriAppStateAction({
+						type: "setDraftConfig",
+						config,
+					});
+				},
+				cannonCenter: configuration.cannonCenter,
+				setCannonCenter: (center) => {
+					void dispatchTauriAppStateAction({
+						type: "setCannonCenter",
+						center,
+					});
+				},
+				pearlMomentum: configuration.pearlMomentum,
+				setPearlMomentum: (momentum) => {
+					void dispatchTauriAppStateAction({
+						type: "setPearlMomentum",
+						momentum,
+					});
+				},
+				redTNTLocation: configuration.redTntLocation,
+				setRedTNTLocation: (location) => {
+					void dispatchTauriAppStateAction({
+						type: "setRedTntLocation",
+						location,
+					});
+				},
+				bitTemplateState: configuration.bitTemplateState,
+				setBitTemplateState: (state) => {
+					void dispatchTauriAppStateAction({
+						type: "setBitTemplateState",
+						state,
+					});
+				},
+				isWizardActive: configuration.isWizardActive,
+				setIsWizardActive: (active) => {
+					void dispatchTauriAppStateAction({
+						type: "setIsWizardActive",
+						active,
+					});
+				},
+				isFinished: configuration.isFinished,
+				setIsFinished: (finished) => {
+					void dispatchTauriAppStateAction({
+						type: "setIsFinished",
+						finished,
+					});
+				},
+				isBitConfigSkipped: configuration.isBitConfigSkipped,
+				setIsBitConfigSkipped: (skipped) => {
+					void dispatchTauriAppStateAction({
+						type: "setIsBitConfigSkipped",
+						skipped,
+					});
+				},
+				savedPath: configuration.savedPath,
+				setSavedPath: (path) => {
+					void dispatchTauriAppStateAction({
+						type: "setSavedPath",
+						path,
+					});
+				},
+				calculationMode: configuration.calculationMode,
+				setCalculationMode: (mode) => {
+					void dispatchTauriAppStateAction({
+						type: "setCalculationMode",
+						mode,
+					});
+				},
+				wizardMode: configuration.wizardMode,
+				setWizardMode: (mode) => {
+					void dispatchTauriAppStateAction({
+						type: "setWizardMode",
+						mode,
+					});
+				},
+				multiplierBitState: configuration.multiplierBitState,
+				setMultiplierBitState: (state) => {
+					void dispatchTauriAppStateAction({
+						type: "setMultiplierBitState",
+						state,
+					});
+				},
+				isMultiplierConfigSkipped: configuration.isMultiplierConfigSkipped,
+				setIsMultiplierConfigSkipped: (skipped) => {
+					void dispatchTauriAppStateAction({
+						type: "setIsMultiplierConfigSkipped",
+						skipped,
+					});
+				},
+				resetDraft: () => {
+					void dispatchTauriAppStateAction({
+						type: "resetDraft",
+					});
+				},
+			}}
+		>
+			{children}
+		</ConfigurationStateContext.Provider>
+	);
+}
+
+function WebConfigurationStateProvider({
 	children,
 }: {
 	children: ReactNode;
@@ -86,11 +202,9 @@ export function ConfigurationStateProvider({
 	const [bitTemplateState, setBitTemplateState] = useState<
 		BitInputState | undefined
 	>(undefined);
-
 	const [isWizardActive, setIsWizardActive] = useState(false);
 	const [isFinished, setIsFinished] = useState(false);
 	const [savedPath, setSavedPath] = useState<string | null>(null);
-
 	const [isBitConfigSkipped, setIsBitConfigSkipped] = useState(false);
 	const [calculationMode, setCalculationMode] =
 		useState<CannonMode>("Standard");
@@ -137,7 +251,6 @@ export function ConfigurationStateProvider({
 				setIsBitConfigSkipped,
 				savedPath,
 				setSavedPath,
-
 				calculationMode,
 				setCalculationMode,
 				wizardMode,
@@ -152,6 +265,20 @@ export function ConfigurationStateProvider({
 			{children}
 		</ConfigurationStateContext.Provider>
 	);
+}
+
+export function ConfigurationStateProvider({
+	children,
+}: {
+	children: ReactNode;
+}) {
+	if (isTauri) {
+		return (
+			<TauriConfigurationStateProvider>{children}</TauriConfigurationStateProvider>
+		);
+	}
+
+	return <WebConfigurationStateProvider>{children}</WebConfigurationStateProvider>;
 }
 
 export function useConfigurationState() {

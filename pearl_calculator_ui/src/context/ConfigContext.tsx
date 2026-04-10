@@ -1,4 +1,6 @@
 import { createContext, type ReactNode, useContext, useState } from "react";
+import { dispatchTauriAppStateAction, useTauriAppStateSlice } from "@/lib/tauri-app-state";
+import { isTauri } from "@/services";
 import type {
 	BitTemplateConfig,
 	GeneralConfig,
@@ -39,7 +41,68 @@ const defaultConfig: GeneralConfig = {
 };
 
 const ConfigContext = createContext<ConfigContextType | undefined>(undefined);
-export function ConfigProvider({ children }: { children: ReactNode }) {
+
+function TauriConfigProvider({ children }: { children: ReactNode }) {
+	const config = useTauriAppStateSlice((snapshot) => snapshot.config);
+
+	return (
+		<ConfigContext.Provider
+			value={{
+				hasConfig: config.hasConfig,
+				setHasConfig: (value) => {
+					void dispatchTauriAppStateAction({
+						type: "setHasConfig",
+						value,
+					});
+				},
+				version: config.version,
+				setVersion: (version) => {
+					void dispatchTauriAppStateAction({
+						type: "setVersion",
+						version,
+					});
+				},
+				configData: config.configData,
+				setConfigData: (data) => {
+					void dispatchTauriAppStateAction({
+						type: "setConfigData",
+						data,
+					});
+				},
+				configPath: config.configPath,
+				setConfigPath: (path) => {
+					void dispatchTauriAppStateAction({
+						type: "setConfigPath",
+						path,
+					});
+				},
+				bitTemplateConfig: config.bitTemplateConfig,
+				setBitTemplateConfig: (data) => {
+					void dispatchTauriAppStateAction({
+						type: "setBitTemplateConfig",
+						data,
+					});
+				},
+				multiplierConfig: config.multiplierConfig,
+				setMultiplierConfig: (data) => {
+					void dispatchTauriAppStateAction({
+						type: "setMultiplierConfig",
+						data,
+					});
+				},
+				resetConfig: () => {
+					void dispatchTauriAppStateAction({
+						type: "resetConfig",
+					});
+				},
+			}}
+		>
+			{children}
+		</ConfigContext.Provider>
+	);
+}
+
+function WebConfigProvider({ children }: { children: ReactNode }) {
 	const [hasConfig, setHasConfig] = useState(false);
 	const [version, setVersion] = useState<PearlVersion>("Post1212");
 	const [configData, setConfigData] = useState<GeneralConfig>(defaultConfig);
@@ -79,6 +142,15 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
 		</ConfigContext.Provider>
 	);
 }
+
+export function ConfigProvider({ children }: { children: ReactNode }) {
+	if (isTauri) {
+		return <TauriConfigProvider>{children}</TauriConfigProvider>;
+	}
+
+	return <WebConfigProvider>{children}</WebConfigProvider>;
+}
+
 export function useConfig() {
 	const context = useContext(ConfigContext);
 	if (context === undefined) {

@@ -1,7 +1,7 @@
 use pearl_calculator_core::calculation::results::{CalculationResult, TNTResult};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TNTResultOutput {
     pub distance: f64,
     pub tick: u32,
@@ -42,7 +42,7 @@ impl From<TNTResult> for TNTResultOutput {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PearlTraceOutput {
     pub landing_position: Space3DOutput,
     pub pearl_trace: Vec<Space3DOutput>,
@@ -137,14 +137,14 @@ impl PearlTraceOutput {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ClosestApproachOutput {
     pub tick: u32,
     pub point: Space3DOutput,
     pub distance: f64,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 pub struct Space3DOutput {
     #[serde(rename = "X")]
     pub x: f64,

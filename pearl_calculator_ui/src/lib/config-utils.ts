@@ -1,45 +1,16 @@
-import { z } from "zod";
-import { CoercedNumberSchema, TNTDirectionSchema } from "@/lib/schemas";
+import { utilsRust } from "@/lib/utils-rust";
 import type {
-	BitDirection,
 	BitInputState,
 	CannonMode,
 	GeneralConfig,
 	MultiplierBitInputState,
 } from "@/types/domain";
-import { preciseSubtract } from "./floating-point-utils";
+import type { DraftConfig } from "@/context/ConfigurationStateContext";
 
-export type TNTDirection = z.infer<typeof TNTDirectionSchema>;
+type TNTDirection = "SouthEast" | "NorthWest" | "SouthWest" | "NorthEast";
 
 export function toBackendMode(mode: CannonMode): "Standard" | "Accumulation" {
 	return mode === "Accumulation" ? "Accumulation" : "Standard";
-}
-
-export interface DraftConfig {
-	pearl_x_position: string;
-	pearl_y_position: string;
-	pearl_z_position: string;
-	pearl_x_motion: string;
-	pearl_y_motion: string;
-	pearl_z_motion: string;
-	max_tnt: string;
-	north_west_tnt: { x: string; y: string; z: string };
-	north_east_tnt: { x: string; y: string; z: string };
-	south_west_tnt: { x: string; y: string; z: string };
-	south_east_tnt: { x: string; y: string; z: string };
-	vertical_tnt: { x: string; y: string; z: string };
-	max_vertical_tnt: string;
-}
-
-export interface CannonCenter {
-	x: string;
-	z: string;
-}
-
-export interface PearlMomentum {
-	x: string;
-	y: string;
-	z: string;
 }
 
 const OPPOSITE_PAIRS: Record<TNTDirection, TNTDirection> = {
@@ -56,32 +27,15 @@ export function getOppositeDirection(dir: string | undefined): TNTDirection {
 	return "SouthEast";
 }
 
-function parseNumber(val: any): number {
-	return CoercedNumberSchema.parse(val);
+export interface CannonCenter {
+	x: string;
+	z: string;
 }
 
-export function getRelativeTNT(
-	tnt: { x: string; y: string; z: string },
-	cx: number,
-	cz: number,
-) {
-	return {
-		x: preciseSubtract(parseNumber(tnt.x), cx),
-		y: parseNumber(tnt.y),
-		z: preciseSubtract(parseNumber(tnt.z), cz),
-	};
-}
-
-export function getRelativeTNTUppercase(
-	tnt: { x: string; y: string; z: string },
-	cx: number,
-	cz: number,
-) {
-	return {
-		X: preciseSubtract(parseNumber(tnt.x), cx),
-		Y: parseNumber(tnt.y),
-		Z: preciseSubtract(parseNumber(tnt.z), cz),
-	};
+export interface PearlMomentum {
+	x: string;
+	y: string;
+	z: string;
 }
 
 export function convertDraftToConfig(
@@ -90,40 +44,12 @@ export function convertDraftToConfig(
 	redTNTLocation: string | undefined,
 	mode?: CannonMode,
 ): GeneralConfig {
-	const cx = parseNumber(cannonCenter.x);
-	const cz = parseNumber(cannonCenter.z);
-
-	const redDir: TNTDirection =
-		TNTDirectionSchema.safeParse(redTNTLocation).data ?? "SouthEast";
-
-	const baseConfig: GeneralConfig = {
-		north_east_tnt: getRelativeTNT(draftConfig.north_east_tnt, cx, cz),
-		north_west_tnt: getRelativeTNT(draftConfig.north_west_tnt, cx, cz),
-		south_east_tnt: getRelativeTNT(draftConfig.south_east_tnt, cx, cz),
-		south_west_tnt: getRelativeTNT(draftConfig.south_west_tnt, cx, cz),
-		pearl_x_position: 0,
-		pearl_x_motion: parseNumber(draftConfig.pearl_x_motion),
-		pearl_y_motion: parseNumber(draftConfig.pearl_y_motion),
-		pearl_z_motion: parseNumber(draftConfig.pearl_z_motion),
-		pearl_y_position: parseNumber(draftConfig.pearl_y_position),
-		pearl_z_position: 0,
-		max_tnt: parseNumber(draftConfig.max_tnt),
-		default_red_tnt_position: redDir,
-		default_blue_tnt_position: getOppositeDirection(redDir),
-		offset_x: 0,
-		offset_z: 0,
-	};
-
-	if (mode === "Vector3D") {
-		baseConfig.vertical_tnt = getRelativeTNT(draftConfig.vertical_tnt, cx, cz);
-		const maxVerticalTnt = parseNumber(draftConfig.max_vertical_tnt);
-		if (maxVerticalTnt >= 0 && draftConfig.max_vertical_tnt !== "") {
-			baseConfig.max_vertical_tnt = maxVerticalTnt;
-		}
-		baseConfig.mode = mode;
-	}
-
-	return baseConfig;
+	return utilsRust.convert_draft_to_config(
+		draftConfig,
+		cannonCenter,
+		redTNTLocation,
+		mode,
+	);
 }
 
 export function buildExportConfig(
@@ -134,86 +60,14 @@ export function buildExportConfig(
 	mode?: CannonMode,
 	multiplierBitState?: MultiplierBitInputState,
 ): Record<string, unknown> {
-	const cx = parseNumber(cannonCenter.x);
-	const cz = parseNumber(cannonCenter.z);
-	const pearlX = parseNumber(draftConfig.pearl_x_position);
-	const pearlZ = parseNumber(draftConfig.pearl_z_position);
-
-	const baseConfig: Record<string, unknown> = {
-		NorthEastTNT: getRelativeTNTUppercase(draftConfig.north_east_tnt, cx, cz),
-		NorthWestTNT: getRelativeTNTUppercase(draftConfig.north_west_tnt, cx, cz),
-		SouthEastTNT: getRelativeTNTUppercase(draftConfig.south_east_tnt, cx, cz),
-		SouthWestTNT: getRelativeTNTUppercase(draftConfig.south_west_tnt, cx, cz),
-		Offset: {
-			X: preciseSubtract(pearlX, cx),
-			Z: preciseSubtract(pearlZ, cz),
-		},
-		Pearl: {
-			Position: {
-				X: 0,
-				Y: parseNumber(draftConfig.pearl_y_position),
-				Z: 0,
-			},
-			Motion: {
-				X: parseNumber(draftConfig.pearl_x_motion),
-				Y: parseNumber(draftConfig.pearl_y_motion),
-				Z: parseNumber(draftConfig.pearl_z_motion),
-			},
-		},
-		MaxTNT: parseNumber(draftConfig.max_tnt),
-		DefaultRedTNTDirection: redTNTLocation,
-		DefaultBlueTNTDirection: getOppositeDirection(redTNTLocation),
-	};
-
-	if (mode === "Vector3D" || mode === "Accumulation") {
-		if (mode === "Vector3D") {
-			baseConfig.VerticalTNT = getRelativeTNTUppercase(
-				draftConfig.vertical_tnt,
-				cx,
-				cz,
-			);
-			const maxVerticalTnt = parseNumber(draftConfig.max_vertical_tnt);
-			if (maxVerticalTnt >= 0 && draftConfig.max_vertical_tnt !== "") {
-				baseConfig.MaxVerticalTNT = maxVerticalTnt;
-			}
-		}
-		baseConfig.Mode = mode;
-	}
-
-	if (!bitTemplateState) {
-		return baseConfig;
-	}
-
-	const directionMasks = bitTemplateState.masks.reduce(
-		(acc, mask) => {
-			if (mask.direction) {
-				acc[mask.bits.join("")] = mask.direction as BitDirection;
-			}
-			return acc;
-		},
-		{} as Record<string, BitDirection>,
+	return utilsRust.build_export_config(
+		draftConfig,
+		cannonCenter,
+		redTNTLocation,
+		bitTemplateState,
+		mode,
+		multiplierBitState,
 	);
-
-	const result: Record<string, unknown> = {
-		...baseConfig,
-		SideMode: bitTemplateState.sideCount,
-		DirectionMasks: directionMasks,
-		RedValues: bitTemplateState.sideValues
-			.map((v) => parseInt(v, 10) || 0)
-			.reverse(),
-		IsRedArrowCenter: bitTemplateState.isSwapped,
-	};
-
-	if (multiplierBitState) {
-		result.MultiplierSideMode = multiplierBitState.sideCount;
-		result.MultiplierValues = multiplierBitState.sideValues
-			.map((v: string) => parseInt(v, 10) || 0)
-			.reverse();
-		result.Multiplier = multiplierBitState.multiplier;
-		result.MultiplierIsSwapped = multiplierBitState.isSwapped;
-	}
-
-	return result;
 }
 
 export function convertConfigToDraft(config: GeneralConfig): {
@@ -222,56 +76,5 @@ export function convertConfigToDraft(config: GeneralConfig): {
 	momentum: PearlMomentum;
 	redLocation: string | undefined;
 } {
-	const center = {
-		x: (config.pearl_x_position - (config.offset_x ?? 0)).toString(),
-		z: (config.pearl_z_position - (config.offset_z ?? 0)).toString(),
-	};
-
-	const momentum = {
-		x: config.pearl_x_motion.toString(),
-		y: config.pearl_y_motion.toString(),
-		z: config.pearl_z_motion.toString(),
-	};
-
-	const redLocation = config.default_red_tnt_position;
-
-	const draft: DraftConfig = {
-		max_tnt: config.max_tnt.toString(),
-		north_west_tnt: {
-			x: config.north_west_tnt.x.toString(),
-			y: config.north_west_tnt.y.toString(),
-			z: config.north_west_tnt.z.toString(),
-		},
-		north_east_tnt: {
-			x: config.north_east_tnt.x.toString(),
-			y: config.north_east_tnt.y.toString(),
-			z: config.north_east_tnt.z.toString(),
-		},
-		south_west_tnt: {
-			x: config.south_west_tnt.x.toString(),
-			y: config.south_west_tnt.y.toString(),
-			z: config.south_west_tnt.z.toString(),
-		},
-		south_east_tnt: {
-			x: config.south_east_tnt.x.toString(),
-			y: config.south_east_tnt.y.toString(),
-			z: config.south_east_tnt.z.toString(),
-		},
-		vertical_tnt: config.vertical_tnt
-			? {
-				x: config.vertical_tnt.x.toString(),
-				y: config.vertical_tnt.y.toString(),
-				z: config.vertical_tnt.z.toString(),
-			}
-			: { x: "", y: "", z: "" },
-		max_vertical_tnt: config.max_vertical_tnt?.toString() ?? "",
-		pearl_x_position: config.pearl_x_position.toString(),
-		pearl_y_position: config.pearl_y_position.toString(),
-		pearl_z_position: config.pearl_z_position.toString(),
-		pearl_x_motion: config.pearl_x_motion.toString(),
-		pearl_y_motion: config.pearl_y_motion.toString(),
-		pearl_z_motion: config.pearl_z_motion.toString(),
-	};
-
-	return { draft, center, momentum, redLocation };
+	return utilsRust.convert_config_to_draft(config);
 }

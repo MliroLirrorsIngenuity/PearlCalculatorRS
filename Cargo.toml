@@ -3,7 +3,8 @@ members = [
     "pearl_calculator_core",
     "pearl_calculator_ui/src-tauri",
     "pearl_calculator_bridge",
-    "pearl_calculator_wasm"
+    "pearl_calculator_wasm",
+    "pearl_calculator_utils"
 ]
 resolver = "3"
 

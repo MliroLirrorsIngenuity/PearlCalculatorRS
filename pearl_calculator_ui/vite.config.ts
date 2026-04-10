@@ -19,18 +19,15 @@ if (!fs.existsSync(wasmPkgPath)) {
 ╠══════════════════════════════════════════════════════════════════════════════╣\x1b[0m
 
   The WASM module has not been built yet.
-  This is a one-time setup required before development.
+  Initialize the WASM toolchain first, then build the module.
 
 \x1b[33m  Run the following commands:
 
-    rustup target add wasm32-unknown-unknown
+    pnpm setup:wasm
+    pnpm build:wasm
 
-    VERSION=$(cargo tree -p wasm-bindgen --depth 0 | head -n 1 | \\            
-            cut -d' ' -f2 | cut -c 2-)
-
-    cargo install wasm-bindgen-cli --version "$VERSION"
-
-  Then run again to build the WASM module.                          
+  The CLI will be installed into the repository-local \`target/tools\`.
+  After that, rerun \`cargo tauri dev\`.                          
 
 \x1b[31m╚══════════════════════════════════════════════════════════════════════════════╝\x1b[0m
 `);

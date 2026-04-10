@@ -1,0 +1,10 @@
+[package]
+name = "pearl_calculator_utils"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+
+[dependencies]
+base64 = "0.22"
+serde.workspace = true
+serde_json = "1"
