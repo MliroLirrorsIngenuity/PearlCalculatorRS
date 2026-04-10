@@ -9,9 +9,10 @@
 	"type": "module",
 	"scripts": {
 		"dev": "vite",
-		"dev:wasm": "pnpm build:wasm && vite",
-		"build": "pnpm build:wasm && tsc && vite build",
-		"build:wasm": "cargo build -p pearl_calculator_wasm --target wasm32-unknown-unknown --release && wasm-bindgen ../target/wasm32-unknown-unknown/release/pearl_calculator_wasm.wasm --out-dir ../pearl_calculator_wasm/pkg --target bundler",
+		"setup:wasm": "node ./scripts/setup-wasm.mjs",
+		"dev:wasm": "pnpm setup:wasm && pnpm build:wasm && vite",
+		"build": "pnpm setup:wasm && pnpm build:wasm && tsc && vite build",
+		"build:wasm": "node ./scripts/build-wasm.mjs",
 		"preview": "vite preview",
 		"tauri": "tauri"
 	},
