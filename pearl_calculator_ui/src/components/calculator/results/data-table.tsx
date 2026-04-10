@@ -134,7 +134,9 @@ export const DataTable = React.forwardRef<
 	const [highlightedRowIndex, setHighlightedRowIndex] = React.useState<
 		number | null
 	>(null);
-	const highlightTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+	const highlightTimeoutRef = React.useRef<ReturnType<
+		typeof setTimeout
+	> | null>(null);
 
 	const ROW_HEIGHT = 25;
 	const BUFFER_ROWS = 5;

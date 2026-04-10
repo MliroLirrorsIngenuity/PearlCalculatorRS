@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { GitHubIcon } from "@/components/ui/github-icon";
 import {
 	HoverCard,
 	HoverCardContent,
@@ -8,7 +9,7 @@ import {
 } from "@/components/ui/hover-card";
 import { useMobileViewOptional } from "@/context/MobileViewContext";
 import { cn } from "@/lib/utils";
-import { BadgeInfo, Github } from "lucide-react";
+import { BadgeInfo } from "lucide-react";
 import pkg from "../../../package.json";
 import tauriConf from "../../../src-tauri/tauri.conf.json";
 
@@ -113,7 +114,7 @@ export function AppInfo({ className }: { className?: string }) {
 												size="icon"
 												className="h-7 w-7 rounded-md text-muted-foreground hover:text-foreground hover:bg-transparent px-0"
 											>
-												<Github className="h-4 w-4" />
+												<GitHubIcon className="h-4 w-4" />
 											</Button>
 										</a>
 									</>
