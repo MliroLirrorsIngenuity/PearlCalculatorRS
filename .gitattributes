@@ -1,2 +1,3 @@
 *.css linguist-generated
 *.html linguist-generated
+*.mjs linguist-generated
