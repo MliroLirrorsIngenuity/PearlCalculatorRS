@@ -77,5 +77,38 @@ jobs:
       - name: Run tests
         run: cargo test --verbose
 
-      - name: Build
-        run: cargo build --verbose
+      - name: Build Desktop Bundle
+        if: runner.os != 'Windows' || runner.arch != 'ARM64'
+        working-directory: pearl_calculator_ui
+        run: pnpm tauri build --debug
+
+      - name: Collect Desktop Artifacts (Linux/macOS)
+        if: runner.os == 'Linux' || runner.os == 'macOS'
+        shell: bash
+        run: |
+          mkdir -p upload_dist
+          find target/debug/bundle -type f \( -name "*.AppImage" -o -name "*.deb" -o -name "*.rpm" -o -name "*.dmg" -o -name "*.app.tar.gz" \) -exec cp {} upload_dist/ \;
+          if [ -f target/debug/pearl_calculator_ui ]; then
+            cp target/debug/pearl_calculator_ui "upload_dist/pearl_calculator_ui-${{ runner.os }}-${{ runner.arch }}"
+          fi
+
+      - name: Collect Desktop Artifacts (Windows)
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          mkdir -p upload_dist
+          find target/debug/bundle -type f \( -name "*.msi" -o -name "*.exe" \) -exec cp {} upload_dist/ \;
+          if [ -f target/debug/pearl_calculator_ui.exe ]; then
+            cp target/debug/pearl_calculator_ui.exe "upload_dist/pearl_calculator_ui-${{ runner.os }}-${{ runner.arch }}.exe"
+          fi
+
+      - name: Upload Build Artifacts
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pearl-calculator-rs-${{ matrix.os }}
+          if-no-files-found: error
+          path: |
+            upload_dist/**
+            pearl_calculator_ui/dist/**
+            pearl_calculator_wasm/pkg/**
