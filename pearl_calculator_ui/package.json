@@ -33,7 +33,7 @@
 		"@radix-ui/react-tooltip": "^1.2.8",
 		"@tailwindcss/vite": "^4.2.2",
 		"@tanstack/react-table": "^8.21.3",
-		"@tauri-apps/api": "^2",
+		"@tauri-apps/api": "2.10.1",
 		"@tauri-apps/plugin-clipboard-manager": "^2.3.2",
 		"@tauri-apps/plugin-dialog": "^2.6.0",
 		"@tauri-apps/plugin-fs": "~2",
@@ -60,7 +60,7 @@
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.4.10",
-		"@tauri-apps/cli": "^2",
+		"@tauri-apps/cli": "2.10.1",
 		"@types/node": "^25.5.0",
 		"@types/react": "^19.2.14",
 		"@types/react-dom": "^19.1.6",
