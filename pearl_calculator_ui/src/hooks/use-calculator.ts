@@ -85,7 +85,7 @@ export function useTNTCalculator() {
 				destinationX: destX,
 				destinationY:
 					((mode === "Vector3D" && inputs.destY) ||
-					(mode === "Standard" && inputs.planeInterceptY && inputs.destY)
+					(mode !== "Vector3D" && inputs.planeInterceptY && inputs.destY)
 						? parseFloat(inputs.destY ?? "") || 0
 						: undefined),
 				destinationZ: destZ,

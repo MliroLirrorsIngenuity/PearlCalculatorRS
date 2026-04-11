@@ -39,7 +39,7 @@ export default function PearlTracePanel({
 	const [summaryExpanded, setSummaryExpanded] = useState(false);
 
 	const closestApproach =
-		calculationMode === "Standard" &&
+		calculationMode !== "Vector3D" &&
 		planeInterceptY &&
 		destY &&
 		pearlTraceData

@@ -124,7 +124,7 @@ function CalculatorContent() {
 	}, [calculationMode, inputs.tickRange, inputs.distanceRange, updateInput]);
 
 	useEffect(() => {
-		if (calculationMode !== "Standard") {
+		if (calculationMode === "Vector3D") {
 			prevPlaneInterceptY.current = inputs.planeInterceptY;
 			planeInterceptPreviousTickRange.current = null;
 			planeInterceptPreviousDistanceRange.current = null;
@@ -134,11 +134,11 @@ function CalculatorContent() {
 		if (prevPlaneInterceptY.current !== inputs.planeInterceptY) {
 			const expandedTickRange: [number, number] = [0, 10000];
 			const expandedDistanceRange: [number, number] = [0, 50];
-			const standardTickRange = getDefaultTickRange("Standard") as [
+			const defaultTickRange = getDefaultTickRange(calculationMode) as [
 				number,
 				number,
 			];
-			const standardDistanceRange = getDefaultDistanceRange("Standard") as [
+			const defaultDistanceRange = getDefaultDistanceRange(calculationMode) as [
 				number,
 				number,
 			];
@@ -169,11 +169,11 @@ function CalculatorContent() {
 			} else {
 				updateInput(
 					"tickRange",
-					planeInterceptPreviousTickRange.current ?? standardTickRange,
+					planeInterceptPreviousTickRange.current ?? defaultTickRange,
 				);
 				updateInput(
 					"distanceRange",
-					planeInterceptPreviousDistanceRange.current ?? standardDistanceRange,
+					planeInterceptPreviousDistanceRange.current ?? defaultDistanceRange,
 				);
 				planeInterceptPreviousTickRange.current = null;
 				planeInterceptPreviousDistanceRange.current = null;
