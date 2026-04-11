@@ -122,6 +122,7 @@ fn test_regression_against_snapshot() {
                 max_ticks,
                 50.0,
                 case.version,
+                false,
             );
 
             let found_original = solver_results
@@ -152,5 +153,61 @@ fn test_regression_against_snapshot() {
     );
     println!("========================================");
 
-    assert_eq!(failed, 0, "Regression test failed! {} cases mismatch", failed);
+    assert_eq!(
+        failed, 0,
+        "Regression test failed! {} cases mismatch",
+        failed
+    );
+}
+
+#[test]
+fn test_standard_plane_intercept_solver_smoke() {
+    let case = common::load_all_input_cases()
+        .into_iter()
+        .find(|case| case.name == "case_b")
+        .expect("case_b input case should exist");
+    let test_case = case
+        .test_cases
+        .iter()
+        .find(|case| case.version == PearlVersion::Post1212 && case.red == 160 && case.blue == 100)
+        .expect("case_b Post1212 South solution should exist");
+    let cannon = case.cannon.to_cannon();
+    let trace = calculate_pearl_trace(
+        &cannon,
+        test_case.red,
+        test_case.blue,
+        test_case.vertical,
+        test_case.direction,
+        120,
+        &[],
+        test_case.version,
+    )
+    .expect("trace should be calculable");
+    let target = trace
+        .pearl_trace
+        .windows(2)
+        .find_map(|segment| {
+            let start = segment[0];
+            let end = segment[1];
+            let dy = end.y - start.y;
+            if dy.abs() <= 1e-8 {
+                return None;
+            }
+            Some(start + ((end - start) * 0.5))
+        })
+        .expect("trace should contain a non-horizontal segment");
+    assert!(
+        calculate_tnt_amount(
+            &cannon,
+            target,
+            500,
+            None,
+            120,
+            1e-4,
+            test_case.version,
+            true
+        )
+        .iter()
+        .any(|result| result.red == test_case.red && result.blue == test_case.blue)
+    );
 }

@@ -37,12 +37,8 @@ pub struct BitCalculationResult {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum BitCalculationResponse {
-    Success {
-        result: BitCalculationResult,
-    },
-    Error {
-        error: BitValidationResult,
-    },
+    Success { result: BitCalculationResult },
+    Error { error: BitValidationResult },
 }
 
 pub fn validate_bit_template(values: &[u32]) -> BitValidationResult {

@@ -111,23 +111,39 @@ pub fn build_export_config(
     let mut root = Map::from_iter([
         (
             "NorthEastTNT".to_string(),
-            serde_json::to_value(get_relative_tnt_uppercase(&draft_config.north_east_tnt, cx, cz))
-                .unwrap_or(Value::Null),
+            serde_json::to_value(get_relative_tnt_uppercase(
+                &draft_config.north_east_tnt,
+                cx,
+                cz,
+            ))
+            .unwrap_or(Value::Null),
         ),
         (
             "NorthWestTNT".to_string(),
-            serde_json::to_value(get_relative_tnt_uppercase(&draft_config.north_west_tnt, cx, cz))
-                .unwrap_or(Value::Null),
+            serde_json::to_value(get_relative_tnt_uppercase(
+                &draft_config.north_west_tnt,
+                cx,
+                cz,
+            ))
+            .unwrap_or(Value::Null),
         ),
         (
             "SouthEastTNT".to_string(),
-            serde_json::to_value(get_relative_tnt_uppercase(&draft_config.south_east_tnt, cx, cz))
-                .unwrap_or(Value::Null),
+            serde_json::to_value(get_relative_tnt_uppercase(
+                &draft_config.south_east_tnt,
+                cx,
+                cz,
+            ))
+            .unwrap_or(Value::Null),
         ),
         (
             "SouthWestTNT".to_string(),
-            serde_json::to_value(get_relative_tnt_uppercase(&draft_config.south_west_tnt, cx, cz))
-                .unwrap_or(Value::Null),
+            serde_json::to_value(get_relative_tnt_uppercase(
+                &draft_config.south_west_tnt,
+                cx,
+                cz,
+            ))
+            .unwrap_or(Value::Null),
         ),
         (
             "Offset".to_string(),
@@ -188,7 +204,8 @@ pub fn build_export_config(
 
         root.insert(
             "Mode".to_string(),
-            serde_json::to_value(mode.unwrap_or_default()).unwrap_or(Value::String("Standard".into())),
+            serde_json::to_value(mode.unwrap_or_default())
+                .unwrap_or(Value::String("Standard".into())),
         );
     }
 
@@ -258,9 +275,7 @@ pub fn build_export_config(
     Value::Object(root)
 }
 
-pub fn convert_config_to_draft(
-    config: &GeneralConfig,
-) -> ConvertedConfigDraft {
+pub fn convert_config_to_draft(config: &GeneralConfig) -> ConvertedConfigDraft {
     let center = CannonCenter {
         x: (config.pearl_x_position - config.offset_x.unwrap_or(0.0)).to_string(),
         z: (config.pearl_z_position - config.offset_z.unwrap_or(0.0)).to_string(),
@@ -278,7 +293,10 @@ pub fn convert_config_to_draft(
         north_east_tnt: vector3_to_draft(config.north_east_tnt),
         south_west_tnt: vector3_to_draft(config.south_west_tnt),
         south_east_tnt: vector3_to_draft(config.south_east_tnt),
-        vertical_tnt: config.vertical_tnt.map(vector3_to_draft).unwrap_or_default(),
+        vertical_tnt: config
+            .vertical_tnt
+            .map(vector3_to_draft)
+            .unwrap_or_default(),
         max_vertical_tnt: config
             .max_vertical_tnt
             .map(|value| value.to_string())
@@ -445,9 +463,18 @@ pub fn decode_config(input: &str) -> Result<DecodedConfig, String> {
     let direction_byte = cursor.next_u8()?;
     let direction_masks = BTreeMap::from_iter([
         ("00".to_string(), u8_to_bit_dir(direction_byte & 0x03)),
-        ("01".to_string(), u8_to_bit_dir((direction_byte >> 2) & 0x03)),
-        ("10".to_string(), u8_to_bit_dir((direction_byte >> 4) & 0x03)),
-        ("11".to_string(), u8_to_bit_dir((direction_byte >> 6) & 0x03)),
+        (
+            "01".to_string(),
+            u8_to_bit_dir((direction_byte >> 2) & 0x03),
+        ),
+        (
+            "10".to_string(),
+            u8_to_bit_dir((direction_byte >> 4) & 0x03),
+        ),
+        (
+            "11".to_string(),
+            u8_to_bit_dir((direction_byte >> 6) & 0x03),
+        ),
     ]);
 
     let mut red_values = Vec::with_capacity(side_mode as usize);
@@ -568,7 +595,13 @@ pub fn config_to_input_state(config: Option<&BitTemplateConfig>) -> Option<BitIn
             .red_values
             .iter()
             .rev()
-            .map(|value| if *value == 0 { String::new() } else { value.to_string() })
+            .map(|value| {
+                if *value == 0 {
+                    String::new()
+                } else {
+                    value.to_string()
+                }
+            })
             .collect(),
         is_swapped: config.is_red_arrow_center,
     })
@@ -581,7 +614,8 @@ pub fn input_state_to_config(state: &BitInputState) -> BitTemplateConfig {
             .masks
             .iter()
             .filter_map(|mask| {
-                parse_bit_direction(&mask.direction).map(|direction| (mask.bits.join(""), direction))
+                parse_bit_direction(&mask.direction)
+                    .map(|direction| (mask.bits.join(""), direction))
             })
             .collect(),
         red_values: state
@@ -603,7 +637,13 @@ pub fn config_to_multiplier_input_state(
             .multiplier_values
             .iter()
             .rev()
-            .map(|value| if *value == 0 { String::new() } else { value.to_string() })
+            .map(|value| {
+                if *value == 0 {
+                    String::new()
+                } else {
+                    value.to_string()
+                }
+            })
             .collect(),
         multiplier: config.multiplier,
         is_swapped: config.multiplier_is_swapped,
@@ -645,7 +685,9 @@ fn normalize_config(root: &Value) -> Result<GeneralConfig, String> {
         north_east_tnt: read_pascal_vector(root.get("NorthEastTNT")),
         south_west_tnt: read_pascal_vector(root.get("SouthWestTNT")),
         south_east_tnt: read_pascal_vector(root.get("SouthEastTNT")),
-        vertical_tnt: root.get("VerticalTNT").map(|value| read_pascal_vector(Some(value))),
+        vertical_tnt: root
+            .get("VerticalTNT")
+            .map(|value| read_pascal_vector(Some(value))),
         pearl_x_position: number_at(root, &["Pearl", "Position", "X"]),
         pearl_x_motion: number_at(root, &["Pearl", "Motion", "X"]),
         pearl_y_motion: number_at(root, &["Pearl", "Motion", "Y"]),
@@ -656,7 +698,9 @@ fn normalize_config(root: &Value) -> Result<GeneralConfig, String> {
         default_blue_tnt_position: blue_dir,
         offset_x: Some(number_at(root, &["Offset", "X"])),
         offset_z: Some(number_at(root, &["Offset", "Z"])),
-        max_vertical_tnt: root.get("MaxVerticalTNT").map(|value| value_to_u32(Some(value))),
+        max_vertical_tnt: root
+            .get("MaxVerticalTNT")
+            .map(|value| value_to_u32(Some(value))),
         mode: parse_cannon_mode(root.get("Mode").and_then(Value::as_str)),
     })
 }
@@ -688,7 +732,10 @@ fn extract_bit_template_config(root: &Value) -> Result<Option<BitTemplateConfig>
     Ok(Some(BitTemplateConfig {
         side_mode,
         direction_masks,
-        red_values: red_values_raw.iter().map(|value| value_to_u32(Some(value))).collect(),
+        red_values: red_values_raw
+            .iter()
+            .map(|value| value_to_u32(Some(value)))
+            .collect(),
         is_red_arrow_center: root
             .get("IsRedArrowCenter")
             .and_then(Value::as_bool)
@@ -714,7 +761,10 @@ fn extract_multiplier_config(root: &Value) -> Result<Option<MultiplierConfig>, S
 
     Ok(Some(MultiplierConfig {
         multiplier_side_mode: side_mode,
-        multiplier_values: values.iter().map(|value| value_to_u32(Some(value))).collect(),
+        multiplier_values: values
+            .iter()
+            .map(|value| value_to_u32(Some(value)))
+            .collect(),
         multiplier,
         multiplier_is_swapped: root
             .get("MultiplierIsSwapped")
@@ -724,7 +774,8 @@ fn extract_multiplier_config(root: &Value) -> Result<Option<MultiplierConfig>, S
 }
 
 fn extract_root<'a>(value: &'a Value) -> &'a Value {
-    value.get("CannonSettings")
+    value
+        .get("CannonSettings")
         .and_then(Value::as_array)
         .and_then(|items| items.first())
         .unwrap_or(value)
@@ -780,18 +831,9 @@ fn parse_cannon_mode(value: Option<&str>) -> Option<CannonMode> {
 fn read_pascal_vector(value: Option<&Value>) -> Vector3 {
     let value = value.unwrap_or(&Value::Null);
     Vector3 {
-        x: value
-            .get("X")
-            .and_then(value_to_f64)
-            .unwrap_or_default(),
-        y: value
-            .get("Y")
-            .and_then(value_to_f64)
-            .unwrap_or_default(),
-        z: value
-            .get("Z")
-            .and_then(value_to_f64)
-            .unwrap_or_default(),
+        x: value.get("X").and_then(value_to_f64).unwrap_or_default(),
+        y: value.get("Y").and_then(value_to_f64).unwrap_or_default(),
+        z: value.get("Z").and_then(value_to_f64).unwrap_or_default(),
     }
 }
 

@@ -101,6 +101,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         MAX_SIMULATION_TICKS,
         SEARCH_TOLERANCE_BLOCKS,
         PearlVersion::Post1212, // Minecraft 1.21.2+ physics
+        false,
     );
 
     println!("   Time: {:.2?}", start_time.elapsed());

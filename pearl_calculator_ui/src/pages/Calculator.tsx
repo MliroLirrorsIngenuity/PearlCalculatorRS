@@ -73,6 +73,11 @@ function CalculatorContent() {
 	}, []);
 
 	const prevMode = useRef(calculationMode);
+	const prevPlaneInterceptY = useRef(inputs.planeInterceptY);
+	const planeInterceptPreviousTickRange = useRef<[number, number] | null>(null);
+	const planeInterceptPreviousDistanceRange = useRef<[number, number] | null>(
+		null,
+	);
 
 	const getDefaultTickRange = (mode: string) => {
 		if (mode === "Vector3D" || mode === "Accumulation") {
@@ -117,6 +122,72 @@ function CalculatorContent() {
 			prevMode.current = calculationMode;
 		}
 	}, [calculationMode, inputs.tickRange, inputs.distanceRange, updateInput]);
+
+	useEffect(() => {
+		if (calculationMode !== "Standard") {
+			prevPlaneInterceptY.current = inputs.planeInterceptY;
+			planeInterceptPreviousTickRange.current = null;
+			planeInterceptPreviousDistanceRange.current = null;
+			return;
+		}
+
+		if (prevPlaneInterceptY.current !== inputs.planeInterceptY) {
+			const expandedTickRange: [number, number] = [0, 10000];
+			const expandedDistanceRange: [number, number] = [0, 50];
+			const standardTickRange = getDefaultTickRange("Standard") as [
+				number,
+				number,
+			];
+			const standardDistanceRange = getDefaultDistanceRange("Standard") as [
+				number,
+				number,
+			];
+
+			if (inputs.planeInterceptY) {
+				planeInterceptPreviousTickRange.current = [
+					inputs.tickRange[0],
+					inputs.tickRange[1],
+				];
+				planeInterceptPreviousDistanceRange.current = [
+					inputs.distanceRange[0],
+					inputs.distanceRange[1],
+				];
+
+				if (
+					inputs.tickRange[0] !== expandedTickRange[0] ||
+					inputs.tickRange[1] !== expandedTickRange[1]
+				) {
+					updateInput("tickRange", expandedTickRange);
+				}
+
+				if (
+					inputs.distanceRange[0] !== expandedDistanceRange[0] ||
+					inputs.distanceRange[1] !== expandedDistanceRange[1]
+				) {
+					updateInput("distanceRange", expandedDistanceRange);
+				}
+			} else {
+				updateInput(
+					"tickRange",
+					planeInterceptPreviousTickRange.current ?? standardTickRange,
+				);
+				updateInput(
+					"distanceRange",
+					planeInterceptPreviousDistanceRange.current ?? standardDistanceRange,
+				);
+				planeInterceptPreviousTickRange.current = null;
+				planeInterceptPreviousDistanceRange.current = null;
+			}
+
+			prevPlaneInterceptY.current = inputs.planeInterceptY;
+		}
+	}, [
+		calculationMode,
+		inputs.planeInterceptY,
+		inputs.tickRange,
+		inputs.distanceRange,
+		updateInput,
+	]);
 
 	const handleImport = async () => {
 		try {
@@ -312,7 +383,9 @@ function CalculatorContent() {
 									<PearlTracePanel
 										pearlTraceData={pearlTraceData}
 										destX={inputs.destX}
+										destY={inputs.destY}
 										destZ={inputs.destZ}
+										planeInterceptY={inputs.planeInterceptY}
 										traceDirection={traceDirection}
 										traceTNT={traceTNT}
 									/>

@@ -22,7 +22,10 @@ import type { CalculatorInputs } from "@/types/domain";
 interface TNTCalculationFormProps {
 	inputs: CalculatorInputs;
 
-	onInputChange: (field: keyof CalculatorInputs, value: string) => void;
+	onInputChange: (
+		field: keyof CalculatorInputs,
+		value: string | boolean,
+	) => void;
 }
 
 export default function TNTCalculationForm({
@@ -31,7 +34,10 @@ export default function TNTCalculationForm({
 }: TNTCalculationFormProps) {
 	const { t } = useTranslation();
 	const { calculationMode } = useConfigurationState();
-	const is3D = calculationMode === "Vector3D";
+	const showPlaneInterceptToggle = calculationMode === "Standard";
+	const showDestY =
+		calculationMode === "Vector3D" ||
+		(calculationMode === "Standard" && inputs.planeInterceptY);
 
 	return (
 		<ScrollArea className="h-full">
@@ -68,27 +74,46 @@ export default function TNTCalculationForm({
 					</FieldGroup>
 					<FieldGroup>
 						<Field>
-							<div className="flex items-center gap-2">
-								<FieldLabel htmlFor="cannon-y">
-									{t("calculator.label_cannon_y")}
-								</FieldLabel>
-								<TooltipProvider>
-									<Tooltip>
-										<TooltipTrigger asChild>
-											<Button
-												variant="ghost"
-												size="icon"
-												className="h-4 w-4 rounded-full p-0 -translate-y-0.5"
-											>
-												<Info className="h-3.5 w-3.5 text-muted-foreground" />
-												<span className="sr-only">Info</span>
-											</Button>
-										</TooltipTrigger>
-										<TooltipContent>
-											<p>{t("calculator.cannon_y_tooltip")}</p>
-										</TooltipContent>
-									</Tooltip>
-								</TooltipProvider>
+							<div className="flex items-center justify-between gap-3">
+								<div className="flex items-center gap-2">
+									<FieldLabel htmlFor="cannon-y">
+										{t("calculator.label_cannon_y")}
+									</FieldLabel>
+									<TooltipProvider>
+										<Tooltip>
+											<TooltipTrigger asChild>
+												<Button
+													variant="ghost"
+													size="icon"
+													className="h-4 w-4 rounded-full p-0 -translate-y-0.5"
+												>
+													<Info className="h-3.5 w-3.5 text-muted-foreground" />
+													<span className="sr-only">Info</span>
+												</Button>
+											</TooltipTrigger>
+											<TooltipContent>
+												<p>{t("calculator.cannon_y_tooltip")}</p>
+											</TooltipContent>
+										</Tooltip>
+									</TooltipProvider>
+								</div>
+								{showPlaneInterceptToggle && (
+									<label
+										htmlFor="plane-intercept-y"
+										className="flex items-center gap-2 text-sm font-normal text-muted-foreground"
+									>
+										<input
+											id="plane-intercept-y"
+											type="checkbox"
+											checked={inputs.planeInterceptY}
+											onChange={(e) =>
+												onInputChange("planeInterceptY", e.target.checked)
+											}
+											className="h-4 w-4 rounded border-input accent-foreground"
+										/>
+										<span>{t("calculator.plane_intercept_toggle")}</span>
+									</label>
+								)}
 							</div>
 							<Input
 								id="cannon-y"
@@ -100,7 +125,7 @@ export default function TNTCalculationForm({
 						</Field>
 					</FieldGroup>
 					<FieldGroup
-						className={`grid ${is3D ? "grid-cols-3" : "grid-cols-2"} gap-4`}
+						className={`grid ${showDestY ? "grid-cols-3" : "grid-cols-2"} gap-4`}
 					>
 						<Field>
 							<FieldLabel htmlFor="dest-x">
@@ -114,7 +139,7 @@ export default function TNTCalculationForm({
 								onChange={(e) => onInputChange("destX", e.target.value)}
 							/>
 						</Field>
-						{is3D && (
+						{showDestY && (
 							<Field>
 								<FieldLabel htmlFor="dest-y">
 									{t("calculator.label_dest_y", "Dest Y")}

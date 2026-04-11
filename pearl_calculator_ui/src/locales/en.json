@@ -115,6 +115,7 @@
 			"header_vertical": "Vertical",
 			"direction_vertical": "Vertical TNT",
 			"label_dest_y": "Destination Y",
+			"plane_intercept_toggle": "Y-plane intercept",
 			"bit_calc_btn": "Bit Calculation",
 			"bit_calculate_btn": "Calculate",
 			"direction_label": "DIR.",

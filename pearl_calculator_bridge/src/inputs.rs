@@ -76,6 +76,10 @@ impl CalculationInput {
             self.destination_z,
         )
     }
+
+    pub fn uses_plane_intercept_y(&self) -> bool {
+        uses_plane_intercept_y(self.mode.as_deref(), self.destination_y)
+    }
 }
 
 #[derive(Debug, Deserialize)]
@@ -100,7 +104,6 @@ pub struct PearlTraceInput {
     pub default_red_direction: String,
     pub default_blue_direction: String,
     pub destination_x: f64,
-    pub destination_y: Option<f64>,
     pub destination_z: f64,
     pub direction: Option<String>,
     pub version: String,
@@ -201,6 +204,10 @@ fn parse_version(s: &str) -> Result<PearlVersion, String> {
         "Post1212" => Ok(PearlVersion::Post1212),
         _ => Err("Invalid pearl version".to_string()),
     }
+}
+
+fn uses_plane_intercept_y(mode: Option<&str>, destination_y: Option<f64>) -> bool {
+    matches!((mode, destination_y), (Some("Standard"), Some(_)))
 }
 
 fn parse_layout_direction(s: &str) -> Option<LayoutDirection> {

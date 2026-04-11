@@ -7,12 +7,10 @@ use pearl_calculator_core::calculation::calculation::{
     calculate_tnt_amount as core_calculate_tnt_amount,
 };
 use pearl_calculator_core::physics::world::space::Space3D;
-
 pub fn calculate_tnt_amount(input: CalculationInput) -> Result<Vec<TNTResultOutput>, String> {
     let version = input.get_version()?;
     let cannon = input.get_cannon()?;
     let destination = input.get_destination();
-
     let results = core_calculate_tnt_amount(
         &cannon,
         destination,
@@ -21,6 +19,7 @@ pub fn calculate_tnt_amount(input: CalculationInput) -> Result<Vec<TNTResultOutp
         input.max_ticks,
         input.max_distance,
         version,
+        input.uses_plane_intercept_y(),
     );
 
     Ok(results.into_iter().map(Into::into).collect())

@@ -205,6 +205,8 @@ pub struct CalculatorInputs {
     pub dest_x: String,
     #[serde(default)]
     pub dest_y: Option<String>,
+    #[serde(default)]
+    pub plane_intercept_y: bool,
     pub dest_z: String,
     pub cannon_y: String,
     pub offset_x: String,
@@ -222,6 +224,7 @@ impl Default for CalculatorInputs {
             pearl_z: String::new(),
             dest_x: String::new(),
             dest_y: None,
+            plane_intercept_y: false,
             dest_z: String::new(),
             cannon_y: "36".to_string(),
             offset_x: "0".to_string(),

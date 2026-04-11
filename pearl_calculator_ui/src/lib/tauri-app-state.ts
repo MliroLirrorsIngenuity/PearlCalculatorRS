@@ -136,6 +136,7 @@ const defaultCalculatorInputs: CalculatorInputs = {
 	pearlX: "",
 	pearlZ: "",
 	destX: "",
+	planeInterceptY: false,
 	destZ: "",
 	cannonY: "36",
 	offsetX: "0",

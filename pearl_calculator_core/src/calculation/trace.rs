@@ -19,11 +19,12 @@ pub fn validate_candidates(
     pearl_offset: Space3D,
     destination: Space3D,
     max_distance_sq: f64,
+    plane_intercept_y: bool,
     version: PearlVersion,
     calculation_direction: Direction,
 ) -> Vec<TNTResult> {
     let pearl_start_absolute_pos = pearl_position + pearl_offset;
-    let check_3d = vert_vec.length_sq() > FLOAT_PRECISION_EPSILON;
+    let check_3d = plane_intercept_y || vert_vec.length_sq() > FLOAT_PRECISION_EPSILON;
 
     let raw_results: Vec<TNTResult> = candidates
         .into_par_iter()
@@ -62,6 +63,7 @@ pub fn validate_candidates(
                 version,
                 max_distance_sq,
                 check_3d,
+                plane_intercept_y,
             );
 
             let mut results = Vec::new();

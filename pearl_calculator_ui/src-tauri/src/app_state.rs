@@ -1,10 +1,9 @@
 use pearl_calculator_bridge::outputs::{PearlTraceOutput, TNTResultOutput};
 use pearl_calculator_utils::{
-    BitInputState, BitTemplateConfig, CalculatorInputs, CannonCenter, CannonMode,
-    GeneralConfig, MultiplierBitInputState, MultiplierConfig, PearlMomentum, PearlVersion,
-    SimulatorConfig, TntDirection, config_to_input_state, config_to_multiplier_input_state,
-    convert_config_to_draft, convert_draft_to_config, input_state_to_config,
-    input_state_to_multiplier_config,
+    BitInputState, BitTemplateConfig, CalculatorInputs, CannonCenter, CannonMode, GeneralConfig,
+    MultiplierBitInputState, MultiplierConfig, PearlMomentum, PearlVersion, SimulatorConfig,
+    TntDirection, config_to_input_state, config_to_multiplier_input_state, convert_config_to_draft,
+    convert_draft_to_config, input_state_to_config, input_state_to_multiplier_config,
 };
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -200,42 +199,94 @@ pub struct TraceTntState {
 }
 
 #[derive(Debug, Clone, Deserialize)]
-#[serde(rename_all = "camelCase", rename_all_fields = "camelCase", tag = "type")]
+#[serde(
+    rename_all = "camelCase",
+    rename_all_fields = "camelCase",
+    tag = "type"
+)]
 pub enum AppStateAction {
-    SetHasConfig { value: bool },
-    SetVersion { version: PearlVersion },
-    SetConfigData { data: GeneralConfig },
-    SetConfigPath { path: String },
-    SetBitTemplateConfig { data: Option<BitTemplateConfig> },
-    SetMultiplierConfig { data: Option<MultiplierConfig> },
+    SetHasConfig {
+        value: bool,
+    },
+    SetVersion {
+        version: PearlVersion,
+    },
+    SetConfigData {
+        data: GeneralConfig,
+    },
+    SetConfigPath {
+        path: String,
+    },
+    SetBitTemplateConfig {
+        data: Option<BitTemplateConfig>,
+    },
+    SetMultiplierConfig {
+        data: Option<MultiplierConfig>,
+    },
     ResetConfig,
 
-    SetDraftConfig { config: pearl_calculator_utils::DraftConfig },
-    SetCannonCenter { center: CannonCenter },
-    SetPearlMomentum { momentum: PearlMomentum },
-    SetRedTntLocation { location: Option<TntDirection> },
-    SetBitTemplateState { state: Option<BitInputState> },
-    SetIsWizardActive { active: bool },
-    SetIsFinished { finished: bool },
-    SetIsBitConfigSkipped { skipped: bool },
-    SetSavedPath { path: Option<String> },
-    SetCalculationMode { mode: CannonMode },
-    SetWizardMode { mode: CannonMode },
-    SetMultiplierBitState { state: Option<MultiplierBitInputState> },
-    SetIsMultiplierConfigSkipped { skipped: bool },
+    SetDraftConfig {
+        config: pearl_calculator_utils::DraftConfig,
+    },
+    SetCannonCenter {
+        center: CannonCenter,
+    },
+    SetPearlMomentum {
+        momentum: PearlMomentum,
+    },
+    SetRedTntLocation {
+        location: Option<TntDirection>,
+    },
+    SetBitTemplateState {
+        state: Option<BitInputState>,
+    },
+    SetIsWizardActive {
+        active: bool,
+    },
+    SetIsFinished {
+        finished: bool,
+    },
+    SetIsBitConfigSkipped {
+        skipped: bool,
+    },
+    SetSavedPath {
+        path: Option<String>,
+    },
+    SetCalculationMode {
+        mode: CannonMode,
+    },
+    SetWizardMode {
+        mode: CannonMode,
+    },
+    SetMultiplierBitState {
+        state: Option<MultiplierBitInputState>,
+    },
+    SetIsMultiplierConfigSkipped {
+        skipped: bool,
+    },
     ResetDraft,
 
     UpdateDefaultInput {
         field: CalculatorInputField,
         value: Value,
     },
-    SetDefaultResults { results: Vec<TNTResultOutput> },
-    UpdateDefaultTrace { patch: DefaultTracePatch },
-    UpdateBitCalculation { show: bool },
+    SetDefaultResults {
+        results: Vec<TNTResultOutput>,
+    },
+    UpdateDefaultTrace {
+        patch: DefaultTracePatch,
+    },
+    UpdateBitCalculation {
+        show: bool,
+    },
     ResetDefaultCalculator,
 
-    SetSimulatorConfig { config: SimulatorConfig },
-    UpdateSimulatorTrace { patch: SimulatorTracePatchPatch },
+    SetSimulatorConfig {
+        config: SimulatorConfig,
+    },
+    UpdateSimulatorTrace {
+        patch: SimulatorTracePatchPatch,
+    },
     ResetSimulatorConfig,
 
     ApplyConfigToCalculator {
@@ -260,6 +311,7 @@ pub enum CalculatorInputField {
     PearlZ,
     DestX,
     DestY,
+    PlaneInterceptY,
     DestZ,
     CannonY,
     OffsetX,
@@ -311,9 +363,7 @@ impl AppStateSnapshot {
             AppStateAction::SetIsWizardActive { active } => {
                 self.configuration.is_wizard_active = active
             }
-            AppStateAction::SetIsFinished { finished } => {
-                self.configuration.is_finished = finished
-            }
+            AppStateAction::SetIsFinished { finished } => self.configuration.is_finished = finished,
             AppStateAction::SetIsBitConfigSkipped { skipped } => {
                 self.configuration.is_bit_config_skipped = skipped
             }
@@ -330,9 +380,11 @@ impl AppStateSnapshot {
             }
             AppStateAction::ResetDraft => self.reset_draft(),
 
-            AppStateAction::UpdateDefaultInput { field, value } => {
-                apply_calculator_input_update(&mut self.calculator.default_calculator.inputs, field, value)
-            }
+            AppStateAction::UpdateDefaultInput { field, value } => apply_calculator_input_update(
+                &mut self.calculator.default_calculator.inputs,
+                field,
+                value,
+            ),
             AppStateAction::SetDefaultResults { results } => {
                 self.calculator.default_calculator.results = results
             }
@@ -351,11 +403,17 @@ impl AppStateSnapshot {
                 }
             }
             AppStateAction::UpdateBitCalculation { show } => {
-                self.calculator.default_calculator.trace.bit_calculation.show = show
+                self.calculator
+                    .default_calculator
+                    .trace
+                    .bit_calculation
+                    .show = show
             }
             AppStateAction::ResetDefaultCalculator => self.reset_default_calculator(),
 
-            AppStateAction::SetSimulatorConfig { config } => self.calculator.simulator.config = config,
+            AppStateAction::SetSimulatorConfig { config } => {
+                self.calculator.simulator.config = config
+            }
             AppStateAction::UpdateSimulatorTrace { patch } => {
                 if let Some(data) = patch.data {
                     self.calculator.simulator.trace.data = Some(data);
@@ -507,12 +565,19 @@ fn parse_f64(value: &str) -> f64 {
     value.parse::<f64>().unwrap_or(0.0)
 }
 
-fn apply_calculator_input_update(inputs: &mut CalculatorInputs, field: CalculatorInputField, value: Value) {
+fn apply_calculator_input_update(
+    inputs: &mut CalculatorInputs,
+    field: CalculatorInputField,
+    value: Value,
+) {
     match field {
         CalculatorInputField::PearlX => inputs.pearl_x = value_to_string(value),
         CalculatorInputField::PearlZ => inputs.pearl_z = value_to_string(value),
         CalculatorInputField::DestX => inputs.dest_x = value_to_string(value),
         CalculatorInputField::DestY => inputs.dest_y = Some(value_to_string(value)),
+        CalculatorInputField::PlaneInterceptY => {
+            inputs.plane_intercept_y = value.as_bool().unwrap_or(false)
+        }
         CalculatorInputField::DestZ => inputs.dest_z = value_to_string(value),
         CalculatorInputField::CannonY => inputs.cannon_y = value_to_string(value),
         CalculatorInputField::OffsetX => inputs.offset_x = value_to_string(value),
@@ -543,8 +608,5 @@ fn parse_range(value: &Value) -> Option<[u32; 2]> {
         return None;
     }
 
-    Some([
-        values[0].as_u64()? as u32,
-        values[1].as_u64()? as u32,
-    ])
+    Some([values[0].as_u64()? as u32, values[1].as_u64()? as u32])
 }

@@ -123,6 +123,7 @@ pub fn scan_trajectory(
     version: PearlVersion,
     max_distance_sq: f64,
     check_3d: bool,
+    plane_intercept_y: bool,
 ) -> Vec<SimResult> {
     match version {
         PearlVersion::Legacy => scan_internal::<MovementLegacy>(
@@ -134,6 +135,7 @@ pub fn scan_trajectory(
             offset,
             max_distance_sq,
             check_3d,
+            plane_intercept_y,
         ),
         PearlVersion::Post1205 => scan_internal::<MovementPost1205>(
             data,
@@ -144,6 +146,7 @@ pub fn scan_trajectory(
             offset,
             max_distance_sq,
             check_3d,
+            plane_intercept_y,
         ),
         PearlVersion::Post1212 => scan_internal::<MovementPost1212>(
             data,
@@ -154,6 +157,7 @@ pub fn scan_trajectory(
             offset,
             max_distance_sq,
             check_3d,
+            plane_intercept_y,
         ),
     }
 }
@@ -204,6 +208,7 @@ fn scan_internal<M: PearlMovement + Clone>(
     offset: Space3D,
     max_distance_sq: f64,
     check_3d: bool,
+    plane_intercept_y: bool,
 ) -> Vec<SimResult> {
     let mut results = Vec::new();
     let mut pearl = PearlEntity::<M>::new(data.pearl_position, data.pearl_motion);
@@ -212,6 +217,7 @@ fn scan_internal<M: PearlMovement + Clone>(
         .iter()
         .map(|tnt| TNTEntity::new(tnt.position, tnt.fuse))
         .collect();
+    let mut previous_pos = pearl.data.position + offset;
 
     for tick in 1..=max_tick {
         for tnt in &mut tnt_entities {
@@ -225,30 +231,29 @@ fn scan_internal<M: PearlMovement + Clone>(
         let current_pos = pearl.data.position + offset;
 
         if (tick as usize) < valid_ticks.len() && valid_ticks[tick as usize] {
-            let dist_sq = if check_3d {
-                current_pos.distance_sq(&destination)
-            } else {
-                current_pos.distance_2d_sq(&destination)
-            };
-            if dist_sq <= max_distance_sq {
-                results.push(SimResult {
-                    tick,
-                    position: current_pos,
-                    motion: pearl.data.motion,
-                    distance: dist_sq.sqrt(),
-                });
+            if let Some((hit_pos, dist_sq)) = measure_hit(
+                previous_pos,
+                current_pos,
+                destination,
+                check_3d,
+                plane_intercept_y,
+            ) {
+                if dist_sq <= max_distance_sq {
+                    results.push(SimResult {
+                        tick,
+                        position: hit_pos,
+                        motion: pearl.data.motion,
+                        distance: dist_sq.sqrt(),
+                    });
+                }
             }
         }
 
         if pearl.data.motion.length_sq() < FLOAT_PRECISION_EPSILON {
-            let dist_sq = if check_3d {
-                current_pos.distance_sq(&destination)
-            } else {
-                current_pos.distance_2d_sq(&destination)
-            };
-            if dist_sq <= max_distance_sq {}
             break;
         }
+
+        previous_pos = current_pos;
     }
     results
 }
@@ -319,12 +324,26 @@ pub fn calculate_tnt_motion(pearl_pos: Space3D, tnt_pos: Space3D) -> Space3D {
     explosion_vec * explosion_strength
 }
 
-trait DistanceSqExt {
-    fn distance_2d_sq(&self, other: &Space3D) -> f64;
-}
-
-impl DistanceSqExt for Space3D {
-    fn distance_2d_sq(&self, other: &Space3D) -> f64 {
-        (self.x - other.x).powi(2) + (self.z - other.z).powi(2)
+fn measure_hit(
+    previous_pos: Space3D,
+    current_pos: Space3D,
+    destination: Space3D,
+    check_3d: bool,
+    plane_intercept_y: bool,
+) -> Option<(Space3D, f64)> {
+    if plane_intercept_y {
+        return previous_pos
+            .horizontal_plane_intersection(current_pos, destination.y)
+            .map(|point| {
+                let dist_sq = point.distance_2d_sq(&destination);
+                (point, dist_sq)
+            });
     }
+
+    let dist_sq = if check_3d {
+        current_pos.distance_sq(&destination)
+    } else {
+        current_pos.distance_2d_sq(&destination)
+    };
+    Some((current_pos, dist_sq))
 }

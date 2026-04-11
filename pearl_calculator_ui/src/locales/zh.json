@@ -115,6 +115,7 @@
 			"header_vertical": "垂直",
 			"direction_vertical": "垂直 TNT",
 			"label_dest_y": "目标 Y 坐标",
+			"plane_intercept_toggle": "Y 截面拦截",
 			"bit_calc_btn": "Bit计算",
 			"bit_calculate_btn": "开始计算",
 			"direction_label": "方向",

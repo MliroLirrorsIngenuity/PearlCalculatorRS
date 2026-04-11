@@ -38,7 +38,10 @@ interface CalculatorStateContextType {
 	defaultCalculator: CalculatorState;
 	setDefaultResults: (results: TNTResult[]) => void;
 	simulator: SimulatorState;
-	updateDefaultInput: (field: keyof CalculatorInputs, value: string | number[]) => void;
+	updateDefaultInput: (
+		field: keyof CalculatorInputs,
+		value: string | number[] | boolean,
+	) => void;
 	updateDefaultTrace: (data: Partial<CalculatorState["trace"]>) => void;
 	updateBitCalculation: (
 		data: Partial<CalculatorState["trace"]["bitCalculation"]>,
@@ -53,6 +56,7 @@ const initialDefaultInputs: CalculatorInputs = {
 	pearlX: "",
 	pearlZ: "",
 	destX: "",
+	planeInterceptY: false,
 	destZ: "",
 	cannonY: "36",
 	offsetX: "0",
@@ -65,6 +69,7 @@ export const emptyCalculatorInputs: CalculatorInputs = {
 	pearlX: "",
 	pearlZ: "",
 	destX: "",
+	planeInterceptY: false,
 	destZ: "",
 	cannonY: "0",
 	offsetX: "0",
@@ -199,7 +204,7 @@ function WebCalculatorStateProvider({ children }: { children: ReactNode }) {
 
 	const updateDefaultInput = (
 		field: keyof CalculatorInputs,
-		value: string | number[],
+		value: string | number[] | boolean,
 	) => {
 		setDefaultCalculator((prev) => ({
 			...prev,

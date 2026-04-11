@@ -16,6 +16,7 @@ export interface PearlTraceInputs {
 	offsetZ: string;
 	cannonY: string;
 	destX: string;
+	destY?: string;
 	destZ: string;
 }
 

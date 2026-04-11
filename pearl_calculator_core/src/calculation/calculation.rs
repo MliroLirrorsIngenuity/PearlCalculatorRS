@@ -13,6 +13,7 @@ pub fn calculate_tnt_amount(
     max_ticks: u32,
     max_distance: f64,
     version: PearlVersion,
+    plane_intercept_y: bool,
 ) -> Vec<TNTResult> {
     let pearl_start_absolute_pos = cannon.pearl.position + cannon.pearl.offset;
     let true_distance = destination - pearl_start_absolute_pos;
@@ -40,6 +41,7 @@ pub fn calculate_tnt_amount(
             destination,
             max_ticks,
             version,
+            plane_intercept_y,
         };
         let theoretical_groups = super::solver::solve_theoretical_tnt(&solver_input);
 
@@ -65,6 +67,7 @@ pub fn calculate_tnt_amount(
             cannon.pearl.offset,
             destination,
             max_distance_sq,
+            plane_intercept_y,
             version,
             flight_direction,
         );

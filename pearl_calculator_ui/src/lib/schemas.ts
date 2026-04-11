@@ -120,6 +120,7 @@ export const CalculatorInputsSchema = z.object({
 	pearlZ: z.string(),
 	destX: z.string(),
 	destY: z.string().optional(),
+	planeInterceptY: z.boolean().default(false),
 	destZ: z.string(),
 	cannonY: z.string(),
 	offsetX: z.string(),
