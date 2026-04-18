@@ -3,6 +3,14 @@ import { readTextFile, writeTextFile } from "@tauri-apps/plugin-fs";
 import { utilsRust, type ImportedConfiguration } from "@/lib/utils-rust";
 import { isTauri } from "@/services";
 
+function stringifyConfig(config: unknown): string {
+	return JSON.stringify(
+		config,
+		(_key, value) => (value instanceof Map ? Object.fromEntries(value) : value),
+		2,
+	);
+}
+
 export function parseConfigurationContent(
 	content: string,
 	path: string,
@@ -51,20 +59,21 @@ export async function loadConfiguration(): Promise<ImportedConfiguration | null>
 }
 
 export async function exportConfiguration(
-	config: object,
+	config: unknown,
 ): Promise<string | null> {
 	try {
+		const content = stringifyConfig(config);
+
 		if (isTauri) {
 			const path = await save({
 				filters: [{ name: "JSON", extensions: ["json"] }],
 			});
 
 			if (path) {
-				await writeTextFile(path, JSON.stringify(config, null, 2));
+				await writeTextFile(path, content);
 				return path;
 			}
 		} else {
-			const content = JSON.stringify(config, null, 2);
 			const blob = new Blob([content], { type: "application/json" });
 			const url = URL.createObjectURL(blob);
 			const a = document.createElement("a");
