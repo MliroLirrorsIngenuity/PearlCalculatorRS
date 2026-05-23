@@ -74,7 +74,7 @@ The MIT License is a permissive license, but please note the following when usin
 
 ## Acknowledgments
 
-- [LegendsOfSky/PearlCalculatorCore](https://github.com/LegendsOfSky/PearlCalculatorCore): The core physics calculation logic is ported from this project.
+- [LegendsOfSky/PearlCalculatorCore](https://github.com/LegendsOfSky/PearlCalculatorCore): The core physics logic is based on this project.
 - [Tauri](https://tauri.app/): An excellent framework for building cross-platform desktop apps.
 - [React](https://react.dev/): A JavaScript library for building user interfaces.
 - [shadcn/ui](https://ui.shadcn.com/): Beautifully designed UI component library.
