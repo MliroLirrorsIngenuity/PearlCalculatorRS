@@ -17,13 +17,7 @@ interface BasicInfoStepProps {
 }
 
 export function BasicInfoStep({ errors, onForceNext }: BasicInfoStepProps) {
-	const {
-		draftConfig,
-		setDraftConfig,
-		cannonCenter,
-		setCannonCenter,
-		wizardMode,
-	} = useConfigurationState();
+	const { draftConfig, setDraftConfig, wizardMode } = useConfigurationState();
 	const { t } = useTranslation();
 
 	return (
@@ -37,51 +31,6 @@ export function BasicInfoStep({ errors, onForceNext }: BasicInfoStepProps) {
 				</CardHeader>
 				<CardContent>
 					<div className="grid w-full items-center gap-4">
-						<div className="flex flex-col space-y-1.5">
-							<Label>{t("configuration_page.cannon_center_label")}</Label>
-							<div className="grid grid-cols-2 gap-2">
-								<div className="space-y-1">
-									<Label className="text-xs text-muted-foreground">
-										{t("configuration_page.label_x")}
-									</Label>
-									<Input
-										type="number"
-										value={cannonCenter.x}
-										onChange={(e) =>
-											setCannonCenter({ ...cannonCenter, x: e.target.value })
-										}
-										placeholder={errors.cannon_x}
-										className={cn(
-											"h-7 text-xs font-mono px-2 py-0 shadow-none",
-											errors.cannon_x &&
-											"border-destructive focus-visible:ring-destructive placeholder:text-destructive/60",
-										)}
-									/>
-								</div>
-								<div className="space-y-1">
-									<Label className="text-xs text-muted-foreground">
-										{t("configuration_page.label_z")}
-									</Label>
-									<Input
-										type="number"
-										value={cannonCenter.z}
-										onChange={(e) =>
-											setCannonCenter({ ...cannonCenter, z: e.target.value })
-										}
-										placeholder={errors.cannon_z}
-										className={cn(
-											"h-7 text-xs font-mono px-2 py-0 shadow-none",
-											errors.cannon_z &&
-											"border-destructive focus-visible:ring-destructive placeholder:text-destructive/60",
-										)}
-									/>
-								</div>
-							</div>
-							<p className="text-[0.8rem] text-muted-foreground">
-								{t("configuration_page.cannon_center_desc")}
-							</p>
-						</div>
-
 						<div className="flex flex-col space-y-1.5">
 							<Label>{t("configuration_page.pearl_coord_label")}</Label>
 							<div className="grid grid-cols-3 gap-2">
@@ -102,7 +51,7 @@ export function BasicInfoStep({ errors, onForceNext }: BasicInfoStepProps) {
 										className={cn(
 											"h-7 text-xs font-mono px-2 py-0 shadow-none",
 											errors.pearl_x &&
-											"border-destructive focus-visible:ring-destructive placeholder:text-destructive/60",
+												"border-destructive focus-visible:ring-destructive placeholder:text-destructive/60",
 										)}
 									/>
 								</div>
@@ -123,7 +72,7 @@ export function BasicInfoStep({ errors, onForceNext }: BasicInfoStepProps) {
 										className={cn(
 											"h-7 text-xs font-mono px-2 py-0 shadow-none",
 											errors.pearl_y &&
-											"border-destructive focus-visible:ring-destructive placeholder:text-destructive/60",
+												"border-destructive focus-visible:ring-destructive placeholder:text-destructive/60",
 										)}
 									/>
 								</div>
@@ -144,7 +93,7 @@ export function BasicInfoStep({ errors, onForceNext }: BasicInfoStepProps) {
 										className={cn(
 											"h-7 text-xs font-mono px-2 py-0 shadow-none",
 											errors.pearl_z &&
-											"border-destructive focus-visible:ring-destructive placeholder:text-destructive/60",
+												"border-destructive focus-visible:ring-destructive placeholder:text-destructive/60",
 										)}
 									/>
 								</div>
@@ -174,7 +123,7 @@ export function BasicInfoStep({ errors, onForceNext }: BasicInfoStepProps) {
 										className={cn(
 											"h-7 text-xs font-mono px-2 py-0 shadow-none",
 											errors.momentum_x &&
-											"border-destructive focus-visible:ring-destructive placeholder:text-destructive/60",
+												"border-destructive focus-visible:ring-destructive placeholder:text-destructive/60",
 										)}
 									/>
 								</div>
@@ -195,7 +144,7 @@ export function BasicInfoStep({ errors, onForceNext }: BasicInfoStepProps) {
 										className={cn(
 											"h-7 text-xs font-mono px-2 py-0 shadow-none",
 											errors.momentum_y &&
-											"border-destructive focus-visible:ring-destructive placeholder:text-destructive/60",
+												"border-destructive focus-visible:ring-destructive placeholder:text-destructive/60",
 										)}
 									/>
 								</div>
@@ -216,7 +165,7 @@ export function BasicInfoStep({ errors, onForceNext }: BasicInfoStepProps) {
 										className={cn(
 											"h-7 text-xs font-mono px-2 py-0 shadow-none",
 											errors.momentum_z &&
-											"border-destructive focus-visible:ring-destructive placeholder:text-destructive/60",
+												"border-destructive focus-visible:ring-destructive placeholder:text-destructive/60",
 										)}
 									/>
 								</div>
@@ -248,7 +197,7 @@ export function BasicInfoStep({ errors, onForceNext }: BasicInfoStepProps) {
 									className={cn(
 										"h-7 text-xs font-mono px-2 py-0 shadow-none",
 										errors.max_vertical_tnt &&
-										"border-destructive focus-visible:ring-destructive placeholder:text-destructive/60",
+											"border-destructive focus-visible:ring-destructive placeholder:text-destructive/60",
 									)}
 								/>
 								<p className="text-[0.8rem] text-muted-foreground">
@@ -275,7 +224,7 @@ export function BasicInfoStep({ errors, onForceNext }: BasicInfoStepProps) {
 									className={cn(
 										"h-7 text-xs font-mono px-2 py-0 shadow-none",
 										errors.max_tnt &&
-										"border-destructive focus-visible:ring-destructive placeholder:text-destructive/60",
+											"border-destructive focus-visible:ring-destructive placeholder:text-destructive/60",
 									)}
 								/>
 								<p className="text-[0.8rem] text-muted-foreground">

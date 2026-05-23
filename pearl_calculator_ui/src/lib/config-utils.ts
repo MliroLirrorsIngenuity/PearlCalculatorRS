@@ -1,3 +1,4 @@
+import type { DraftConfig } from "@/context/ConfigurationStateContext";
 import { utilsRust } from "@/lib/utils-rust";
 import type {
 	BitInputState,
@@ -5,7 +6,6 @@ import type {
 	GeneralConfig,
 	MultiplierBitInputState,
 } from "@/types/domain";
-import type { DraftConfig } from "@/context/ConfigurationStateContext";
 
 type TNTDirection = "SouthEast" | "NorthWest" | "SouthWest" | "NorthEast";
 
@@ -27,11 +27,6 @@ export function getOppositeDirection(dir: string | undefined): TNTDirection {
 	return "SouthEast";
 }
 
-export interface CannonCenter {
-	x: string;
-	z: string;
-}
-
 export interface PearlMomentum {
 	x: string;
 	y: string;
@@ -40,21 +35,14 @@ export interface PearlMomentum {
 
 export function convertDraftToConfig(
 	draftConfig: DraftConfig,
-	cannonCenter: CannonCenter,
 	redTNTLocation: string | undefined,
 	mode?: CannonMode,
 ): GeneralConfig {
-	return utilsRust.convert_draft_to_config(
-		draftConfig,
-		cannonCenter,
-		redTNTLocation,
-		mode,
-	);
+	return utilsRust.convert_draft_to_config(draftConfig, redTNTLocation, mode);
 }
 
 export function buildExportConfig(
 	draftConfig: DraftConfig,
-	cannonCenter: CannonCenter,
 	redTNTLocation: string | undefined,
 	bitTemplateState: BitInputState | undefined,
 	mode?: CannonMode,
@@ -62,7 +50,6 @@ export function buildExportConfig(
 ): Record<string, unknown> {
 	return utilsRust.build_export_config(
 		draftConfig,
-		cannonCenter,
 		redTNTLocation,
 		bitTemplateState,
 		mode,
@@ -72,7 +59,6 @@ export function buildExportConfig(
 
 export function convertConfigToDraft(config: GeneralConfig): {
 	draft: DraftConfig;
-	center: CannonCenter;
 	momentum: PearlMomentum;
 	redLocation: string | undefined;
 } {

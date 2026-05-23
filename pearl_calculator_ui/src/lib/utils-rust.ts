@@ -17,7 +17,6 @@ interface ImportedConfiguration {
 
 interface ConvertedConfigDraft {
 	draft: DraftConfig;
-	center: { x: string; z: string };
 	momentum: { x: string; y: string; z: string };
 	redLocation: string | undefined;
 }
@@ -27,7 +26,6 @@ interface EncodableConfig {
 	NorthWestTNT: { X: number; Y: number; Z: number };
 	SouthEastTNT: { X: number; Y: number; Z: number };
 	SouthWestTNT: { X: number; Y: number; Z: number };
-	Offset: { X: number; Z: number };
 	Pearl: {
 		Position: { X: number; Y: number; Z: number };
 		Motion: { X: number; Y: number; Z: number };
@@ -53,14 +51,12 @@ interface UtilsRustBridge {
 	): ImportedConfiguration;
 	convert_draft_to_config(
 		draft: DraftConfig,
-		cannonCenter: { x: string; z: string },
 		redTntLocation: string | undefined,
 		mode: CannonMode | undefined,
 	): GeneralConfig;
 	convert_config_to_draft(config: GeneralConfig): ConvertedConfigDraft;
 	build_export_config(
 		draft: DraftConfig,
-		cannonCenter: { x: string; z: string },
 		redTntLocation: string | undefined,
 		bitTemplateState: BitInputState | undefined,
 		mode: CannonMode | undefined,
@@ -107,7 +103,13 @@ interface UtilsRustBridge {
 		redTnt: number,
 		direction: string,
 	):
-		| { result: { blue: number[]; red: number[]; direction: [boolean, boolean] } }
+		| {
+				result: {
+					blue: number[];
+					red: number[];
+					direction: [boolean, boolean];
+				};
+		  }
 		| {
 				error: {
 					isValid: boolean;

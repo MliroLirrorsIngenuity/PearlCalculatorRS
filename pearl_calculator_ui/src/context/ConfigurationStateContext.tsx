@@ -1,5 +1,8 @@
 import { createContext, type ReactNode, useContext, useState } from "react";
-import { dispatchTauriAppStateAction, useTauriAppStateSlice } from "@/lib/tauri-app-state";
+import {
+	dispatchTauriAppStateAction,
+	useTauriAppStateSlice,
+} from "@/lib/tauri-app-state";
 import { isTauri } from "@/services";
 import type {
 	BitInputState,
@@ -42,8 +45,6 @@ export const emptyDraftConfig: DraftConfig = {
 interface ConfigurationStateContextType {
 	draftConfig: DraftConfig;
 	setDraftConfig: (config: DraftConfig) => void;
-	cannonCenter: { x: string; z: string };
-	setCannonCenter: (center: { x: string; z: string }) => void;
 	pearlMomentum: { x: string; y: string; z: string };
 	setPearlMomentum: (momentum: { x: string; y: string; z: string }) => void;
 	redTNTLocation: string | undefined;
@@ -90,13 +91,6 @@ function TauriConfigurationStateProvider({
 					void dispatchTauriAppStateAction({
 						type: "setDraftConfig",
 						config,
-					});
-				},
-				cannonCenter: configuration.cannonCenter,
-				setCannonCenter: (center) => {
-					void dispatchTauriAppStateAction({
-						type: "setCannonCenter",
-						center,
 					});
 				},
 				pearlMomentum: configuration.pearlMomentum,
@@ -188,13 +182,8 @@ function TauriConfigurationStateProvider({
 	);
 }
 
-function WebConfigurationStateProvider({
-	children,
-}: {
-	children: ReactNode;
-}) {
+function WebConfigurationStateProvider({ children }: { children: ReactNode }) {
 	const [draftConfig, setDraftConfig] = useState<DraftConfig>(emptyDraftConfig);
-	const [cannonCenter, setCannonCenter] = useState({ x: "", z: "" });
 	const [pearlMomentum, setPearlMomentum] = useState({ x: "", y: "", z: "" });
 	const [redTNTLocation, setRedTNTLocation] = useState<string | undefined>(
 		undefined,
@@ -217,7 +206,6 @@ function WebConfigurationStateProvider({
 
 	const resetDraft = () => {
 		setDraftConfig(emptyDraftConfig);
-		setCannonCenter({ x: "", z: "" });
 		setPearlMomentum({ x: "", y: "", z: "" });
 		setRedTNTLocation(undefined);
 		setBitTemplateState(undefined);
@@ -235,8 +223,6 @@ function WebConfigurationStateProvider({
 			value={{
 				draftConfig,
 				setDraftConfig,
-				cannonCenter,
-				setCannonCenter,
 				pearlMomentum,
 				setPearlMomentum,
 				redTNTLocation,
@@ -274,11 +260,15 @@ export function ConfigurationStateProvider({
 }) {
 	if (isTauri) {
 		return (
-			<TauriConfigurationStateProvider>{children}</TauriConfigurationStateProvider>
+			<TauriConfigurationStateProvider>
+				{children}
+			</TauriConfigurationStateProvider>
 		);
 	}
 
-	return <WebConfigurationStateProvider>{children}</WebConfigurationStateProvider>;
+	return (
+		<WebConfigurationStateProvider>{children}</WebConfigurationStateProvider>
+	);
 }
 
 export function useConfigurationState() {

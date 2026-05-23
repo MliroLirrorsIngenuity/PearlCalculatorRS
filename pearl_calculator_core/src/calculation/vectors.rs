@@ -8,8 +8,7 @@ pub fn resolve_vectors_for_direction(
     cannon: &Cannon,
     direction: Direction,
 ) -> (Space3D, Space3D, Space3D) {
-    let mut pearl_calc_pos = cannon.pearl.offset;
-    pearl_calc_pos.y = cannon.pearl.position.y;
+    let pearl_calc_pos = cannon.pearl.position;
 
     let blue_duper = cannon
         .default_blue_duper

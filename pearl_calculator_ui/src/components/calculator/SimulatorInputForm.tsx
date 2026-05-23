@@ -5,9 +5,9 @@ import { FieldLegend, FieldSet } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { CoercedNumberSchema } from "@/lib/schemas";
 import { cn } from "@/lib/utils";
 import type { SimulatorConfig } from "@/types/domain";
-import { CoercedNumberSchema } from "@/lib/schemas";
 
 function CompactInput({
 	label,

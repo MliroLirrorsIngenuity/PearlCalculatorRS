@@ -1,14 +1,13 @@
 import { useState } from "react";
+import { z } from "zod";
+import { toBackendMode } from "@/lib/config-utils";
 import { calculatorService } from "@/services";
 import type {
 	CalculatorInputs,
+	CannonMode,
 	GeneralConfig,
 	TNTResult,
 } from "@/types/domain";
-import { z } from "zod";
-import { CoercedNumberSchema } from "@/lib/schemas";
-import { toBackendMode } from "@/lib/config-utils";
-import type { CannonMode } from "@/types/domain";
 
 type CalculationResult =
 	| { success: true; data: TNTResult[] }
@@ -51,11 +50,6 @@ export function useTNTCalculator() {
 			return res.success ? res.data : defaultVal;
 		};
 
-		const parseOrZero = (val: string) => {
-			const res = CoercedNumberSchema.safeParse(val);
-			return res.success ? res.data : 0;
-		};
-
 		setIsCalculating(true);
 		try {
 			const verticalTnt = mode === "Vector3D" ? config.vertical_tnt : undefined;
@@ -64,14 +58,12 @@ export function useTNTCalculator() {
 			const backendMode = toBackendMode(mode);
 
 			const calculationInput = {
-				pearlX: parseOrConfig(inputs.pearlX, config.pearl_x_position),
+				pearlX: 0,
 				pearlY: config.pearl_y_position,
-				pearlZ: parseOrConfig(inputs.pearlZ, config.pearl_z_position),
+				pearlZ: 0,
 				pearlMotionX: config.pearl_x_motion,
 				pearlMotionY: config.pearl_y_motion,
 				pearlMotionZ: config.pearl_z_motion,
-				offsetX: parseOrZero(inputs.offsetX),
-				offsetZ: parseOrZero(inputs.offsetZ),
 				cannonY: parseOrConfig(
 					inputs.cannonY,
 					Math.floor(config.pearl_y_position),
@@ -84,10 +76,10 @@ export function useTNTCalculator() {
 				defaultBlueDirection: config.default_blue_tnt_position,
 				destinationX: destX,
 				destinationY:
-					((mode === "Vector3D" && inputs.destY) ||
+					(mode === "Vector3D" && inputs.destY) ||
 					(mode !== "Vector3D" && inputs.planeInterceptY && inputs.destY)
 						? parseFloat(inputs.destY ?? "") || 0
-						: undefined),
+						: undefined,
 				destinationZ: destZ,
 				maxTnt: config.max_tnt,
 				maxVerticalTnt: maxVerticalTnt,
@@ -95,7 +87,7 @@ export function useTNTCalculator() {
 				maxDistance: 50.0,
 				version: version,
 				mode: backendMode,
-				verticalTnt: verticalTnt,
+				verticalTnt,
 			};
 
 			console.log("Sending calculation input:", calculationInput);

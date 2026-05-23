@@ -1,5 +1,5 @@
 import { ArrowLeft, ArrowRight } from "lucide-react";
-import { ThemeColor } from "@/lib/bit-layout-utils";
+import type { ThemeColor } from "@/lib/bit-layout-utils";
 
 interface CarriageReturnGuideProps {
 	theme: ThemeColor;

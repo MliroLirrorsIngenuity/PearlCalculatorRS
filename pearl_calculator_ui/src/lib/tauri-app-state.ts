@@ -48,7 +48,6 @@ interface ConfigStateSnapshot {
 
 interface ConfigurationStateSnapshot {
 	draftConfig: DraftConfigState;
-	cannonCenter: { x: string; z: string };
 	pearlMomentum: { x: string; y: string; z: string };
 	redTntLocation: string | undefined;
 	bitTemplateState: BitInputState | undefined;
@@ -139,8 +138,6 @@ const defaultCalculatorInputs: CalculatorInputs = {
 	planeInterceptY: false,
 	destZ: "",
 	cannonY: "36",
-	offsetX: "0",
-	offsetZ: "0",
 	tickRange: [0, 20],
 	distanceRange: [0, 20],
 };
@@ -179,7 +176,6 @@ const defaultSnapshot: AppStateSnapshot = {
 	},
 	configuration: {
 		draftConfig: defaultDraftConfig,
-		cannonCenter: { x: "", z: "" },
 		pearlMomentum: { x: "", y: "", z: "" },
 		redTntLocation: undefined,
 		bitTemplateState: undefined,

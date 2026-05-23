@@ -23,7 +23,6 @@ export function useDragDrop() {
 	const { setConfigData, setHasConfig, setBitTemplateConfig } = useConfig();
 	const {
 		setDraftConfig,
-		setCannonCenter,
 		setPearlMomentum,
 		setRedTNTLocation,
 		setBitTemplateState,
@@ -58,10 +57,9 @@ export function useDragDrop() {
 							path,
 						});
 					} else {
-						const { draft, center, momentum, redLocation } =
+						const { draft, momentum, redLocation } =
 							convertConfigToDraft(config);
 						setDraftConfig(draft);
-						setCannonCenter(center);
 						setPearlMomentum(momentum);
 						setRedTNTLocation(redLocation);
 
@@ -85,14 +83,12 @@ export function useDragDrop() {
 						setBitTemplateConfig(bitTemplate);
 						setHasConfig(true);
 
-						updateDefaultInput("pearlX", config.pearl_x_position.toString());
-						updateDefaultInput("pearlZ", config.pearl_z_position.toString());
+						updateDefaultInput("pearlX", "0");
+						updateDefaultInput("pearlZ", "0");
 						updateDefaultInput(
 							"cannonY",
 							Math.floor(config.pearl_y_position).toString(),
 						);
-						updateDefaultInput("offsetX", (config.offset_x ?? 0).toString());
-						updateDefaultInput("offsetZ", (config.offset_z ?? 0).toString());
 					}
 
 					showSuccess(t("calculator.toast_config_loaded"));
@@ -109,7 +105,6 @@ export function useDragDrop() {
 			t,
 			navigate,
 			setDraftConfig,
-			setCannonCenter,
 			setPearlMomentum,
 			setRedTNTLocation,
 			setBitTemplateState,

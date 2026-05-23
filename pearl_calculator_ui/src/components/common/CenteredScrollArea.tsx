@@ -1,4 +1,4 @@
-import * as React from "react";
+import type * as React from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useElementSize } from "@/hooks/use-element-size";
 import { cn } from "@/lib/utils";

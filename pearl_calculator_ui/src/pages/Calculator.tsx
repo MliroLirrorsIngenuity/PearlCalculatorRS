@@ -20,11 +20,11 @@ import { useMobileView } from "@/context/MobileViewContext";
 import { useTNTCalculator } from "@/hooks/use-calculator";
 import { usePearlTrace } from "@/hooks/use-pearl-trace";
 import { useToastNotifications } from "@/hooks/use-toast-notifications";
-import { loadConfiguration } from "@/lib/config-service";
 import { decodeConfig } from "@/lib/config-codec";
+import { loadConfiguration } from "@/lib/config-service";
 import { dispatchTauriAppStateAction } from "@/lib/tauri-app-state";
-import type { CalculatorInputs } from "@/types/domain";
 import { isTauri } from "@/services";
+import type { CalculatorInputs } from "@/types/domain";
 
 function CalculatorContent() {
 	const {
@@ -208,15 +208,12 @@ function CalculatorContent() {
 					setMultiplierConfig(result.multiplierTemplate);
 					setHasConfig(true);
 
-					updateDefaultInput("pearlX", result.config.pearl_x_position.toString());
-					updateDefaultInput("pearlZ", result.config.pearl_z_position.toString());
+					updateDefaultInput("pearlX", "0");
+					updateDefaultInput("pearlZ", "0");
 					updateDefaultInput(
 						"cannonY",
 						Math.floor(result.config.pearl_y_position).toString(),
 					);
-					updateDefaultInput("offsetX", (result.config.offset_x ?? 0).toString());
-					updateDefaultInput("offsetZ", (result.config.offset_z ?? 0).toString());
-
 					setCalculationMode(result.config.mode ?? "Standard");
 				}
 
@@ -247,27 +244,12 @@ function CalculatorContent() {
 				setConfigPath("");
 				setHasConfig(true);
 
-				updateDefaultInput(
-					"pearlX",
-					decoded.generalConfig.pearl_x_position.toString(),
-				);
-				updateDefaultInput(
-					"pearlZ",
-					decoded.generalConfig.pearl_z_position.toString(),
-				);
+				updateDefaultInput("pearlX", "0");
+				updateDefaultInput("pearlZ", "0");
 				updateDefaultInput(
 					"cannonY",
 					Math.floor(decoded.generalConfig.pearl_y_position).toString(),
 				);
-				updateDefaultInput(
-					"offsetX",
-					(decoded.generalConfig.offset_x ?? 0).toString(),
-				);
-				updateDefaultInput(
-					"offsetZ",
-					(decoded.generalConfig.offset_z ?? 0).toString(),
-				);
-
 				setCalculationMode(decoded.generalConfig.mode ?? "Standard");
 			}
 

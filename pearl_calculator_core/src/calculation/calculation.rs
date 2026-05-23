@@ -15,7 +15,7 @@ pub fn calculate_tnt_amount(
     version: PearlVersion,
     plane_intercept_y: bool,
 ) -> Vec<TNTResult> {
-    let pearl_start_absolute_pos = cannon.pearl.position + cannon.pearl.offset;
+    let pearl_start_absolute_pos = cannon.pearl.position;
     let true_distance = destination - pearl_start_absolute_pos;
 
     if true_distance.length_sq() < FLOAT_PRECISION_EPSILON {
@@ -64,7 +64,6 @@ pub fn calculate_tnt_amount(
             vert_vec,
             cannon.pearl.position,
             cannon.pearl.motion,
-            cannon.pearl.offset,
             destination,
             max_distance_sq,
             plane_intercept_y,

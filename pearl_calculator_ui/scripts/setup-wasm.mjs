@@ -1,11 +1,11 @@
 import {
-	TOOLS_DIR,
 	getInstalledWasmBindgenVersion,
 	getRequiredWasmBindgenVersion,
 	hasRustTarget,
 	localToolPath,
 	resolveTool,
 	run,
+	TOOLS_DIR,
 } from "./wasm-utils.mjs";
 
 const target = "wasm32-unknown-unknown";
@@ -26,7 +26,9 @@ if (installedVersion !== requiredVersion) {
 			`Installing wasm-bindgen-cli v${requiredVersion} (current: v${installedVersion}) into ${TOOLS_DIR}...`,
 		);
 	} else {
-		console.log(`Installing wasm-bindgen-cli v${requiredVersion} into ${TOOLS_DIR}...`);
+		console.log(
+			`Installing wasm-bindgen-cli v${requiredVersion} into ${TOOLS_DIR}...`,
+		);
 	}
 
 	run("cargo", [

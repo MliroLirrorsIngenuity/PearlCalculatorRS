@@ -13,8 +13,6 @@ export interface CalculationInput {
 	pearlMotionX: number;
 	pearlMotionY: number;
 	pearlMotionZ: number;
-	offsetX: number;
-	offsetZ: number;
 	cannonY: number;
 	northWestTnt: Space3DInput;
 	northEastTnt: Space3DInput;
@@ -43,8 +41,6 @@ export interface PearlTraceInput {
 	pearlMotionX: number;
 	pearlMotionY: number;
 	pearlMotionZ: number;
-	offsetX: number;
-	offsetZ: number;
 	cannonY: number;
 	northWestTnt: Space3DInput;
 	northEastTnt: Space3DInput;

@@ -1,7 +1,7 @@
 import { AnimatePresence, motion } from "motion/react";
 import { Outlet, useLocation } from "react-router";
-import { DragDropOverlay } from "@/components/common/DragDropOverlay";
 import { AppSidebar } from "@/components/app-sidebar";
+import { DragDropOverlay } from "@/components/common/DragDropOverlay";
 import { AppBreadcrumb } from "@/components/layout/AppBreadcrumb";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { Toaster } from "@/components/ui/sonner";

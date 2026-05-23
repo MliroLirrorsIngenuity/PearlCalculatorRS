@@ -8,14 +8,12 @@ declare module "pearl_calculator_wasm" {
 	): unknown;
 	export function convert_draft_to_config(
 		draft: unknown,
-		cannonCenter: unknown,
 		redTntLocation: unknown,
 		mode: unknown,
 	): unknown;
 	export function convert_config_to_draft(config: unknown): unknown;
 	export function build_export_config(
 		draft: unknown,
-		cannonCenter: unknown,
 		redTntLocation: unknown,
 		bitTemplateState: unknown,
 		mode: unknown,
@@ -32,13 +30,19 @@ declare module "pearl_calculator_wasm" {
 	export function config_to_multiplier_input_state(config: unknown): unknown;
 	export function input_state_to_multiplier_config(state: unknown): unknown;
 	export function validate_bit_template(values: unknown): unknown;
-	export function decode_bit_value(values: unknown, targetValue: number): unknown;
+	export function decode_bit_value(
+		values: unknown,
+		targetValue: number,
+	): unknown;
 	export function decode_with_multiplier(
 		values: unknown,
 		multiplier: number,
 		targetValue: number,
 	): unknown;
-	export function get_direction_bits(masks: unknown, direction: string): unknown;
+	export function get_direction_bits(
+		masks: unknown,
+		direction: string,
+	): unknown;
 	export function parse_template_values(state: unknown): unknown;
 	export function calculate_bits(
 		state: unknown,

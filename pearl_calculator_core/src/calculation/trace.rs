@@ -16,14 +16,13 @@ pub fn validate_candidates(
     vert_vec: Space3D,
     pearl_position: Space3D,
     pearl_motion: Space3D,
-    pearl_offset: Space3D,
     destination: Space3D,
     max_distance_sq: f64,
     plane_intercept_y: bool,
     version: PearlVersion,
     calculation_direction: Direction,
 ) -> Vec<TNTResult> {
-    let pearl_start_absolute_pos = pearl_position + pearl_offset;
+    let pearl_start_absolute_pos = pearl_position;
     let check_3d = plane_intercept_y || vert_vec.length_sq() > FLOAT_PRECISION_EPSILON;
 
     let raw_results: Vec<TNTResult> = candidates
@@ -59,7 +58,6 @@ pub fn validate_candidates(
                 max_sim_tick,
                 &valid_ticks_map,
                 &[],
-                pearl_offset,
                 version,
                 max_distance_sq,
                 check_3d,
@@ -145,7 +143,6 @@ pub fn calculate_pearl_trace(
     run_trace_internal(
         cannon.pearl.position,
         final_motion,
-        Some(cannon.pearl.offset),
         max_ticks,
         world_collisions,
         version,
@@ -174,7 +171,6 @@ pub fn calculate_raw_trace(
     run_trace_internal(
         pearl_position,
         pearl_motion + total_explosion_motion,
-        None,
         max_ticks,
         world_collisions,
         version,
@@ -184,7 +180,6 @@ pub fn calculate_raw_trace(
 fn run_trace_internal(
     position: Space3D,
     motion: Space3D,
-    offset: Option<Space3D>,
     max_ticks: u32,
     world_collisions: &[AABBBox],
     version: PearlVersion,
@@ -195,12 +190,5 @@ fn run_trace_internal(
         tnt_charges: vec![],
     };
 
-    simulation::run(
-        &general_data,
-        None,
-        max_ticks,
-        world_collisions,
-        offset,
-        version,
-    )
+    simulation::run(&general_data, None, max_ticks, world_collisions, version)
 }

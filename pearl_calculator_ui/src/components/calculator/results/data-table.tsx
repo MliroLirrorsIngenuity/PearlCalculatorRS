@@ -8,8 +8,8 @@ import {
 	getSortedRowModel,
 	type Row,
 	type SortingState,
-	type VisibilityState,
 	useReactTable,
+	type VisibilityState,
 } from "@tanstack/react-table";
 import * as React from "react";
 import { useTranslation } from "react-i18next";

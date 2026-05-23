@@ -4,7 +4,6 @@ import { z } from "zod";
 import { useConfig } from "@/context/ConfigContext";
 import { useConfigurationState } from "@/context/ConfigurationStateContext";
 import { useToastNotifications } from "@/hooks/use-toast-notifications";
-import { CoercedNumberSchema } from "@/lib/schemas";
 import { toBackendMode } from "@/lib/config-utils";
 import { calculatorService } from "@/services";
 import type { PearlTraceResult } from "@/types/domain";
@@ -12,8 +11,6 @@ import type { PearlTraceResult } from "@/types/domain";
 export interface PearlTraceInputs {
 	pearlX: string;
 	pearlZ: string;
-	offsetX: string;
-	offsetZ: string;
 	cannonY: string;
 	destX: string;
 	destY?: string;
@@ -41,23 +38,15 @@ export function usePearlTrace() {
 			const res = z.coerce.number().safeParse(val);
 			return res.success ? res.data : defaultVal;
 		};
-
-		const parseOrZero = (val: string) => {
-			const res = CoercedNumberSchema.safeParse(val);
-			return res.success ? res.data : 0;
-		};
-
 		setLoading(true);
 		try {
 			const traceInput = {
-				pearlX: parseOrConfig(inputs.pearlX, configData.pearl_x_position),
+				pearlX: 0,
 				pearlY: configData.pearl_y_position,
-				pearlZ: parseOrConfig(inputs.pearlZ, configData.pearl_z_position),
+				pearlZ: 0,
 				pearlMotionX: configData.pearl_x_motion,
 				pearlMotionY: configData.pearl_y_motion,
 				pearlMotionZ: configData.pearl_z_motion,
-				offsetX: parseOrZero(inputs.offsetX),
-				offsetZ: parseOrZero(inputs.offsetZ),
 				cannonY: parseOrConfig(
 					inputs.cannonY,
 					Math.floor(configData.pearl_y_position),
@@ -73,7 +62,9 @@ export function usePearlTrace() {
 				verticalTntAmount:
 					calculationMode === "Vector3D" ? tntResult.vertical : undefined,
 				verticalTnt:
-					calculationMode === "Vector3D" ? configData.vertical_tnt : undefined,
+					calculationMode === "Vector3D" && configData.vertical_tnt
+						? configData.vertical_tnt
+						: undefined,
 
 				defaultRedDirection: configData.default_red_tnt_position,
 				defaultBlueDirection: configData.default_blue_tnt_position,

@@ -1,3 +1,4 @@
+import { BadgeInfo } from "lucide-react";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -9,7 +10,6 @@ import {
 } from "@/components/ui/hover-card";
 import { useMobileViewOptional } from "@/context/MobileViewContext";
 import { cn } from "@/lib/utils";
-import { BadgeInfo } from "lucide-react";
 import pkg from "../../../package.json";
 import tauriConf from "../../../src-tauri/tauri.conf.json";
 

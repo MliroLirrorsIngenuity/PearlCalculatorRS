@@ -1,14 +1,14 @@
-import React from "react";
 import { ArrowLeft, ArrowRight } from "lucide-react";
+import React from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useElementSize } from "@/hooks/use-element-size";
-import { CarriageReturnGuide } from "./CarriageReturnGuide";
 import {
-	THEME_CLASSES,
-	ThemeColor,
 	calculateRowChunks,
+	THEME_CLASSES,
+	type ThemeColor,
 } from "@/lib/bit-layout-utils";
+import { CarriageReturnGuide } from "./CarriageReturnGuide";
 
 interface BitInputRowProps {
 	theme: ThemeColor;
@@ -22,7 +22,7 @@ interface BitInputRowProps {
 	onPaste?: (index: number, e: React.ClipboardEvent) => void;
 }
 
-export { type ThemeColor };
+export type { ThemeColor };
 
 export function BitInputRow({
 	theme,

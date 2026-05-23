@@ -1,4 +1,5 @@
 use pearl_calculator_core::calculation::results::{CalculationResult, TNTResult};
+use pearl_calculator_core::physics::world::space::Space3D;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -18,6 +19,14 @@ pub struct TNTResultOutput {
 
 impl From<TNTResult> for TNTResultOutput {
     fn from(r: TNTResult) -> Self {
+        Self::from_core(r, Space3D::default())
+    }
+}
+
+impl TNTResultOutput {
+    pub fn from_core(r: TNTResult, origin: Space3D) -> Self {
+        let pearl_end_pos = r.pearl_end_pos + origin;
+
         TNTResultOutput {
             distance: r.distance,
             tick: r.tick,
@@ -28,9 +37,9 @@ impl From<TNTResult> for TNTResultOutput {
             pitch: r.pitch,
             total: r.total,
             pearl_end_pos: Space3DOutput {
-                x: r.pearl_end_pos.x,
-                y: r.pearl_end_pos.y,
-                z: r.pearl_end_pos.z,
+                x: pearl_end_pos.x,
+                y: pearl_end_pos.y,
+                z: pearl_end_pos.z,
             },
             pearl_end_motion: Space3DOutput {
                 x: r.pearl_end_motion.x,
@@ -55,7 +64,11 @@ pub struct PearlTraceOutput {
 }
 
 impl PearlTraceOutput {
-    pub fn from_core(result: CalculationResult, destination: Option<(f64, f64)>) -> Self {
+    pub fn from_core(
+        result: CalculationResult,
+        destination: Option<(f64, f64)>,
+        origin: Space3D,
+    ) -> Self {
         let mut min_distance = f64::INFINITY;
         let mut closest_tick = 0;
         let mut closest_point = Space3DOutput {
@@ -69,6 +82,7 @@ impl PearlTraceOutput {
             .iter()
             .enumerate()
             .map(|(index, pos)| {
+                let pos = *pos + origin;
                 if let Some((dest_x, dest_z)) = destination {
                     let dx = pos.x - dest_x;
                     let dz = pos.z - dest_z;
@@ -116,11 +130,13 @@ impl PearlTraceOutput {
             (0.0, None)
         };
 
+        let landing_position = result.landing_position + origin;
+
         PearlTraceOutput {
             landing_position: Space3DOutput {
-                x: result.landing_position.x,
-                y: result.landing_position.y,
-                z: result.landing_position.z,
+                x: landing_position.x,
+                y: landing_position.y,
+                z: landing_position.z,
             },
             pearl_trace: pearl_trace_output,
             pearl_motion_trace: pearl_motion_trace_output,

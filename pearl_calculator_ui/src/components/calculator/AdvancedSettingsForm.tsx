@@ -6,7 +6,6 @@ import {
 	FieldLegend,
 	FieldSet,
 } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Slider } from "@/components/ui/slider";
 import type { CalculatorInputs } from "@/types/domain";
@@ -42,32 +41,6 @@ export default function AdvancedSettingsForm({
 					<FieldLegend className="text-lg font-semibold">
 						{t("calculator.advanced_settings_legend")}
 					</FieldLegend>
-					<FieldGroup className="grid grid-cols-2 gap-4">
-						<Field>
-							<FieldLabel htmlFor="offset-x">
-								{t("calculator.label_offset_x")}
-							</FieldLabel>
-							<Input
-								id="offset-x"
-								type="number"
-								step="any"
-								value={inputs.offsetX}
-								onChange={(e) => onInputChange("offsetX", e.target.value)}
-							/>
-						</Field>
-						<Field>
-							<FieldLabel htmlFor="offset-z">
-								{t("calculator.label_offset_z")}
-							</FieldLabel>
-							<Input
-								id="offset-z"
-								type="number"
-								step="any"
-								value={inputs.offsetZ}
-								onChange={(e) => onInputChange("offsetZ", e.target.value)}
-							/>
-						</Field>
-					</FieldGroup>
 					<FieldGroup className="space-y-4">
 						<Field>
 							<FieldLabel>{t("calculator.label_ticks_range")}</FieldLabel>

@@ -34,15 +34,13 @@ pub fn parse_configuration_content(content: &str, path: &str) -> Result<JsValue,
 #[wasm_bindgen]
 pub fn convert_draft_to_config(
     draft: JsValue,
-    cannon_center: JsValue,
     red_tnt_location: JsValue,
     mode: JsValue,
 ) -> Result<JsValue, JsError> {
     let draft = serde_wasm_bindgen::from_value(draft)?;
-    let cannon_center = serde_wasm_bindgen::from_value(cannon_center)?;
     let red_tnt_location = serde_wasm_bindgen::from_value(red_tnt_location).ok();
     let mode = serde_wasm_bindgen::from_value(mode).ok();
-    let result = utils::convert_draft_to_config(&draft, &cannon_center, red_tnt_location, mode);
+    let result = utils::convert_draft_to_config(&draft, red_tnt_location, mode);
     Ok(serde_wasm_bindgen::to_value(&result)?)
 }
 
@@ -56,14 +54,12 @@ pub fn convert_config_to_draft(config: JsValue) -> Result<JsValue, JsError> {
 #[wasm_bindgen]
 pub fn build_export_config(
     draft: JsValue,
-    cannon_center: JsValue,
     red_tnt_location: JsValue,
     bit_template_state: JsValue,
     mode: JsValue,
     multiplier_bit_state: JsValue,
 ) -> Result<JsValue, JsError> {
     let draft = serde_wasm_bindgen::from_value(draft)?;
-    let cannon_center = serde_wasm_bindgen::from_value(cannon_center)?;
     let red_tnt_location = serde_wasm_bindgen::from_value(red_tnt_location).ok();
     let bit_template_state = serde_wasm_bindgen::from_value(bit_template_state).ok();
     let mode = serde_wasm_bindgen::from_value(mode).ok();
@@ -71,7 +67,6 @@ pub fn build_export_config(
 
     let result = utils::build_export_config(
         &draft,
-        &cannon_center,
         red_tnt_location,
         bit_template_state.as_ref(),
         mode,

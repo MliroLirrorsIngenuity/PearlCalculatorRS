@@ -1,5 +1,8 @@
 import { createContext, type ReactNode, useContext, useState } from "react";
-import { dispatchTauriAppStateAction, useTauriAppStateSlice } from "@/lib/tauri-app-state";
+import {
+	dispatchTauriAppStateAction,
+	useTauriAppStateSlice,
+} from "@/lib/tauri-app-state";
 import { isTauri } from "@/services";
 import type {
 	BitTemplateConfig,

@@ -11,6 +11,7 @@ pub fn calculate_tnt_amount(input: CalculationInput) -> Result<Vec<TNTResultOutp
     let version = input.get_version()?;
     let cannon = input.get_cannon()?;
     let destination = input.get_destination();
+    let origin = input.get_origin();
     let results = core_calculate_tnt_amount(
         &cannon,
         destination,
@@ -22,7 +23,10 @@ pub fn calculate_tnt_amount(input: CalculationInput) -> Result<Vec<TNTResultOutp
         input.uses_plane_intercept_y(),
     );
 
-    Ok(results.into_iter().map(Into::into).collect())
+    Ok(results
+        .into_iter()
+        .map(|result| TNTResultOutput::from_core(result, origin))
+        .collect())
 }
 
 pub fn calculate_pearl_trace(input: PearlTraceInput) -> Result<PearlTraceOutput, String> {
@@ -45,6 +49,7 @@ pub fn calculate_pearl_trace(input: PearlTraceInput) -> Result<PearlTraceOutput,
     Ok(PearlTraceOutput::from_core(
         result,
         Some((input.destination_x, input.destination_z)),
+        input.get_origin(),
     ))
 }
 
@@ -68,5 +73,9 @@ pub fn calculate_raw_trace(input: RawTraceInput) -> Result<PearlTraceOutput, Str
         core_calculate_raw_trace(pearl_pos, pearl_motion, tnt_charges, 10000, &[], version)
             .ok_or_else(|| "Raw trace calculation failed".to_string())?;
 
-    Ok(PearlTraceOutput::from_core(result, None))
+    Ok(PearlTraceOutput::from_core(
+        result,
+        None,
+        Space3D::default(),
+    ))
 }

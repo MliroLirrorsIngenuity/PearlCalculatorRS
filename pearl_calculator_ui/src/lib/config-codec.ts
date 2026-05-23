@@ -1,15 +1,11 @@
 import { utilsRust } from "@/lib/utils-rust";
-import type {
-	BitTemplateConfig,
-	GeneralConfig,
-} from "@/types/domain";
+import type { BitTemplateConfig, GeneralConfig } from "@/types/domain";
 
 export interface EncodableConfig {
 	NorthEastTNT: { X: number; Y: number; Z: number };
 	NorthWestTNT: { X: number; Y: number; Z: number };
 	SouthEastTNT: { X: number; Y: number; Z: number };
 	SouthWestTNT: { X: number; Y: number; Z: number };
-	Offset: { X: number; Z: number };
 	Pearl: {
 		Position: { X: number; Y: number; Z: number };
 		Motion: { X: number; Y: number; Z: number };
