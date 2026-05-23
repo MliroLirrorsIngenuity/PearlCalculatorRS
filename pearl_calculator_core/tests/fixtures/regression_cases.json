@@ -1,0 +1,85 @@
+{
+  "CannonSettings": [
+    {
+      "NorthEastTNT": {
+        "X": 0.625,
+        "Y": 256.52,
+        "Z": -0.625
+      },
+      "NorthWestTNT": {
+        "X": -0.625,
+        "Y": 256.52,
+        "Z": -0.625
+      },
+      "SouthEastTNT": {
+        "X": 0.625,
+        "Y": 256.52,
+        "Z": 0.625
+      },
+      "SouthWestTNT": {
+        "X": -0.625,
+        "Y": 256.52,
+        "Z": 0.625
+      },
+      "Offset": {
+        "X": 0.0,
+        "Z": 0.0
+      },
+      "Pearl": {
+        "Position": {
+          "X": 0.0,
+          "Y": 256.3687769039699,
+          "Z": 0.0
+        },
+        "Motion": {
+          "X": -8.0281359065837,
+          "Y": 13.10226324282859,
+          "Z": 5.619694926377817
+        }
+      },
+      "MaxTNT": 2993,
+      "Mode": "Standard",
+      "DefaultRedDirection": "SouthEast",
+      "DefaultBlueDirection": "NorthWest"
+    }
+  ],
+  "RegressionCases": [
+    {
+      "Name": "post1212_west_true_tnt_positions_match_game_trace",
+      "CannonIndex": 0,
+      "RedTNT": 2993,
+      "BlueTNT": 2974,
+      "VerticalTNT": 0,
+      "Direction": "West",
+      "MaxTicks": 605,
+      "Version": "Post1212",
+      "WorldOrigin": {
+        "X": 1039.875,
+        "Y": 0.0,
+        "Z": 3057.875
+      },
+      "Expected": {
+        "WorldLandingPosition": {
+          "X": -369151.905246,
+          "Z": 2436.707752
+        },
+        "FinalMotion": {
+          "X": -8.571952,
+          "Y": -2.932874,
+          "Z": -0.014383
+        },
+        "Tolerances": {
+          "WorldLandingPosition": {
+            "X": 0.3,
+            "Z": 0.05
+          },
+          "FinalMotion": {
+            "X": 0.00005,
+            "Y": 0.00001,
+            "Z": 0.00001
+          }
+        }
+      }
+    }
+  ]
+}
