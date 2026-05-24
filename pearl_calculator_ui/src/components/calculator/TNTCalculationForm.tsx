@@ -35,7 +35,8 @@ export default function TNTCalculationForm({
 	const { t } = useTranslation();
 	const { calculationMode } = useConfigurationState();
 	const showPlaneInterceptToggle = calculationMode !== "Vector3D";
-	const showDestY = calculationMode === "Vector3D" ? true : inputs.planeInterceptY;
+	const showDestY =
+		calculationMode === "Vector3D" ? true : inputs.planeInterceptY;
 
 	return (
 		<ScrollArea className="h-full">

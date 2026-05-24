@@ -111,7 +111,7 @@ export function TNTInputGroup({
 						}
 					}}
 					error={errors?.y}
-					suffix={(xSign || zSign) ? <span /> : undefined}
+					suffix={xSign || zSign ? <span /> : undefined}
 				/>
 				<CompactInput
 					label={t("configuration_page.label_z")}

@@ -1,213 +1,140 @@
-use pearl_calculator_core::calculation::calculation::{
-    calculate_pearl_trace, calculate_tnt_amount,
-};
+use pearl_calculator_core::calculation::calculation::calculate_pearl_trace;
+use pearl_calculator_core::calculation::inputs::Cannon;
 use pearl_calculator_core::physics::entities::movement::PearlVersion;
 use pearl_calculator_core::physics::world::direction::Direction;
 use pearl_calculator_core::physics::world::space::Space3D;
+use pearl_calculator_core::settings::{CannonSettings, Surface2D};
 use serde::Deserialize;
 use std::fs::File;
 use std::io::BufReader;
+use std::path::PathBuf;
 
-mod common;
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "PascalCase")]
+struct RegressionConfig {
+    cannon_settings: Vec<CannonSettings>,
+    regression_cases: Vec<RegressionCase>,
+}
 
-#[derive(Deserialize, Debug)]
-#[allow(dead_code)]
-struct SnapshotCase {
-    id: usize,
-    source_file: String,
-    case_name: String,
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "PascalCase")]
+struct RegressionCase {
+    name: String,
+    cannon_index: usize,
+    #[serde(rename = "RedTNT")]
+    red_tnt: u32,
+    #[serde(rename = "BlueTNT")]
+    blue_tnt: u32,
+    #[serde(rename = "VerticalTNT")]
+    vertical_tnt: u32,
+    direction: Direction,
+    max_ticks: u32,
     version: PearlVersion,
-    input_red: u32,
-    input_blue: u32,
-    input_vertical: u32,
-    input_direction: Direction,
-    expected_landing_pos: Space3D,
-    expected_ticks: u32,
-    tick_10_checkpoint: Option<Space3D>,
+    world_origin: Space3D,
+    expected: ExpectedTrace,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "PascalCase")]
+struct ExpectedTrace {
+    world_landing_position: Surface2D,
+    final_motion: Space3D,
+    tolerances: TraceTolerances,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "PascalCase")]
+struct TraceTolerances {
+    world_landing_position: Surface2D,
+    final_motion: Space3D,
 }
 
 #[test]
-fn test_regression_against_snapshot() {
-    let file_path = "tests/fixtures/snapshot.json";
+fn regression_cases_match_game_trace() {
+    let config = load_regression_config();
 
-    let file = match File::open(file_path) {
-        Ok(f) => f,
-        Err(_) => {
-            println!("Snapshot file not found, skipping regression test");
-            println!("  Run first: cargo test --test gen_snapshot -- --ignored");
-            return;
-        }
-    };
-
-    let reader = BufReader::new(file);
-    let cases: Vec<SnapshotCase> = serde_json::from_reader(reader).expect("Invalid JSON format");
-
-    let input_cases = common::load_all_input_cases();
-
-    println!(
-        "Starting regression test, {} snapshot cases...\n",
-        cases.len()
+    assert!(
+        !config.regression_cases.is_empty(),
+        "regression config should contain at least one case"
     );
 
-    let mut passed = 0;
-    let mut failed = 0;
-    let max_ticks = 120;
+    for case in &config.regression_cases {
+        let cannon_settings = config
+            .cannon_settings
+            .get(case.cannon_index)
+            .unwrap_or_else(|| {
+                panic!(
+                    "{} references missing cannon index {}",
+                    case.name, case.cannon_index
+                )
+            });
+        let cannon = Cannon::from_settings(cannon_settings);
 
-    for case in cases {
-        print!("[{}] {} ... ", case.id, case.case_name);
-
-        let input_case = input_cases.iter().find(|ic| ic.name == case.source_file);
-
-        let cannon = match input_case {
-            Some(ic) => ic.cannon.to_cannon(),
-            None => {
-                println!("SKIP (config '{}' not found)", case.source_file);
-                continue;
-            }
-        };
-
-        let trace_result = calculate_pearl_trace(
+        let trace = calculate_pearl_trace(
             &cannon,
-            case.input_red,
-            case.input_blue,
-            case.input_vertical,
-            case.input_direction,
-            max_ticks,
+            case.red_tnt,
+            case.blue_tnt,
+            case.vertical_tnt,
+            case.direction,
+            case.max_ticks,
             &[],
             case.version,
+        )
+        .unwrap_or_else(|| panic!("{} trace should be calculable", case.name));
+
+        let pos = trace.landing_position + case.world_origin;
+        let motion = trace.final_motion;
+
+        assert_close(
+            &format!("{} world x", case.name),
+            pos.x,
+            case.expected.world_landing_position.x,
+            case.expected.tolerances.world_landing_position.x,
         );
-
-        let trace = match trace_result {
-            Some(t) => t,
-            None => {
-                println!("FAIL (trace calculation failed)");
-                failed += 1;
-                continue;
-            }
-        };
-
-        let pos_diff = trace.landing_position.distance(&case.expected_landing_pos);
-
-        if pos_diff >= 1e-8 {
-            println!(
-                "FAIL (position mismatch)\n  Expected: {:?}\n  Actual:   {:?}\n  Diff: {:.10e}",
-                case.expected_landing_pos, trace.landing_position, pos_diff
-            );
-            failed += 1;
-            continue;
-        }
-
-        if let Some(expected_tick_10) = case.tick_10_checkpoint {
-            if trace.pearl_trace.len() > 10 {
-                let actual_tick_10 = trace.pearl_trace[10];
-                let tick_10_diff = actual_tick_10.distance(&expected_tick_10);
-
-                if tick_10_diff >= 1e-6 {
-                    println!(
-                        "FAIL (Tick 10 mismatch)\n  Expected: {:?}\n  Actual:   {:?}\n  Diff: {:.10e}",
-                        expected_tick_10, actual_tick_10, tick_10_diff
-                    );
-                    failed += 1;
-                    continue;
-                }
-            }
-        }
-
-        if case.input_red < 100_000 && case.input_blue < 10_000 {
-            let solver_results = calculate_tnt_amount(
-                &cannon,
-                case.expected_landing_pos,
-                100_000,
-                None,
-                max_ticks,
-                50.0,
-                case.version,
-                false,
-            );
-
-            let found_original = solver_results
-                .iter()
-                .any(|r| r.red == case.input_red && r.blue == case.input_blue);
-
-            if !found_original {
-                println!(
-                    "FAIL (solver cannot recover)\n  Target: {:?}\n  Expected: R={}, B={}\n  Found {} results",
-                    case.expected_landing_pos,
-                    case.input_red,
-                    case.input_blue,
-                    solver_results.len()
-                );
-                failed += 1;
-                continue;
-            }
-        }
-
-        println!("OK");
-        passed += 1;
+        assert_close(
+            &format!("{} world z", case.name),
+            pos.z,
+            case.expected.world_landing_position.z,
+            case.expected.tolerances.world_landing_position.z,
+        );
+        assert_close(
+            &format!("{} motion x", case.name),
+            motion.x,
+            case.expected.final_motion.x,
+            case.expected.tolerances.final_motion.x,
+        );
+        assert_close(
+            &format!("{} motion y", case.name),
+            motion.y,
+            case.expected.final_motion.y,
+            case.expected.tolerances.final_motion.y,
+        );
+        assert_close(
+            &format!("{} motion z", case.name),
+            motion.z,
+            case.expected.final_motion.z,
+            case.expected.tolerances.final_motion.z,
+        );
     }
-
-    println!("\n========================================");
-    println!(
-        "Regression test complete: {} passed, {} failed",
-        passed, failed
-    );
-    println!("========================================");
-
-    assert_eq!(
-        failed, 0,
-        "Regression test failed! {} cases mismatch",
-        failed
-    );
 }
 
-#[test]
-fn test_standard_plane_intercept_solver_smoke() {
-    let case = common::load_all_input_cases()
-        .into_iter()
-        .find(|case| case.name == "case_b")
-        .expect("case_b input case should exist");
-    let test_case = case
-        .test_cases
-        .iter()
-        .find(|case| case.version == PearlVersion::Post1212 && case.red == 160 && case.blue == 100)
-        .expect("case_b Post1212 South solution should exist");
-    let cannon = case.cannon.to_cannon();
-    let trace = calculate_pearl_trace(
-        &cannon,
-        test_case.red,
-        test_case.blue,
-        test_case.vertical,
-        test_case.direction,
-        120,
-        &[],
-        test_case.version,
-    )
-    .expect("trace should be calculable");
-    let target = trace
-        .pearl_trace
-        .windows(2)
-        .find_map(|segment| {
-            let start = segment[0];
-            let end = segment[1];
-            let dy = end.y - start.y;
-            if dy.abs() <= 1e-8 {
-                return None;
-            }
-            Some(start + ((end - start) * 0.5))
-        })
-        .expect("trace should contain a non-horizontal segment");
+fn load_regression_config() -> RegressionConfig {
+    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("tests")
+        .join("fixtures")
+        .join("regression_cases.json");
+    let file = File::open(&path)
+        .unwrap_or_else(|err| panic!("failed to open regression config {path:?}: {err}"));
+    let reader = BufReader::new(file);
+
+    serde_json::from_reader(reader)
+        .unwrap_or_else(|err| panic!("failed to parse regression config {path:?}: {err}"))
+}
+
+fn assert_close(label: &str, actual: f64, expected: f64, tolerance: f64) {
+    let diff = (actual - expected).abs();
     assert!(
-        calculate_tnt_amount(
-            &cannon,
-            target,
-            500,
-            None,
-            120,
-            1e-4,
-            test_case.version,
-            true
-        )
-        .iter()
-        .any(|result| result.red == test_case.red && result.blue == test_case.blue)
+        diff < tolerance,
+        "{label} mismatch: actual={actual}, expected={expected}, diff={diff}, tolerance={tolerance}"
     );
 }

@@ -25,18 +25,17 @@ pub fn run(
     destination: Option<Space3D>,
     max_ticks: u32,
     world_collisions: &[AABBBox],
-    offset: Option<Space3D>,
     version: PearlVersion,
 ) -> Option<CalculationResult> {
     match version {
         PearlVersion::Legacy => {
-            run_internal::<MovementLegacy>(data, destination, max_ticks, world_collisions, offset)
+            run_internal::<MovementLegacy>(data, destination, max_ticks, world_collisions)
         }
         PearlVersion::Post1205 => {
-            run_internal::<MovementPost1205>(data, destination, max_ticks, world_collisions, offset)
+            run_internal::<MovementPost1205>(data, destination, max_ticks, world_collisions)
         }
         PearlVersion::Post1212 => {
-            run_internal::<MovementPost1212>(data, destination, max_ticks, world_collisions, offset)
+            run_internal::<MovementPost1212>(data, destination, max_ticks, world_collisions)
         }
     }
 }
@@ -46,7 +45,6 @@ fn run_internal<M: PearlMovement + Clone>(
     destination: Option<Space3D>,
     max_ticks: u32,
     world_collisions: &[AABBBox],
-    offset: Option<Space3D>,
 ) -> Option<CalculationResult> {
     let mut pearl = PearlEntity::<M>::new(data.pearl_position, data.pearl_motion);
     let mut tnt_entities: Vec<TNTEntity> = data
@@ -90,21 +88,9 @@ fn run_internal<M: PearlMovement + Clone>(
     final_traces.dedup();
     final_motion_traces.dedup();
 
-    let (final_landing_pos_with_offset, final_traces_with_offset) = match offset {
-        Some(offset_vec) => {
-            let final_pos = final_landing_pos + offset_vec;
-            let final_traces = final_traces
-                .into_iter()
-                .map(|pos| pos + offset_vec)
-                .collect();
-            (final_pos, final_traces)
-        }
-        None => (final_landing_pos, final_traces),
-    };
-
     Some(CalculationResult {
-        landing_position: final_landing_pos_with_offset,
-        pearl_trace: final_traces_with_offset,
+        landing_position: final_landing_pos,
+        pearl_trace: final_traces,
         pearl_motion_trace: final_motion_traces,
         is_successful: is_success,
         tick: max_ticks,
@@ -119,7 +105,6 @@ pub fn scan_trajectory(
     max_tick: u32,
     valid_ticks: &[bool],
     world_collisions: &[AABBBox],
-    offset: Space3D,
     version: PearlVersion,
     max_distance_sq: f64,
     check_3d: bool,
@@ -132,7 +117,6 @@ pub fn scan_trajectory(
             max_tick,
             valid_ticks,
             world_collisions,
-            offset,
             max_distance_sq,
             check_3d,
             plane_intercept_y,
@@ -143,7 +127,6 @@ pub fn scan_trajectory(
             max_tick,
             valid_ticks,
             world_collisions,
-            offset,
             max_distance_sq,
             check_3d,
             plane_intercept_y,
@@ -154,7 +137,6 @@ pub fn scan_trajectory(
             max_tick,
             valid_ticks,
             world_collisions,
-            offset,
             max_distance_sq,
             check_3d,
             plane_intercept_y,
@@ -167,7 +149,6 @@ pub fn check_landing(
     destination: Space3D,
     max_ticks: u32,
     world_collisions: &[AABBBox],
-    offset: Space3D,
     version: PearlVersion,
     max_distance_sq: f64,
 ) -> Option<(Space3D, Space3D, u32)> {
@@ -177,7 +158,6 @@ pub fn check_landing(
             destination,
             max_ticks,
             world_collisions,
-            offset,
             max_distance_sq,
         ),
         PearlVersion::Post1205 => check_internal::<MovementPost1205>(
@@ -185,7 +165,6 @@ pub fn check_landing(
             destination,
             max_ticks,
             world_collisions,
-            offset,
             max_distance_sq,
         ),
         PearlVersion::Post1212 => check_internal::<MovementPost1212>(
@@ -193,7 +172,6 @@ pub fn check_landing(
             destination,
             max_ticks,
             world_collisions,
-            offset,
             max_distance_sq,
         ),
     }
@@ -205,7 +183,6 @@ fn scan_internal<M: PearlMovement + Clone>(
     max_tick: u32,
     valid_ticks: &[bool],
     world_collisions: &[AABBBox],
-    offset: Space3D,
     max_distance_sq: f64,
     check_3d: bool,
     plane_intercept_y: bool,
@@ -217,7 +194,7 @@ fn scan_internal<M: PearlMovement + Clone>(
         .iter()
         .map(|tnt| TNTEntity::new(tnt.position, tnt.fuse))
         .collect();
-    let mut previous_pos = pearl.data.position + offset;
+    let mut previous_pos = pearl.data.position;
 
     for tick in 1..=max_tick {
         for tnt in &mut tnt_entities {
@@ -228,7 +205,7 @@ fn scan_internal<M: PearlMovement + Clone>(
 
         M::run_tick_sequence(&mut pearl, world_collisions);
 
-        let current_pos = pearl.data.position + offset;
+        let current_pos = pearl.data.position;
 
         if (tick as usize) < valid_ticks.len() && valid_ticks[tick as usize] {
             if let Some((hit_pos, dist_sq)) = measure_hit(
@@ -263,7 +240,6 @@ fn check_internal<M: PearlMovement + Clone>(
     destination: Space3D,
     max_ticks: u32,
     world_collisions: &[AABBBox],
-    offset: Space3D,
     max_distance_sq: f64,
 ) -> Option<(Space3D, Space3D, u32)> {
     let mut pearl = PearlEntity::<M>::new(data.pearl_position, data.pearl_motion);
@@ -287,7 +263,7 @@ fn check_internal<M: PearlMovement + Clone>(
         }
     }
 
-    let final_pos = pearl.data.position + offset;
+    let final_pos = pearl.data.position;
 
     if final_pos.distance_2d_sq(&destination) <= max_distance_sq {
         Some((final_pos, pearl.data.motion, max_ticks))

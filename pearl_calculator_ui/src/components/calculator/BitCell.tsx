@@ -1,4 +1,4 @@
-import { ThemeColor } from "@/lib/bit-layout-utils";
+import type { ThemeColor } from "@/lib/bit-layout-utils";
 
 interface BitCellProps {
 	value: string;

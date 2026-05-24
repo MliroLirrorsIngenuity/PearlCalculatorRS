@@ -1,5 +1,8 @@
 import { createContext, type ReactNode, useContext, useState } from "react";
-import { dispatchTauriAppStateAction, useTauriAppStateSlice } from "@/lib/tauri-app-state";
+import {
+	dispatchTauriAppStateAction,
+	useTauriAppStateSlice,
+} from "@/lib/tauri-app-state";
 import { isTauri } from "@/services";
 import type {
 	CalculatorInputs,
@@ -59,8 +62,6 @@ const initialDefaultInputs: CalculatorInputs = {
 	planeInterceptY: false,
 	destZ: "",
 	cannonY: "36",
-	offsetX: "0",
-	offsetZ: "0",
 	tickRange: [0, 20],
 	distanceRange: [0, 20],
 };
@@ -72,8 +73,6 @@ export const emptyCalculatorInputs: CalculatorInputs = {
 	planeInterceptY: false,
 	destZ: "",
 	cannonY: "0",
-	offsetX: "0",
-	offsetZ: "0",
 	tickRange: [0, 20],
 	distanceRange: [0, 20],
 };
@@ -309,7 +308,9 @@ function WebCalculatorStateProvider({ children }: { children: ReactNode }) {
 
 export function CalculatorStateProvider({ children }: { children: ReactNode }) {
 	if (isTauri) {
-		return <TauriCalculatorStateProvider>{children}</TauriCalculatorStateProvider>;
+		return (
+			<TauriCalculatorStateProvider>{children}</TauriCalculatorStateProvider>
+		);
 	}
 
 	return <WebCalculatorStateProvider>{children}</WebCalculatorStateProvider>;

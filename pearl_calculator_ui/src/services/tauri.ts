@@ -1,8 +1,8 @@
 import { invoke } from "@tauri-apps/api/core";
-import { writeText, readText } from "@tauri-apps/plugin-clipboard-manager";
-import type { PearlTraceResult, TNTResult } from "@/types/domain";
-import { PearlTraceResultSchema, TNTResultSchema } from "@/lib/schemas";
+import { readText, writeText } from "@tauri-apps/plugin-clipboard-manager";
 import { z } from "zod";
+import { PearlTraceResultSchema, TNTResultSchema } from "@/lib/schemas";
+import type { PearlTraceResult, TNTResult } from "@/types/domain";
 import type {
 	CalculationInput,
 	ICalculatorService,

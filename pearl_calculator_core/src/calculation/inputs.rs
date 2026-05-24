@@ -20,7 +20,6 @@ pub struct TNT {
 pub struct Pearl {
     pub position: Space3D,
     pub motion: Space3D,
-    pub offset: Space3D,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -44,7 +43,6 @@ impl Cannon {
             pearl: Pearl {
                 position: settings.pearl.position,
                 motion: settings.pearl.motion,
-                offset: Space3D::new(settings.offset.x, 0.0, settings.offset.z),
             },
             red_tnt_override: settings.red_tnt,
             blue_tnt_override: settings.blue_tnt,

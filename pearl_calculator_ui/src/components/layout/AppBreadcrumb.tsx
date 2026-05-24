@@ -1,8 +1,8 @@
-import { match, P } from "ts-pattern";
 import { ArrowLeftRight, ChevronLeft, ChevronsRight, Menu } from "lucide-react";
 import { Fragment } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router";
+import { match, P } from "ts-pattern";
 import { Badge } from "@/components/ui/badge";
 
 import {
@@ -14,16 +14,16 @@ import {
 	BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
-import { useBreadcrumbItems } from "@/hooks/use-breadcrumb-items";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useSidebar } from "@/components/ui/sidebar";
 import { useConfigurationState } from "@/context/ConfigurationStateContext";
 import { useMobileView } from "@/context/MobileViewContext";
-import { useSidebar } from "@/components/ui/sidebar";
+import { useBreadcrumbItems } from "@/hooks/use-breadcrumb-items";
 import type { CannonMode } from "@/types/domain";
 
 export function AppBreadcrumb() {
@@ -42,7 +42,7 @@ export function AppBreadcrumb() {
 		match(prev)
 			.with({ onClick: P.nonNullable }, (item) => item.onClick())
 			.with({ href: P.string }, (item) => navigate(item.href))
-			.otherwise(() => { });
+			.otherwise(() => {});
 	};
 
 	const handleModeChange = (mode: CannonMode) => {

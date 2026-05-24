@@ -39,10 +39,7 @@ export default function PearlTracePanel({
 	const [summaryExpanded, setSummaryExpanded] = useState(false);
 
 	const closestApproach =
-		calculationMode !== "Vector3D" &&
-		planeInterceptY &&
-		destY &&
-		pearlTraceData
+		calculationMode !== "Vector3D" && planeInterceptY && destY && pearlTraceData
 			? (() => {
 					const targetX = Number(destX);
 					const targetY = Number(destY);
@@ -57,7 +54,11 @@ export default function PearlTracePanel({
 						const curr = pearlTraceData.pearl_trace[i];
 						const prevDelta = prev.Y - targetY;
 						const currDelta = curr.Y - targetY;
-						if (prevDelta === 0 || currDelta === 0 || prevDelta * currDelta < 0) {
+						if (
+							prevDelta === 0 ||
+							currDelta === 0 ||
+							prevDelta * currDelta < 0
+						) {
 							const ratio =
 								curr.Y === prev.Y ? 0 : (targetY - prev.Y) / (curr.Y - prev.Y);
 							const point = {

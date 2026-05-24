@@ -1,5 +1,4 @@
 import { useTranslation } from "react-i18next";
-import { preciseSubtract } from "@/lib/floating-point-utils";
 import { Badge } from "@/components/ui/badge";
 import {
 	Card,
@@ -13,7 +12,7 @@ import { useConfigurationState } from "@/context/ConfigurationStateContext";
 import { useMobileView } from "@/context/MobileViewContext";
 
 export function PreviewStep() {
-	const { draftConfig, cannonCenter, pearlMomentum, redTNTLocation } =
+	const { draftConfig, pearlMomentum, redTNTLocation } =
 		useConfigurationState();
 	const { t } = useTranslation();
 	const { isMobile } = useMobileView();
@@ -82,40 +81,6 @@ export function PreviewStep() {
 										<div className="text-xs text-muted-foreground font-mono">
 											{t("configuration_page.label_z")}:{" "}
 											<span className="text-foreground">{pearlMomentum.z}</span>
-										</div>
-									</div>
-								</div>
-
-								<div className="space-y-2 p-3 rounded-lg border bg-muted/50 h-full min-h-[110px]">
-									<div className="flex items-center justify-between mb-2">
-										<span className="text-sm font-bold">
-											{t("configuration_page.calculated_offset")}
-										</span>
-									</div>
-									<div className="flex flex-col gap-1">
-										<div className="text-xs text-muted-foreground font-mono">
-											{t("configuration_page.label_x")}:{" "}
-											<span className="text-foreground">
-												{(() => {
-													const val = preciseSubtract(
-														parseFloat(draftConfig.pearl_x_position) || 0,
-														parseFloat(cannonCenter.x) || 0,
-													);
-													return val > 0 ? `+${val}` : val;
-												})()}
-											</span>
-										</div>
-										<div className="text-xs text-muted-foreground font-mono">
-											{t("configuration_page.label_z")}:{" "}
-											<span className="text-foreground">
-												{(() => {
-													const val = preciseSubtract(
-														parseFloat(draftConfig.pearl_z_position) || 0,
-														parseFloat(cannonCenter.z) || 0,
-													);
-													return val > 0 ? `+${val}` : val;
-												})()}
-											</span>
 										</div>
 									</div>
 								</div>

@@ -185,12 +185,6 @@ pub struct DraftConfig {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
-pub struct CannonCenter {
-    pub x: String,
-    pub z: String,
-}
-
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
 pub struct PearlMomentum {
     pub x: String,
     pub y: String,
@@ -209,8 +203,6 @@ pub struct CalculatorInputs {
     pub plane_intercept_y: bool,
     pub dest_z: String,
     pub cannon_y: String,
-    pub offset_x: String,
-    pub offset_z: String,
     #[serde(default = "default_tick_range")]
     pub tick_range: [u32; 2],
     #[serde(default = "default_distance_range")]
@@ -227,8 +219,6 @@ impl Default for CalculatorInputs {
             plane_intercept_y: false,
             dest_z: String::new(),
             cannon_y: "36".to_string(),
-            offset_x: "0".to_string(),
-            offset_z: "0".to_string(),
             tick_range: default_tick_range(),
             distance_range: default_distance_range(),
         }
@@ -280,7 +270,6 @@ pub struct ImportedConfiguration {
 #[serde(rename_all = "camelCase")]
 pub struct ConvertedConfigDraft {
     pub draft: DraftConfig,
-    pub center: CannonCenter,
     pub momentum: PearlMomentum,
     pub red_location: Option<TntDirection>,
 }
@@ -302,13 +291,6 @@ pub struct EncodableVector3 {
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "PascalCase")]
-pub struct EncodableOffset {
-    pub x: f64,
-    pub z: f64,
-}
-
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "PascalCase")]
 pub struct EncodablePearl {
     pub position: EncodableVector3,
     pub motion: EncodableVector3,
@@ -324,8 +306,6 @@ pub struct EncodableConfig {
     pub south_east_tnt: EncodableVector3,
     #[serde(rename = "SouthWestTNT")]
     pub south_west_tnt: EncodableVector3,
-    #[serde(rename = "Offset")]
-    pub offset: EncodableOffset,
     #[serde(rename = "Pearl")]
     pub pearl: EncodablePearl,
     #[serde(rename = "MaxTNT")]

@@ -1,15 +1,9 @@
-import { match, P } from "ts-pattern";
 import { revealItemInDir } from "@tauri-apps/plugin-opener";
-import {
-	WizardBasicInfoSchema,
-	WizardBitConfigSchema,
-	WizardTNTConfigSchema,
-	WizardVerticalTNTSchema,
-} from "@/lib/schemas";
-import { z } from "zod";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
+import { match, P } from "ts-pattern";
+import type { z } from "zod";
 import { useCalculatorState } from "@/context/CalculatorStateContext";
 import { useConfig } from "@/context/ConfigContext";
 import { useConfigurationState } from "@/context/ConfigurationStateContext";
@@ -21,16 +15,22 @@ import {
 	inputStateToMultiplierConfig,
 } from "@/lib/bit-template-utils";
 import {
-	buildExportConfig,
-	convertConfigToDraft,
-	convertDraftToConfig,
-} from "@/lib/config-utils";
-import { exportConfiguration, loadConfiguration } from "@/lib/config-service";
-import {
 	decodeConfig,
 	type EncodableConfig,
 	encodeConfig,
 } from "@/lib/config-codec";
+import { exportConfiguration, loadConfiguration } from "@/lib/config-service";
+import {
+	buildExportConfig,
+	convertConfigToDraft,
+	convertDraftToConfig,
+} from "@/lib/config-utils";
+import {
+	WizardBasicInfoSchema,
+	WizardBitConfigSchema,
+	WizardTNTConfigSchema,
+	WizardVerticalTNTSchema,
+} from "@/lib/schemas";
 import { dispatchTauriAppStateAction } from "@/lib/tauri-app-state";
 import { isTauri } from "@/services";
 import type {
@@ -40,8 +40,6 @@ import type {
 } from "@/types/domain";
 
 export const ERROR_MAPPINGS = [
-	["cannonCenter.x", "cannon_x"],
-	["cannonCenter.z", "cannon_z"],
 	["pearlPosition.x", "pearl_x"],
 	["pearlPosition.y", "pearl_y"],
 	["pearlPosition.z", "pearl_z"],
@@ -73,7 +71,6 @@ export function useConfigurationController() {
 	const { t } = useTranslation();
 	const {
 		draftConfig,
-		cannonCenter,
 		redTNTLocation,
 		bitTemplateState,
 		resetDraft,
@@ -82,7 +79,6 @@ export function useConfigurationController() {
 		isFinished,
 		setIsFinished,
 		setDraftConfig,
-		setCannonCenter,
 		setRedTNTLocation,
 		setBitTemplateState,
 		isBitConfigSkipped,
@@ -116,7 +112,6 @@ export function useConfigurationController() {
 			.with(1, () => ({ success: true, error: null }))
 			.with(2, () => {
 				const baseData = {
-					cannonCenter,
 					pearlPosition: {
 						x: draftConfig.pearl_x_position,
 						y: draftConfig.pearl_y_position,
@@ -134,7 +129,9 @@ export function useConfigurationController() {
 							: undefined,
 				};
 				if (wizardMode === "Accumulation" || wizardMode === "Vector3D") {
-					return WizardBasicInfoSchema.omit({ maxTNT: true }).safeParse(baseData);
+					return WizardBasicInfoSchema.omit({ maxTNT: true }).safeParse(
+						baseData,
+					);
 				}
 				return WizardBasicInfoSchema.safeParse(baseData);
 			})
@@ -186,9 +183,9 @@ export function useConfigurationController() {
 						.with(
 							P.nullish,
 							() =>
-							(newErrors.bit_template_empty = t(
-								"error.configuration_page.validation.required",
-							)),
+								(newErrors.bit_template_empty = t(
+									"error.configuration_page.validation.required",
+								)),
 						)
 						.with(
 							{
@@ -197,22 +194,22 @@ export function useConfigurationController() {
 								),
 							},
 							() =>
-							(newErrors.bit_values_incomplete = t(
-								"error.configuration_page.validation.required",
-							)),
+								(newErrors.bit_values_incomplete = t(
+									"error.configuration_page.validation.required",
+								)),
 						)
 						.with(
 							{ masks: P.when((m) => m.some((mask) => !mask.direction)) },
 							() =>
-							(newErrors.bit_masks_incomplete = t(
-								"error.configuration_page.validation.required",
-							)),
+								(newErrors.bit_masks_incomplete = t(
+									"error.configuration_page.validation.required",
+								)),
 						)
 						.otherwise(
 							() =>
-							(newErrors.bit_template_empty = t(
-								"error.configuration_page.validation.required",
-							)),
+								(newErrors.bit_template_empty = t(
+									"error.configuration_page.validation.required",
+								)),
 						);
 					return;
 				}
@@ -272,7 +269,6 @@ export function useConfigurationController() {
 
 		const config = convertDraftToConfig(
 			draftConfig,
-			cannonCenter,
 			redTNTLocation,
 			wizardMode,
 		);
@@ -281,14 +277,6 @@ export function useConfigurationController() {
 
 		updateDefaultInput("pearlX", "0");
 		updateDefaultInput("pearlZ", "0");
-
-		const cx = parseFloat(cannonCenter.x) || 0;
-		const cz = parseFloat(cannonCenter.z) || 0;
-		const px = parseFloat(draftConfig.pearl_x_position) || 0;
-		const pz = parseFloat(draftConfig.pearl_z_position) || 0;
-
-		updateDefaultInput("offsetX", (px - cx).toString());
-		updateDefaultInput("offsetZ", (pz - cz).toString());
 
 		const pearlY = parseFloat(draftConfig.pearl_y_position) || 0;
 		updateDefaultInput("cannonY", Math.floor(pearlY).toString());
@@ -311,7 +299,6 @@ export function useConfigurationController() {
 		try {
 			const config = buildExportConfig(
 				draftConfig,
-				cannonCenter,
 				redTNTLocation,
 				bitTemplateState,
 				wizardMode,
@@ -356,10 +343,8 @@ export function useConfigurationController() {
 			return;
 		}
 
-		const { draft, center, redLocation } =
-			convertConfigToDraft(config);
+		const { draft, redLocation } = convertConfigToDraft(config);
 		setDraftConfig(draft);
-		setCannonCenter(center);
 		setRedTNTLocation(redLocation);
 
 		const bitInput = configToInputState(bitTemplate);
@@ -420,7 +405,6 @@ export function useConfigurationController() {
 		try {
 			const config = buildExportConfig(
 				draftConfig,
-				cannonCenter,
 				redTNTLocation,
 				bitTemplateState,
 				calculationMode,

@@ -1,14 +1,14 @@
 import path from "node:path";
 import {
-	PKG_DIR,
-	WASM_OUTPUT,
-	ROOT_DIR,
 	ensureDir,
 	getInstalledWasmBindgenVersion,
 	getRequiredWasmBindgenVersion,
 	hasRustTarget,
+	PKG_DIR,
+	ROOT_DIR,
 	resolveTool,
 	run,
+	WASM_OUTPUT,
 } from "./wasm-utils.mjs";
 
 const target = "wasm32-unknown-unknown";
@@ -16,7 +16,9 @@ const requiredVersion = getRequiredWasmBindgenVersion();
 
 if (!hasRustTarget(target)) {
 	console.error(`Missing Rust target ${target}.`);
-	console.error(`Run \`pnpm setup:wasm\` from ${path.relative(process.cwd(), path.join(ROOT_DIR, "pearl_calculator_ui")) || "."} first.`);
+	console.error(
+		`Run \`pnpm setup:wasm\` from ${path.relative(process.cwd(), path.join(ROOT_DIR, "pearl_calculator_ui")) || "."} first.`,
+	);
 	process.exit(1);
 }
 
@@ -50,6 +52,12 @@ run("cargo", [
 ensureDir(PKG_DIR);
 
 console.log("Generating JS bindings with wasm-bindgen...");
-run(resolveTool("wasm-bindgen"), [WASM_OUTPUT, "--out-dir", PKG_DIR, "--target", "bundler"]);
+run(resolveTool("wasm-bindgen"), [
+	WASM_OUTPUT,
+	"--out-dir",
+	PKG_DIR,
+	"--target",
+	"bundler",
+]);
 
 console.log(`WASM package generated in ${PKG_DIR}.`);

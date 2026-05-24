@@ -11,8 +11,8 @@ import {
 import { AnimatePresence, motion } from "motion/react";
 import * as React from "react";
 import { useTranslation } from "react-i18next";
-import { OnboardingPanel } from "@/components/common/OnboardingPanel";
 import { CenteredScrollArea } from "@/components/common/CenteredScrollArea";
+import { OnboardingPanel } from "@/components/common/OnboardingPanel";
 import { BasicInfoStep } from "@/components/configuration/BasicInfoStep";
 import { BitConfigurationStep } from "@/components/configuration/BitConfigurationStep";
 import { CannonTypeStep } from "@/components/configuration/CannonTypeStep";

@@ -14,7 +14,7 @@ pub use config::{
     input_state_to_multiplier_config, parse_configuration_content, to_backend_mode,
 };
 pub use types::{
-    BitDirection, BitInputState, BitTemplateConfig, CalculatorInputs, CannonCenter, CannonMode,
+    BitDirection, BitInputState, BitTemplateConfig, CalculatorInputs, CannonMode,
     ConvertedConfigDraft, DecodedConfig, DraftConfig, EncodableConfig, GeneralConfig,
     ImportedConfiguration, MaskGroup, MultiplierBitInputState, MultiplierConfig, PearlMomentum,
     PearlVersion, SimulatorConfig, TntDirection, Vector3,

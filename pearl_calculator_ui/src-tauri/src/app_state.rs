@@ -1,6 +1,6 @@
 use pearl_calculator_bridge::outputs::{PearlTraceOutput, TNTResultOutput};
 use pearl_calculator_utils::{
-    BitInputState, BitTemplateConfig, CalculatorInputs, CannonCenter, CannonMode, GeneralConfig,
+    BitInputState, BitTemplateConfig, CalculatorInputs, CannonMode, GeneralConfig,
     MultiplierBitInputState, MultiplierConfig, PearlMomentum, PearlVersion, SimulatorConfig,
     TntDirection, config_to_input_state, config_to_multiplier_input_state, convert_config_to_draft,
     convert_draft_to_config, input_state_to_config, input_state_to_multiplier_config,
@@ -54,7 +54,6 @@ impl Default for ConfigStoreState {
 #[serde(rename_all = "camelCase")]
 pub struct ConfigurationStoreState {
     pub draft_config: pearl_calculator_utils::DraftConfig,
-    pub cannon_center: CannonCenter,
     pub pearl_momentum: PearlMomentum,
     pub red_tnt_location: Option<TntDirection>,
     pub bit_template_state: Option<BitInputState>,
@@ -72,7 +71,6 @@ impl Default for ConfigurationStoreState {
     fn default() -> Self {
         Self {
             draft_config: pearl_calculator_utils::DraftConfig::default(),
-            cannon_center: CannonCenter::default(),
             pearl_momentum: PearlMomentum::default(),
             red_tnt_location: None,
             bit_template_state: None,
@@ -228,9 +226,6 @@ pub enum AppStateAction {
     SetDraftConfig {
         config: pearl_calculator_utils::DraftConfig,
     },
-    SetCannonCenter {
-        center: CannonCenter,
-    },
     SetPearlMomentum {
         momentum: PearlMomentum,
     },
@@ -314,8 +309,6 @@ pub enum CalculatorInputField {
     PlaneInterceptY,
     DestZ,
     CannonY,
-    OffsetX,
-    OffsetZ,
     TickRange,
     DistanceRange,
 }
@@ -350,7 +343,6 @@ impl AppStateSnapshot {
             AppStateAction::ResetConfig => self.reset_config(),
 
             AppStateAction::SetDraftConfig { config } => self.configuration.draft_config = config,
-            AppStateAction::SetCannonCenter { center } => self.configuration.cannon_center = center,
             AppStateAction::SetPearlMomentum { momentum } => {
                 self.configuration.pearl_momentum = momentum
             }
@@ -483,11 +475,9 @@ impl AppStateSnapshot {
         self.configuration.calculation_mode = config.mode.unwrap_or(CannonMode::Standard);
 
         let inputs = &mut self.calculator.default_calculator.inputs;
-        inputs.pearl_x = config.pearl_x_position.to_string();
-        inputs.pearl_z = config.pearl_z_position.to_string();
+        inputs.pearl_x = "0".to_string();
+        inputs.pearl_z = "0".to_string();
         inputs.cannon_y = config.pearl_y_position.floor().to_string();
-        inputs.offset_x = config.offset_x.unwrap_or(0.0).to_string();
-        inputs.offset_z = config.offset_z.unwrap_or(0.0).to_string();
     }
 
     fn apply_config_to_wizard(
@@ -500,7 +490,6 @@ impl AppStateSnapshot {
         let converted = convert_config_to_draft(&config);
 
         self.configuration.draft_config = converted.draft;
-        self.configuration.cannon_center = converted.center;
         self.configuration.pearl_momentum = converted.momentum;
         self.configuration.red_tnt_location = converted.red_location;
         self.configuration.bit_template_state = config_to_input_state(bit_template.as_ref());
@@ -517,24 +506,16 @@ impl AppStateSnapshot {
     fn apply_wizard_to_calculator(&mut self) {
         let config = convert_draft_to_config(
             &self.configuration.draft_config,
-            &self.configuration.cannon_center,
             self.configuration.red_tnt_location,
             Some(self.configuration.wizard_mode),
         );
 
         self.configuration.calculation_mode = self.configuration.wizard_mode;
 
-        self.calculator.default_calculator.inputs.pearl_x = "0".to_string();
-        self.calculator.default_calculator.inputs.pearl_z = "0".to_string();
-
-        let cannon_x = parse_f64(&self.configuration.cannon_center.x);
-        let cannon_z = parse_f64(&self.configuration.cannon_center.z);
-        let pearl_x = parse_f64(&self.configuration.draft_config.pearl_x_position);
-        let pearl_z = parse_f64(&self.configuration.draft_config.pearl_z_position);
         let pearl_y = parse_f64(&self.configuration.draft_config.pearl_y_position);
 
-        self.calculator.default_calculator.inputs.offset_x = (pearl_x - cannon_x).to_string();
-        self.calculator.default_calculator.inputs.offset_z = (pearl_z - cannon_z).to_string();
+        self.calculator.default_calculator.inputs.pearl_x = "0".to_string();
+        self.calculator.default_calculator.inputs.pearl_z = "0".to_string();
         self.calculator.default_calculator.inputs.cannon_y = pearl_y.floor().to_string();
 
         self.config.config_data = config;
@@ -580,8 +561,6 @@ fn apply_calculator_input_update(
         }
         CalculatorInputField::DestZ => inputs.dest_z = value_to_string(value),
         CalculatorInputField::CannonY => inputs.cannon_y = value_to_string(value),
-        CalculatorInputField::OffsetX => inputs.offset_x = value_to_string(value),
-        CalculatorInputField::OffsetZ => inputs.offset_z = value_to_string(value),
         CalculatorInputField::TickRange => {
             if let Some(range) = parse_range(&value) {
                 inputs.tick_range = range;

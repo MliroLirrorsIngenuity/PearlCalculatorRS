@@ -1,6 +1,6 @@
 import { open, save } from "@tauri-apps/plugin-dialog";
 import { readTextFile, writeTextFile } from "@tauri-apps/plugin-fs";
-import { utilsRust, type ImportedConfiguration } from "@/lib/utils-rust";
+import { type ImportedConfiguration, utilsRust } from "@/lib/utils-rust";
 import { isTauri } from "@/services";
 
 function stringifyConfig(config: unknown): string {

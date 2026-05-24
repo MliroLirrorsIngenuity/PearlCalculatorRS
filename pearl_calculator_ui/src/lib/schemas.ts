@@ -37,18 +37,20 @@ export const CoercedVector3Schema = z.object({
 	z: CoercedNumberSchema,
 });
 
-export const TNTResultSchema = z.object({
-	distance: z.number(),
-	tick: z.number(),
-	blue: z.number(),
-	red: z.number(),
-	total: z.number(),
-	pearl_end_pos: z.object({ X: z.number(), Y: z.number(), Z: z.number() }),
-	pearl_end_motion: z.object({ X: z.number(), Y: z.number(), Z: z.number() }),
-	direction: z.string(),
-	vertical: z.number().optional(),
-	charges: z.number().optional(),
-}).passthrough();
+export const TNTResultSchema = z
+	.object({
+		distance: z.number(),
+		tick: z.number(),
+		blue: z.number(),
+		red: z.number(),
+		total: z.number(),
+		pearl_end_pos: z.object({ X: z.number(), Y: z.number(), Z: z.number() }),
+		pearl_end_motion: z.object({ X: z.number(), Y: z.number(), Z: z.number() }),
+		direction: z.string(),
+		vertical: z.number().optional(),
+		charges: z.number().optional(),
+	})
+	.passthrough();
 
 export const PearlTraceResultSchema = z.object({
 	landing_position: z.object({ X: z.number(), Y: z.number(), Z: z.number() }),
@@ -92,8 +94,6 @@ export const GeneralConfigSchema = z.object({
 	pearl_z_position: z.number(),
 	default_red_tnt_position: TNTDirectionSchema,
 	default_blue_tnt_position: TNTDirectionSchema,
-	offset_x: z.number().optional(),
-	offset_z: z.number().optional(),
 	vertical_tnt: Vector3Schema.optional(),
 	max_vertical_tnt: z.number().optional(),
 	mode: CannonModeSchema.optional(),
@@ -123,8 +123,6 @@ export const CalculatorInputsSchema = z.object({
 	planeInterceptY: z.boolean().default(false),
 	destZ: z.string(),
 	cannonY: z.string(),
-	offsetX: z.string(),
-	offsetZ: z.string(),
 	tickRange: z.array(z.number()),
 	distanceRange: z.array(z.number()),
 });
@@ -167,10 +165,6 @@ export const MultiplierBitInputStateSchema = z.object({
 });
 
 export const WizardBasicInfoSchema = z.object({
-	cannonCenter: z.object({
-		x: z.string().min(1),
-		z: z.string().min(1),
-	}),
 	pearlPosition: z.object({
 		x: z.string().min(1),
 		y: z.string().min(1),
