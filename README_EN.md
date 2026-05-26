@@ -30,6 +30,7 @@
     - **TNT Calculation**: Supports various TNT configurations and arrangements. Quickly calculate with Y-axis offsets.
     - **Simulator**: Built-in pearl trajectory simulation for quick momentum and landing spot prediction.
     - **Configuration Wizard**: Intuitive configuration process for easy cannon setup.
+    - **Configuration Creation Mod**: Companion [carpet-ftlconfig](https://github.com/MliroLirrorsIngenuity/carpet-ftlconfig) Carpet extension for quickly capturing configuration data and importing it into the calculator.
 - **Cross-Platform Support**: Powered by Tauri, supporting Windows, macOS, and Linux. No external dependencies required.
 
 ## Usage

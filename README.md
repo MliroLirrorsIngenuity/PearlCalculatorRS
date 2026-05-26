@@ -30,6 +30,7 @@
     - **TNT 计算**：支持常规、弱加载、三维矢量珍珠炮的计算。支持快捷偏移Y轴高度进行计算。支持配置Bit码计算。
     - **轨迹模拟**：内置珍珠轨迹模拟，可快速查看动量及落点。
     - **配置向导**：提供直观的创建配置流程，轻松创建珍珠炮配置。
+    - **配置创建Mod**：配套 [carpet-ftlconfig](https://github.com/MliroLirrorsIngenuity/carpet-ftlconfig) Carpet 附属模组，快速采集配置信息，一键导入计算器。
     - **配置分享**：采用 Sparse+Palette 压缩算法，将复杂的配置文件无损压缩为一串简短的“神秘代码”便于分享。
 - **跨平台支持**：得益于 Tauri 框架，**支持 Windows、macOS、Linux 和 Android 平台。无需任何依赖**。
 
