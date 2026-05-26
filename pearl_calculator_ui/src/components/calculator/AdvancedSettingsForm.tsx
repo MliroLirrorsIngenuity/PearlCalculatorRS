@@ -55,8 +55,8 @@ export default function AdvancedSettingsForm({
 										]}
 										onValueChange={(v) => {
 											const newRange = [
-												sliderToTicks(v[0]),
-												sliderToTicks(v[1]),
+												Math.round(sliderToTicks(v[0])),
+												Math.round(sliderToTicks(v[1])),
 											];
 											onInputChange("tickRange", newRange);
 										}}
