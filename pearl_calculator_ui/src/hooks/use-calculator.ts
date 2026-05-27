@@ -58,9 +58,9 @@ export function useTNTCalculator() {
 			const backendMode = toBackendMode(mode);
 
 			const calculationInput = {
-				pearlX: 0,
+				pearlX: parseOrConfig(inputs.pearlX, config.pearl_x_position),
 				pearlY: config.pearl_y_position,
-				pearlZ: 0,
+				pearlZ: parseOrConfig(inputs.pearlZ, config.pearl_z_position),
 				pearlMotionX: config.pearl_x_motion,
 				pearlMotionY: config.pearl_y_motion,
 				pearlMotionZ: config.pearl_z_motion,

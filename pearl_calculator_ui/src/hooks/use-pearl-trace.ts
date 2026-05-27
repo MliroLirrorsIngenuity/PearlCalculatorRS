@@ -41,9 +41,9 @@ export function usePearlTrace() {
 		setLoading(true);
 		try {
 			const traceInput = {
-				pearlX: 0,
+				pearlX: parseOrConfig(inputs.pearlX, configData.pearl_x_position),
 				pearlY: configData.pearl_y_position,
-				pearlZ: 0,
+				pearlZ: parseOrConfig(inputs.pearlZ, configData.pearl_z_position),
 				pearlMotionX: configData.pearl_x_motion,
 				pearlMotionY: configData.pearl_y_motion,
 				pearlMotionZ: configData.pearl_z_motion,
