@@ -21,6 +21,6 @@ tauri-plugin-clipboard-manager = "2"
 serde.workspace = true
 serde_json = "1"
 
-pearl_calculator_core = { path = "../../pearl_calculator_core", version = "3.0.0" }
+pearl_calculator_core = { path = "../../pearl_calculator_core", version = "3.0.1" }
 pearl_calculator_bridge = { path = "../../pearl_calculator_bridge" }
 pearl_calculator_utils = { path = "../../pearl_calculator_utils" }
