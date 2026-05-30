@@ -47,9 +47,7 @@ impl CalculationInput {
 
     pub fn get_cannon(&self) -> Result<Cannon, String> {
         build_cannon(
-            self.pearl_x,
             self.pearl_y,
-            self.pearl_z,
             self.pearl_motion_x,
             self.pearl_motion_y,
             self.pearl_motion_z,
@@ -116,9 +114,7 @@ impl PearlTraceInput {
 
     pub fn get_cannon(&self) -> Result<Cannon, String> {
         build_cannon(
-            self.pearl_x,
             self.pearl_y,
-            self.pearl_z,
             self.pearl_motion_x,
             self.pearl_motion_y,
             self.pearl_motion_z,
@@ -231,9 +227,7 @@ fn direction_from_layout(layout: LayoutDirection) -> Direction {
 }
 
 fn build_cannon(
-    px: f64,
     py: f64,
-    pz: f64,
     pmx: f64,
     pmy: f64,
     pmz: f64,
@@ -256,11 +250,11 @@ fn build_cannon(
         _ => CannonMode::Standard,
     };
 
-    let to_relative = |pos: &Space3DInput| Space3D::new(pos.x - px, pos.y + y_offset, pos.z - pz);
+    let with_y_offset = |pos: &Space3DInput| Space3D::new(pos.x, pos.y + y_offset, pos.z);
 
-    let vertical_tnt = vert.map(|v| to_relative(&v));
-    let nw_pos = to_relative(nw);
-    let ne_pos = to_relative(ne);
+    let vertical_tnt = vert.map(|v| with_y_offset(&v));
+    let nw_pos = with_y_offset(nw);
+    let ne_pos = with_y_offset(ne);
 
     let (red_override, blue_override) = (None, None);
 
@@ -275,8 +269,8 @@ fn build_cannon(
         mode,
         north_west_tnt: nw_pos,
         north_east_tnt: ne_pos,
-        south_west_tnt: to_relative(sw),
-        south_east_tnt: to_relative(se),
+        south_west_tnt: with_y_offset(sw),
+        south_east_tnt: with_y_offset(se),
         default_red_duper: default_red_direction,
         default_blue_duper: default_blue_direction,
     })

@@ -78,8 +78,6 @@ pub fn convert_draft_to_config(
         max_tnt: parse_u32_string(&draft_config.max_tnt),
         default_red_tnt_position: red_dir,
         default_blue_tnt_position: get_opposite_direction(Some(red_dir)),
-        offset_x: None,
-        offset_z: None,
         ..GeneralConfig::default()
     };
 
@@ -518,8 +516,6 @@ pub fn decode_config(input: &str) -> Result<DecodedConfig, String> {
         pearl_z_motion: float_values[19],
         default_red_tnt_position: default_red_dir,
         default_blue_tnt_position: default_blue_dir,
-        offset_x: None,
-        offset_z: None,
         ..GeneralConfig::default()
     };
 
@@ -727,8 +723,6 @@ fn normalize_config(root: &Value) -> Result<GeneralConfig, String> {
         pearl_z_position: 0.0,
         default_red_tnt_position: red_dir,
         default_blue_tnt_position: blue_dir,
-        offset_x: None,
-        offset_z: None,
         max_vertical_tnt: root
             .get("MaxVerticalTNT")
             .map(|value| value_to_u32(Some(value))),
@@ -1133,8 +1127,6 @@ mod tests {
         assert_close(config.south_west_tnt.z, 0.625, 1e-12);
         assert_close(config.south_east_tnt.x, 0.625, 1e-12);
         assert_close(config.south_east_tnt.z, 0.625, 1e-12);
-        assert_eq!(config.offset_x, None);
-        assert_eq!(config.offset_z, None);
     }
 
     #[test]
@@ -1163,8 +1155,6 @@ mod tests {
         assert_close(config.south_west_tnt.z, 0.645, 1e-12);
         assert_close(config.south_east_tnt.x, 0.645, 1e-12);
         assert_close(config.south_east_tnt.z, 0.645, 1e-12);
-        assert_eq!(config.offset_x, None);
-        assert_eq!(config.offset_z, None);
     }
 
     #[test]
@@ -1195,8 +1185,6 @@ mod tests {
         assert_close(config.south_west_tnt.z, 0.645, 1e-12);
         assert_close(config.south_east_tnt.x, 0.645, 1e-12);
         assert_close(config.south_east_tnt.z, 0.645, 1e-12);
-        assert_eq!(config.offset_x, None);
-        assert_eq!(config.offset_z, None);
     }
 
     #[test]

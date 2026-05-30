@@ -15,14 +15,14 @@ pub fn calculate_tnt_amount(
     version: PearlVersion,
     plane_intercept_y: bool,
 ) -> Vec<TNTResult> {
-    let pearl_start_absolute_pos = cannon.pearl.position;
-    let true_distance = destination - pearl_start_absolute_pos;
+    let pearl_start_pos = cannon.pearl.position;
+    let true_distance = destination - pearl_start_pos;
 
     if true_distance.length_sq() < FLOAT_PRECISION_EPSILON {
         return Vec::new();
     }
 
-    let yaw = pearl_start_absolute_pos.angle_to_yaw(&destination);
+    let yaw = pearl_start_pos.angle_to_yaw(&destination);
     let flight_directions = Direction::from_angle_with_fallbacks(yaw);
 
     let max_distance_sq = max_distance * max_distance;
@@ -36,7 +36,7 @@ pub fn calculate_tnt_amount(
             red_vec,
             blue_vec,
             vert_vec,
-            start_pos: pearl_start_absolute_pos,
+            start_pos: pearl_start_pos,
             start_motion: cannon.pearl.motion,
             destination,
             max_ticks,

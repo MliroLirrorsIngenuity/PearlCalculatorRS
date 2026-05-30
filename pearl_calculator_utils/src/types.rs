@@ -59,10 +59,6 @@ pub struct GeneralConfig {
     pub default_red_tnt_position: TntDirection,
     pub default_blue_tnt_position: TntDirection,
     #[serde(default)]
-    pub offset_x: Option<f64>,
-    #[serde(default)]
-    pub offset_z: Option<f64>,
-    #[serde(default)]
     pub vertical_tnt: Option<Vector3>,
     #[serde(default)]
     pub max_vertical_tnt: Option<u32>,
@@ -86,8 +82,6 @@ impl Default for GeneralConfig {
             pearl_z_position: 0.0,
             default_red_tnt_position: TntDirection::SouthEast,
             default_blue_tnt_position: TntDirection::SouthEast,
-            offset_x: None,
-            offset_z: None,
             vertical_tnt: None,
             max_vertical_tnt: None,
             mode: None,
