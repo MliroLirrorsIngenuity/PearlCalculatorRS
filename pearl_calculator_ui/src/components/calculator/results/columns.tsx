@@ -11,6 +11,7 @@ export type CalculationResult = {
 	blue: number;
 	red: number;
 	total: number;
+	pearlY: number;
 	direction: string;
 	vertical?: number;
 	warmup?: number;
@@ -104,6 +105,27 @@ export const columns: ColumnDef<CalculationResult>[] = [
 		accessorKey: "total",
 		labelKey: "calculator.header_total",
 	}),
+	{
+		accessorKey: "pearlY",
+		header: ({ column }) => (
+			<SortableHeader
+				column={column}
+				labelKey="calculator.header_pearl_y"
+				fallback="Pearl Y"
+			/>
+		),
+		cell: ({ row }) => {
+			const val = row.getValue("pearlY") as number;
+			return (
+				<div
+					className={`text-left font-medium ${val > 255 ? "text-red-600 font-bold" : ""}`}
+				>
+					{val.toFixed(2)}
+				</div>
+			);
+		},
+		enableResizing: false,
+	},
 	{
 		id: "actions",
 		header: () => null,

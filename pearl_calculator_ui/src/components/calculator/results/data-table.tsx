@@ -35,6 +35,7 @@ interface DataTableProps<TData, TValue> {
 	) => void;
 	columnVisibility?: VisibilityState;
 	defaultSortColumn?: string;
+	getRowClassName?: (row: TData) => string;
 }
 
 const DEFAULT_COLUMN_SIZES: Record<string, number> = {
@@ -56,11 +57,12 @@ const MIN_COLUMN_SIZES: Record<string, number> = {
 };
 
 const DataTableRow = React.memo(
-	({ row, isHighlighted }: { row: Row<any>; isHighlighted?: boolean }) => {
+	({ row, isHighlighted, getRowClassName }: { row: Row<any>; isHighlighted?: boolean; getRowClassName?: (row: any) => string }) => {
+		const extraClass = getRowClassName ? getRowClassName(row.original) : "";
 		return (
 			<TableRow
 				data-state={row.getIsSelected() && "selected"}
-				className={`[&>td]:border-r last:border-r-0 odd:bg-muted/50 *:whitespace-nowrap h-[25px] transition-colors duration-500 ${isHighlighted ? "!bg-primary/20" : ""}`}
+				className={`[&>td]:border-r last:border-r-0 odd:bg-muted/50 *:whitespace-nowrap h-[25px] transition-colors duration-500 ${isHighlighted ? "!bg-primary/20" : ""} ${extraClass}`}
 				style={{
 					contain: "layout style paint",
 				}}
@@ -91,6 +93,7 @@ export const DataTable = React.forwardRef<
 		onTrace,
 		columnVisibility = {},
 		defaultSortColumn,
+		getRowClassName,
 	},
 	ref,
 ) {
@@ -380,6 +383,7 @@ export const DataTable = React.forwardRef<
 								key={row.id}
 								row={row}
 								isHighlighted={highlightedRowIndex === row.index}
+								getRowClassName={getRowClassName}
 							/>
 						))
 					) : (

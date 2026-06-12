@@ -48,6 +48,7 @@ export default function RightPanel({
 			vertical: result.vertical,
 			charges: result.charges,
 			direction: result.direction,
+			pearlY: result.pearl_end_pos.Y,
 		}));
 	}, [filteredResults]);
 
@@ -66,6 +67,7 @@ export default function RightPanel({
 				red: 10,
 				vertical: 15,
 				total: 15,
+				pearlY: 15,
 				actions: 10,
 			},
 			Standard: {
@@ -74,6 +76,7 @@ export default function RightPanel({
 				blue: 15,
 				red: 15,
 				total: 15,
+				pearlY: 15,
 				actions: 10,
 			},
 		};
@@ -120,6 +123,7 @@ export default function RightPanel({
 					data={tableData}
 					onTrace={onTrace}
 					defaultColumnSizing={columnSizing}
+					getRowClassName={(row) => row.pearlY > 255 ? '!bg-red-50' : ''}
 				/>
 			</div>
 		</div>

@@ -90,8 +90,7 @@ export default function TNTCalculationForm({
 								{t("calculator.label_pearl_x")}
 							</FieldLabel>
 							<BufferedNumberInput
-								type="number"
-								id="pearl-x"
+									id="pearl-x"
 								placeholder="0.0"
 								value={inputs.pearlX}
 								onChange={(v) => onInputChange("pearlX", v)}
@@ -102,8 +101,7 @@ export default function TNTCalculationForm({
 								{t("calculator.label_pearl_z")}
 							</FieldLabel>
 							<BufferedNumberInput
-								type="number"
-								id="pearl-z"
+									id="pearl-z"
 								placeholder="0.0"
 								value={inputs.pearlZ}
 								onChange={(v) => onInputChange("pearlZ", v)}
@@ -154,8 +152,7 @@ export default function TNTCalculationForm({
 								)}
 							</div>
 							<BufferedNumberInput
-								type="number"
-								id="cannon-y"
+									id="cannon-y"
 								placeholder="36"
 								value={inputs.cannonY}
 								onChange={(v) => onInputChange("cannonY", v)}
@@ -170,8 +167,7 @@ export default function TNTCalculationForm({
 								{t("calculator.label_dest_x")}
 							</FieldLabel>
 							<BufferedNumberInput
-								type="number"
-								id="dest-x"
+									id="dest-x"
 								placeholder="0.0"
 								value={inputs.destX}
 								onChange={(v) => onInputChange("destX", v)}
@@ -183,8 +179,7 @@ export default function TNTCalculationForm({
 									{t("calculator.label_dest_y", "Dest Y")}
 								</FieldLabel>
 								<BufferedNumberInput
-									type="number"
-									id="dest-y"
+											id="dest-y"
 									placeholder="0.0"
 									value={inputs.destY || ""}
 									onChange={(v) => onInputChange("destY", v)}
@@ -196,8 +191,7 @@ export default function TNTCalculationForm({
 								{t("calculator.label_dest_z")}
 							</FieldLabel>
 							<BufferedNumberInput
-								type="number"
-								id="dest-z"
+									id="dest-z"
 								placeholder="0.0"
 								value={inputs.destZ}
 								onChange={(v) => onInputChange("destZ", v)}
