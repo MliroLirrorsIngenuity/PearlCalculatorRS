@@ -43,11 +43,6 @@ jobs:
             platform: linux-x86_64
             target: x86_64-unknown-linux-gnu
             args: ""
-          # Android Universal
-          - os: ubuntu-latest
-            platform: android-universal
-            target: android
-            args: ""
 
     runs-on: ${{ matrix.os }}
     name: Release (${{ matrix.platform }})
@@ -62,24 +57,6 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.1-dev build-essential curl wget file libssl-dev libgtk-3-dev libayatana-appindicator3-dev librsvg2-dev rpm
-
-      # ===== Android-specific setup =====
-      - name: Setup Java (Android)
-        if: matrix.target == 'android'
-        uses: actions/setup-java@v5
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-
-      - name: Setup Android SDK
-        if: matrix.target == 'android'
-        uses: android-actions/setup-android@v4
-
-      - name: Install Android NDK
-        if: matrix.target == 'android'
-        run: |
-          sdkmanager --install "ndk;27.0.12077973"
-          echo "NDK_HOME=$ANDROID_HOME/ndk/27.0.12077973" >> $GITHUB_ENV
 
       # ===== Common setup =====
       - uses: pnpm/action-setup@v6
@@ -96,17 +73,10 @@ jobs:
         working-directory: pearl_calculator_ui
         run: pnpm install
 
-      - name: Setup Rust (Desktop)
-        if: matrix.target != 'android'
+      - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.target }},wasm32-unknown-unknown
-
-      - name: Setup Rust (Android)
-        if: matrix.target == 'android'
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: aarch64-linux-android,armv7-linux-androideabi,i686-linux-android,x86_64-linux-android,wasm32-unknown-unknown
 
       - name: Install wasm-bindgen-cli
         shell: bash
@@ -158,12 +128,6 @@ jobs:
           git diff --staged --quiet || git commit -m "chore: Bump version to $VERSION"
           git push origin HEAD:main
 
-      # ===== Android-specific init (before icon restore) =====
-      - name: Initialize Android Project
-        if: matrix.target == 'android'
-        working-directory: pearl_calculator_ui
-        run: pnpm tauri android init
-
       - name: Restore Icon
         working-directory: pearl_calculator_ui
         shell: bash
@@ -182,70 +146,8 @@ jobs:
             echo "⚠️ ICON_URL secret not set. Skipping icon restoration."
           fi
 
-      # ===== Android-specific build =====
-
-      - name: Setup Android Signing
-        if: matrix.target == 'android'
-        working-directory: pearl_calculator_ui/src-tauri/gen/android
-        env:
-          ANDROID_KEY_BASE64: ${{ secrets.ANDROID_KEY_BASE64 }}
-          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
-          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
-        run: |
-          if [ -n "$ANDROID_KEY_BASE64" ]; then
-            echo "keyAlias=$ANDROID_KEY_ALIAS" > keystore.properties
-            echo "password=$ANDROID_KEY_PASSWORD" >> keystore.properties
-            base64 -d <<< "$ANDROID_KEY_BASE64" > $RUNNER_TEMP/keystore.jks
-            echo "storeFile=$RUNNER_TEMP/keystore.jks" >> keystore.properties
-            echo "✅ Android signing configured"
-          else
-            echo "⚠️ Android signing secrets not configured, APK will be unsigned"
-          fi
-
-      - name: Configure Gradle Signing
-        if: matrix.target == 'android'
-        working-directory: pearl_calculator_ui/src-tauri/gen/android
-        run: |
-          BUILD_GRADLE="app/build.gradle.kts"
-          
-          if ! grep -q "import java.io.FileInputStream" "$BUILD_GRADLE"; then
-            sed -i '1i import java.io.FileInputStream' "$BUILD_GRADLE"
-          fi
-          
-          if ! grep -q "import java.util.Properties" "$BUILD_GRADLE"; then
-            sed -i '1i import java.util.Properties' "$BUILD_GRADLE"
-          fi
-
-          if ! grep -q "signingConfigs {" "$BUILD_GRADLE"; then
-            sed -i '/^[[:space:]]*buildTypes[[:space:]]*{/i \
-                signingConfigs {\
-                    create("release") {\
-                        val keystorePropertiesFile = rootProject.file("keystore.properties")\
-                        val keystoreProperties = Properties()\
-                        if (keystorePropertiesFile.exists()) {\
-                            keystoreProperties.load(FileInputStream(keystorePropertiesFile))\
-                        }\
-                        keyAlias = keystoreProperties["keyAlias"] as String?\
-                        keyPassword = keystoreProperties["password"] as String?\
-                        storeFile = keystoreProperties["storeFile"]?.let { file(it as String) }\
-                        storePassword = keystoreProperties["password"] as String?\
-                    }\
-                }\
-            ' "$BUILD_GRADLE"
-          fi
-
-          if ! grep -q "signingConfig = signingConfigs.getByName" "$BUILD_GRADLE"; then
-            sed -i '/getByName("release")/a \            signingConfig = signingConfigs.getByName("release")' "$BUILD_GRADLE"
-          fi
-
-      - name: Build Android APK
-        if: matrix.target == 'android'
-        working-directory: pearl_calculator_ui
-        run: pnpm tauri android build --apk
-
       # ===== Desktop build =====
       - name: Build Desktop
-        if: matrix.target != 'android'
         working-directory: pearl_calculator_ui
         run: pnpm tauri build ${{ matrix.args }}
 
@@ -273,7 +175,6 @@ jobs:
 
       # ===== Upload assets =====
       - name: Upload Desktop Assets
-        if: matrix.target != 'android'
         shell: bash
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -367,50 +268,3 @@ jobs:
             echo "❌ ERROR: No assets found to upload for $PLATFORM"
             exit 1
           fi
-
-      - name: Upload Android APK
-        if: matrix.target == 'android'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAG_NAME: ${{ github.ref_name }}
-        run: |
-          VERSION=${GITHUB_REF#refs/tags/v}
-          VERSION=${VERSION%%-*}
-          mkdir -p upload_dist
-          
-          echo "=== Searching for APK files ==="
-          find pearl_calculator_ui/src-tauri/gen/android -name "*.apk" -type f || true
-          
-          APK_DIR="pearl_calculator_ui/src-tauri/gen/android/app/build/outputs/apk"
-          if [ -d "$APK_DIR" ]; then
-            find "$APK_DIR" -name "*.apk" -type f | while read apk; do
-              if [[ "$apk" == *"/release/"* ]]; then
-                BUILD_TYPE="release"
-              else
-                BUILD_TYPE="debug"
-              fi
-              NEW_NAME="Pearl-Calculator-RS_${VERSION}_android-universal_${BUILD_TYPE}.apk"
-              echo "Found APK: $apk -> $NEW_NAME"
-              cp "$apk" "upload_dist/$NEW_NAME"
-            done
-          fi
-          
-          echo "=== Upload Directory Contents ==="
-          ls -la upload_dist/
-          echo "================================="
-          
-          if [ "$(ls -A upload_dist 2>/dev/null)" ]; then
-            gh release upload "$TAG_NAME" upload_dist/* --clobber
-            echo "✅ Upload complete!"
-          else
-            echo "❌ ERROR: No APK files found"
-            exit 1
-          fi
-
-  deploy-pages:
-    needs: call-test-workflow
-    permissions:
-      contents: read
-      deployments: write
-    uses: ./.github/workflows/pages-deploy.yml
-    secrets: inherit
