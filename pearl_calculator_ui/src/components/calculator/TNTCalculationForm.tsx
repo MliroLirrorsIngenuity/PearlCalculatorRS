@@ -1,4 +1,5 @@
 import { Info } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,6 +19,44 @@ import {
 } from "@/components/ui/tooltip";
 import { useConfigurationState } from "@/context/ConfigurationStateContext";
 import type { CalculatorInputs } from "@/types/domain";
+
+function BufferedNumberInput({
+	id,
+	value,
+	placeholder,
+	onChange,
+}: {
+	id?: string;
+	value: string;
+	placeholder?: string;
+	onChange: (val: string) => void;
+}) {
+	const [localValue, setLocalValue] = useState(value);
+	const [isFocused, setIsFocused] = useState(false);
+
+	useEffect(() => {
+		if (!isFocused) {
+			setLocalValue(value);
+		}
+	}, [value, isFocused]);
+
+	const handleChange = (newValue: string) => {
+		setLocalValue(newValue);
+		onChange(newValue);
+	};
+
+	return (
+		<Input
+			id={id}
+			type="number"
+			placeholder={placeholder}
+			value={localValue}
+			onChange={(e) => handleChange(e.target.value)}
+			onFocus={() => setIsFocused(true)}
+			onBlur={() => setIsFocused(false)}
+		/>
+	);
+}
 
 interface TNTCalculationFormProps {
 	inputs: CalculatorInputs;
@@ -50,24 +89,24 @@ export default function TNTCalculationForm({
 							<FieldLabel htmlFor="pearl-x">
 								{t("calculator.label_pearl_x")}
 							</FieldLabel>
-							<Input
-								id="pearl-x"
+							<BufferedNumberInput
 								type="number"
+								id="pearl-x"
 								placeholder="0.0"
 								value={inputs.pearlX}
-								onChange={(e) => onInputChange("pearlX", e.target.value)}
+								onChange={(v) => onInputChange("pearlX", v)}
 							/>
 						</Field>
 						<Field>
 							<FieldLabel htmlFor="pearl-z">
 								{t("calculator.label_pearl_z")}
 							</FieldLabel>
-							<Input
-								id="pearl-z"
+							<BufferedNumberInput
 								type="number"
+								id="pearl-z"
 								placeholder="0.0"
 								value={inputs.pearlZ}
-								onChange={(e) => onInputChange("pearlZ", e.target.value)}
+								onChange={(v) => onInputChange("pearlZ", v)}
 							/>
 						</Field>
 					</FieldGroup>
@@ -114,12 +153,12 @@ export default function TNTCalculationForm({
 									</label>
 								)}
 							</div>
-							<Input
-								id="cannon-y"
+							<BufferedNumberInput
 								type="number"
+								id="cannon-y"
 								placeholder="36"
 								value={inputs.cannonY}
-								onChange={(e) => onInputChange("cannonY", e.target.value)}
+								onChange={(v) => onInputChange("cannonY", v)}
 							/>
 						</Field>
 					</FieldGroup>
@@ -130,12 +169,12 @@ export default function TNTCalculationForm({
 							<FieldLabel htmlFor="dest-x">
 								{t("calculator.label_dest_x")}
 							</FieldLabel>
-							<Input
-								id="dest-x"
+							<BufferedNumberInput
 								type="number"
+								id="dest-x"
 								placeholder="0.0"
 								value={inputs.destX}
-								onChange={(e) => onInputChange("destX", e.target.value)}
+								onChange={(v) => onInputChange("destX", v)}
 							/>
 						</Field>
 						{showDestY && (
@@ -143,12 +182,12 @@ export default function TNTCalculationForm({
 								<FieldLabel htmlFor="dest-y">
 									{t("calculator.label_dest_y", "Dest Y")}
 								</FieldLabel>
-								<Input
-									id="dest-y"
+								<BufferedNumberInput
 									type="number"
+									id="dest-y"
 									placeholder="0.0"
 									value={inputs.destY || ""}
-									onChange={(e) => onInputChange("destY", e.target.value)}
+									onChange={(v) => onInputChange("destY", v)}
 								/>
 							</Field>
 						)}
@@ -156,12 +195,12 @@ export default function TNTCalculationForm({
 							<FieldLabel htmlFor="dest-z">
 								{t("calculator.label_dest_z")}
 							</FieldLabel>
-							<Input
-								id="dest-z"
+							<BufferedNumberInput
 								type="number"
+								id="dest-z"
 								placeholder="0.0"
 								value={inputs.destZ}
-								onChange={(e) => onInputChange("destZ", e.target.value)}
+								onChange={(v) => onInputChange("destZ", v)}
 							/>
 						</Field>
 					</FieldGroup>

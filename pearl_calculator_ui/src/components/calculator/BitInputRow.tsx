@@ -22,6 +22,52 @@ interface BitInputRowProps {
 	onPaste?: (index: number, e: React.ClipboardEvent) => void;
 }
 
+function BufferedBitInput({
+	value,
+	onChange,
+	className,
+	placeholder,
+	inputRef,
+	onKeyDown,
+	onPaste,
+}: {
+	value: string;
+	onChange: (val: string) => void;
+	className?: string;
+	placeholder?: string;
+	inputRef?: (el: HTMLInputElement | null) => void;
+	onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+	onPaste?: (e: React.ClipboardEvent) => void;
+}) {
+	const [localValue, setLocalValue] = React.useState(value);
+	const [isFocused, setIsFocused] = React.useState(false);
+
+	React.useEffect(() => {
+		if (!isFocused) {
+			setLocalValue(value);
+		}
+	}, [value, isFocused]);
+
+	const handleChange = (newValue: string) => {
+		setLocalValue(newValue);
+		onChange(newValue);
+	};
+
+	return (
+		<Input
+			ref={inputRef}
+			value={localValue}
+			onChange={(e) => handleChange(e.target.value)}
+			onKeyDown={onKeyDown}
+			onPaste={onPaste}
+			onFocus={() => setIsFocused(true)}
+			onBlur={() => setIsFocused(false)}
+			className={className}
+			placeholder={placeholder}
+		/>
+	);
+}
+
 export type { ThemeColor };
 
 export function BitInputRow({
@@ -102,14 +148,14 @@ export function BitInputRow({
 										const originalIndex = indexChunks[chunkIndex][i];
 
 										return (
-											<Input
+											<BufferedBitInput
 												key={originalIndex}
-												ref={(el) => {
+												inputRef={(el) => {
 													inputRefs.current[originalIndex] = el;
 												}}
 												value={val}
-												onChange={(e) =>
-													onValueChange(originalIndex, e.target.value)
+												onChange={(v) =>
+													onValueChange(originalIndex, v)
 												}
 												onKeyDown={(e) => onKeyDown(originalIndex, e)}
 												onPaste={(e) => onPaste?.(originalIndex, e)}
