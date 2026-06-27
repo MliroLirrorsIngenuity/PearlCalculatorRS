@@ -1,6 +1,6 @@
 version: 2
 updates:
-  # Maintain Rust dependencies
+  # Maintain Rust dependencies (exclude tauri to avoid version mismatch with npm)
   - package-ecosystem: "cargo"
     directory: "/"
     schedule:
@@ -9,8 +9,13 @@ updates:
       rust-deps:
         patterns:
           - "*"
+        exclude-patterns:
+          - "tauri"
+          - "tauri-*"
+          - "wry"
+          - "tao"
 
-  # Maintain Frontend dependencies
+  # Maintain Frontend dependencies (exclude @tauri-apps to avoid version mismatch with cargo)
   - package-ecosystem: "npm"
     directory: "/pearl_calculator_ui"
     schedule:
@@ -19,6 +24,8 @@ updates:
       npm-deps:
         patterns:
           - "*"
+        exclude-patterns:
+          - "@tauri-apps/*"
 
   # Maintain GitHub Actions
   - package-ecosystem: "github-actions"
