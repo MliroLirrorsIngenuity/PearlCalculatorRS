@@ -2,5 +2,4 @@ packages:
   - '.'
 allowBuilds:
   '@swc/core': true
-overrides:
-  rollup: "4.59.0"
+  'esbuild': true
