@@ -3,7 +3,6 @@ import react from "@vitejs/plugin-react";
 import fs from "fs";
 import path from "path";
 import { defineConfig } from "vite";
-import topLevelAwait from "vite-plugin-top-level-await";
 import wasm from "vite-plugin-wasm";
 
 const host = process.env.TAURI_DEV_HOST;
@@ -35,7 +34,7 @@ if (!fs.existsSync(wasmPkgPath)) {
 }
 
 export default defineConfig(async () => ({
-	plugins: [react(), tailwindcss(), wasm(), topLevelAwait()],
+	plugins: [react(), tailwindcss(), wasm()],
 	resolve: {
 		alias: {
 			"@": path.resolve(__dirname, "./src"),
