@@ -38,6 +38,8 @@
 
 前往 [Releases](https://github.com/MliroLirrorsIngenuity/PearlCalculatorRS/releases) 页面下载**对应平台**的最新版本即可使用。
 
+推荐搭配 [carpet-ftlconfig](https://github.com/MliroLirrorsIngenuity/carpet-ftlconfig) 使用，它是一个 Carpet 扩展，可在游戏内直接导出珍珠炮配置文件，省去手动测量与填写参数。
+
 访问 [pcrs.lolicon.best](https://pcrs.lolicon.best) 可使用免安装的 WebAssembly (WASM) 版本。
 > **注意**：WASM 版本运行于单线程模式，计算性能相较本地原生版本可能略有下降。
 
