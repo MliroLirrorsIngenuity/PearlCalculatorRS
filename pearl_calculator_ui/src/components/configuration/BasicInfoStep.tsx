@@ -1,4 +1,5 @@
 import { useTranslation } from "react-i18next";
+import { BufferedNumberInput } from "@/components/common/BufferedNumberInput";
 import {
 	Card,
 	CardContent,
@@ -6,7 +7,6 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useConfigurationState } from "@/context/ConfigurationStateContext";
 import { cn } from "@/lib/utils";
@@ -38,13 +38,12 @@ export function BasicInfoStep({ errors, onForceNext }: BasicInfoStepProps) {
 									<Label className="text-xs text-muted-foreground">
 										{t("configuration_page.label_x")}
 									</Label>
-									<Input
-										type="number"
+									<BufferedNumberInput
 										value={draftConfig.pearl_x_position}
-										onChange={(e) =>
+										onValueChange={(v) =>
 											setDraftConfig({
 												...draftConfig,
-												pearl_x_position: e.target.value,
+												pearl_x_position: v,
 											})
 										}
 										placeholder={errors.pearl_x}
@@ -59,13 +58,12 @@ export function BasicInfoStep({ errors, onForceNext }: BasicInfoStepProps) {
 									<Label className="text-xs text-muted-foreground">
 										{t("configuration_page.label_y")}
 									</Label>
-									<Input
-										type="number"
+									<BufferedNumberInput
 										value={draftConfig.pearl_y_position}
-										onChange={(e) =>
+										onValueChange={(v) =>
 											setDraftConfig({
 												...draftConfig,
-												pearl_y_position: e.target.value,
+												pearl_y_position: v,
 											})
 										}
 										placeholder={errors.pearl_y}
@@ -80,13 +78,12 @@ export function BasicInfoStep({ errors, onForceNext }: BasicInfoStepProps) {
 									<Label className="text-xs text-muted-foreground">
 										{t("configuration_page.label_z")}
 									</Label>
-									<Input
-										type="number"
+									<BufferedNumberInput
 										value={draftConfig.pearl_z_position}
-										onChange={(e) =>
+										onValueChange={(v) =>
 											setDraftConfig({
 												...draftConfig,
-												pearl_z_position: e.target.value,
+												pearl_z_position: v,
 											})
 										}
 										placeholder={errors.pearl_z}
@@ -110,13 +107,12 @@ export function BasicInfoStep({ errors, onForceNext }: BasicInfoStepProps) {
 									<Label className="text-xs text-muted-foreground">
 										{t("configuration_page.label_x")}
 									</Label>
-									<Input
-										type="number"
+									<BufferedNumberInput
 										value={draftConfig.pearl_x_motion}
-										onChange={(e) =>
+										onValueChange={(v) =>
 											setDraftConfig({
 												...draftConfig,
-												pearl_x_motion: e.target.value,
+												pearl_x_motion: v,
 											})
 										}
 										placeholder={errors.momentum_x}
@@ -131,13 +127,12 @@ export function BasicInfoStep({ errors, onForceNext }: BasicInfoStepProps) {
 									<Label className="text-xs text-muted-foreground">
 										{t("configuration_page.label_y")}
 									</Label>
-									<Input
-										type="number"
+									<BufferedNumberInput
 										value={draftConfig.pearl_y_motion}
-										onChange={(e) => {
+										onValueChange={(v) => {
 											setDraftConfig({
 												...draftConfig,
-												pearl_y_motion: e.target.value,
+												pearl_y_motion: v,
 											});
 										}}
 										placeholder={errors.momentum_y}
@@ -152,13 +147,12 @@ export function BasicInfoStep({ errors, onForceNext }: BasicInfoStepProps) {
 									<Label className="text-xs text-muted-foreground">
 										{t("configuration_page.label_z")}
 									</Label>
-									<Input
-										type="number"
+									<BufferedNumberInput
 										value={draftConfig.pearl_z_motion}
-										onChange={(e) =>
+										onValueChange={(v) =>
 											setDraftConfig({
 												...draftConfig,
-												pearl_z_motion: e.target.value,
+												pearl_z_motion: v,
 											})
 										}
 										placeholder={errors.momentum_z}
@@ -178,13 +172,12 @@ export function BasicInfoStep({ errors, onForceNext }: BasicInfoStepProps) {
 						{wizardMode === "Vector3D" && (
 							<div className="flex flex-col space-y-1.5">
 								<Label>{t("configuration_page.max_vertical_tnt_label")}</Label>
-								<Input
-									type="number"
+								<BufferedNumberInput
 									value={draftConfig.max_vertical_tnt}
-									onChange={(e) =>
+									onValueChange={(v) =>
 										setDraftConfig({
 											...draftConfig,
-											max_vertical_tnt: e.target.value,
+											max_vertical_tnt: v,
 										})
 									}
 									onKeyDown={(e) => {
@@ -208,11 +201,10 @@ export function BasicInfoStep({ errors, onForceNext }: BasicInfoStepProps) {
 						{wizardMode === "Standard" && (
 							<div className="flex flex-col space-y-1.5">
 								<Label>{t("configuration_page.max_tnt_label")}</Label>
-								<Input
-									type="number"
+								<BufferedNumberInput
 									value={draftConfig.max_tnt}
-									onChange={(e) =>
-										setDraftConfig({ ...draftConfig, max_tnt: e.target.value })
+									onValueChange={(v) =>
+										setDraftConfig({ ...draftConfig, max_tnt: v })
 									}
 									onKeyDown={(e) => {
 										if (e.key === "Tab" && !e.shiftKey) {

@@ -1,5 +1,6 @@
 import { Info } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { BufferedNumberInput } from "@/components/common/BufferedNumberInput";
 import { Button } from "@/components/ui/button";
 import {
 	Field,
@@ -8,7 +9,6 @@ import {
 	FieldLegend,
 	FieldSet,
 } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
 	Tooltip,
@@ -50,24 +50,22 @@ export default function TNTCalculationForm({
 							<FieldLabel htmlFor="pearl-x">
 								{t("calculator.label_pearl_x")}
 							</FieldLabel>
-							<Input
+							<BufferedNumberInput
 								id="pearl-x"
-								type="number"
 								placeholder="0.0"
 								value={inputs.pearlX}
-								onChange={(e) => onInputChange("pearlX", e.target.value)}
+								onValueChange={(v) => onInputChange("pearlX", v)}
 							/>
 						</Field>
 						<Field>
 							<FieldLabel htmlFor="pearl-z">
 								{t("calculator.label_pearl_z")}
 							</FieldLabel>
-							<Input
+							<BufferedNumberInput
 								id="pearl-z"
-								type="number"
 								placeholder="0.0"
 								value={inputs.pearlZ}
-								onChange={(e) => onInputChange("pearlZ", e.target.value)}
+								onValueChange={(v) => onInputChange("pearlZ", v)}
 							/>
 						</Field>
 					</FieldGroup>
@@ -114,12 +112,11 @@ export default function TNTCalculationForm({
 									</label>
 								)}
 							</div>
-							<Input
+							<BufferedNumberInput
 								id="cannon-y"
-								type="number"
 								placeholder="36"
 								value={inputs.cannonY}
-								onChange={(e) => onInputChange("cannonY", e.target.value)}
+								onValueChange={(v) => onInputChange("cannonY", v)}
 							/>
 						</Field>
 					</FieldGroup>
@@ -130,12 +127,11 @@ export default function TNTCalculationForm({
 							<FieldLabel htmlFor="dest-x">
 								{t("calculator.label_dest_x")}
 							</FieldLabel>
-							<Input
+							<BufferedNumberInput
 								id="dest-x"
-								type="number"
 								placeholder="0.0"
 								value={inputs.destX}
-								onChange={(e) => onInputChange("destX", e.target.value)}
+								onValueChange={(v) => onInputChange("destX", v)}
 							/>
 						</Field>
 						{showDestY && (
@@ -143,12 +139,11 @@ export default function TNTCalculationForm({
 								<FieldLabel htmlFor="dest-y">
 									{t("calculator.label_dest_y", "Dest Y")}
 								</FieldLabel>
-								<Input
+								<BufferedNumberInput
 									id="dest-y"
-									type="number"
 									placeholder="0.0"
 									value={inputs.destY || ""}
-									onChange={(e) => onInputChange("destY", e.target.value)}
+									onValueChange={(v) => onInputChange("destY", v)}
 								/>
 							</Field>
 						)}
@@ -156,12 +151,11 @@ export default function TNTCalculationForm({
 							<FieldLabel htmlFor="dest-z">
 								{t("calculator.label_dest_z")}
 							</FieldLabel>
-							<Input
+							<BufferedNumberInput
 								id="dest-z"
-								type="number"
 								placeholder="0.0"
 								value={inputs.destZ}
-								onChange={(e) => onInputChange("destZ", e.target.value)}
+								onValueChange={(v) => onInputChange("destZ", v)}
 							/>
 						</Field>
 					</FieldGroup>
