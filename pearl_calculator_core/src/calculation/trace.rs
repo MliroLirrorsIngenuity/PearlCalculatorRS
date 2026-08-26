@@ -61,7 +61,6 @@ pub fn validate_candidates(
                 version,
                 max_distance_sq,
                 check_3d,
-                plane_intercept_y,
             );
 
             let mut results = Vec::new();

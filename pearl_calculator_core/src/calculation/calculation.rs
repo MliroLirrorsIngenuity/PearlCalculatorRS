@@ -41,7 +41,6 @@ pub fn calculate_tnt_amount(
             destination,
             max_ticks,
             version,
-            plane_intercept_y,
         };
         let theoretical_groups = super::solver::solve_theoretical_tnt(&solver_input);
 
