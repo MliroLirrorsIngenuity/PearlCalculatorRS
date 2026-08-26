@@ -39,16 +39,23 @@ jobs:
           RELEASE_BODY: ${{ steps.git-cliff.outputs.content }}
         run: |
           set -euo pipefail
-          printf '%s' "$RELEASE_BODY" > release_notes.md
+          printf '%s' "$RELEASE_BODY" > changelog.md
+
+          : > release_notes.md
+          if [ -s changelog.md ]; then
+            if [ -s .github/release-preamble.md ]; then
+              cat .github/release-preamble.md >> release_notes.md
+              printf '\n' >> release_notes.md
+            fi
+            cat changelog.md >> release_notes.md
+          else
+            echo "::warning::git-cliff produced an empty changelog for $TAG_NAME"
+          fi
 
           PRERELEASE=false
           case "$TAG_NAME" in
             *beta*) PRERELEASE=true ;;
           esac
-
-          if [ ! -s release_notes.md ]; then
-            echo "::warning::git-cliff produced an empty changelog for $TAG_NAME"
-          fi
 
           if gh release view "$TAG_NAME" >/dev/null 2>&1; then
             if [ -s release_notes.md ]; then
