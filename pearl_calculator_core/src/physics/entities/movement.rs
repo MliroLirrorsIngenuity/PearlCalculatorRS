@@ -19,10 +19,15 @@ pub enum PearlVersion {
 }
 
 impl PearlVersion {
-    pub fn apply_grav_drag_tick(&self, velocity: f64, gravity: f64, drag: f64) -> f64 {
+    pub fn apply_gravity_tick(&self, velocity: f64, gravity: f64, drag: f64) -> (f64, f64) {
         match self {
-            PearlVersion::Legacy | PearlVersion::Post1205 => (velocity * drag) + gravity,
-            PearlVersion::Post1212 => (velocity + gravity) * drag,
+            PearlVersion::Legacy | PearlVersion::Post1205 => {
+                ((velocity * drag) + gravity, velocity)
+            }
+            PearlVersion::Post1212 => {
+                let new_velocity = (velocity + gravity) * drag;
+                (new_velocity, new_velocity)
+            }
         }
     }
 

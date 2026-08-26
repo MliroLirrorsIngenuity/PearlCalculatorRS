@@ -56,10 +56,12 @@ pub fn solve_theoretical_tnt(input: &SolverInput) -> SolverOutput {
     let mut sim_motion_pos = Space3D::default();
 
     for tick in 1..=input.max_ticks {
-        sim_grav_vel = input
-            .version
-            .apply_grav_drag_tick(sim_grav_vel, gravity, drag_multiplier);
-        sim_grav_pos += sim_grav_vel;
+        let (new_grav_vel, grav_displacement) =
+            input
+                .version
+                .apply_gravity_tick(sim_grav_vel, gravity, drag_multiplier);
+        sim_grav_vel = new_grav_vel;
+        sim_grav_pos += grav_displacement;
 
         let (new_vx, dx) = input
             .version
