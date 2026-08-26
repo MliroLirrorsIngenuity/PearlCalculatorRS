@@ -11,10 +11,18 @@ pub struct SolverInput {
     pub start_motion: Space3D,
     pub destination: Space3D,
     pub max_ticks: u32,
+    pub max_distance: f64,
+    pub search_radius: i32,
+    pub check_3d: bool,
     pub version: PearlVersion,
 }
 
-pub fn solve_theoretical_tnt(input: &SolverInput) -> HashMap<(i32, i32, i32), Vec<u32>> {
+pub struct SolverOutput {
+    pub groups: HashMap<(i32, i32, i32), Vec<u32>>,
+    pub apex_y: Option<f64>,
+}
+
+pub fn solve_theoretical_tnt(input: &SolverInput) -> SolverOutput {
     let true_distance = input.destination - input.start_pos;
 
     let mut groups: HashMap<(i32, i32, i32), Vec<u32>> = HashMap::new();
@@ -25,8 +33,21 @@ pub fn solve_theoretical_tnt(input: &SolverInput) -> HashMap<(i32, i32, i32), Ve
     let is_3d_solve = input.vert_vec.length_sq() > FLOAT_PRECISION_EPSILON;
 
     if !is_3d_solve && denominator.abs() < FLOAT_PRECISION_EPSILON {
-        return HashMap::new();
+        return SolverOutput {
+            groups,
+            apex_y: None,
+        };
     }
+
+    let projection = input.version.get_projection_multiplier(drag_multiplier);
+    let y_spread =
+        (input.search_radius as f64 + 0.5) * (input.red_vec.y.abs() + input.blue_vec.y.abs());
+    let y_spread_supremum = y_spread * projection / denominator_constant;
+    let prune_y = input.check_3d && !is_3d_solve;
+    let can_terminate = prune_y
+        && input.start_motion.x.abs() < FLOAT_PRECISION_EPSILON
+        && input.start_motion.z.abs() < FLOAT_PRECISION_EPSILON;
+    let mut apex_y: Option<f64> = None;
 
     let gravity = -crate::physics::constants::constants::PEARL_GRAVITY_ACCELERATION;
     let mut sim_grav_vel = 0.0;
@@ -58,8 +79,7 @@ pub fn solve_theoretical_tnt(input: &SolverInput) -> HashMap<(i32, i32, i32), Ve
         compensated_distance.z -= sim_motion_pos.z;
 
         let numerator = 1.0 - drag_multiplier.powi(tick as i32);
-        let divider = input.version.get_projection_multiplier(drag_multiplier) * numerator
-            / denominator_constant;
+        let divider = projection * numerator / denominator_constant;
 
         if is_3d_solve {
             let target_motion = compensated_distance / divider;
@@ -75,6 +95,26 @@ pub fn solve_theoretical_tnt(input: &SolverInput) -> HashMap<(i32, i32, i32), Ve
             let true_blue =
                 (compensated_distance.x - true_red * input.red_vec.x) / input.blue_vec.x;
 
+            let predicted_y = input.start_pos.y
+                + sim_grav_pos
+                + sim_motion_pos.y
+                + true_red * input.red_vec.y
+                + true_blue * input.blue_vec.y;
+            apex_y = Some(apex_y.map_or(predicted_y, |current: f64| current.max(predicted_y)));
+
+            if prune_y
+                && (predicted_y - input.destination.y).abs() - y_spread * divider.abs()
+                    > input.max_distance
+            {
+                if can_terminate
+                    && sim_grav_vel + sim_motion_vel.y < 0.0
+                    && predicted_y + y_spread_supremum < input.destination.y - input.max_distance
+                {
+                    break;
+                }
+                continue;
+            }
+
             push_candidate(
                 &mut groups,
                 tick,
@@ -85,7 +125,7 @@ pub fn solve_theoretical_tnt(input: &SolverInput) -> HashMap<(i32, i32, i32), Ve
         }
     }
 
-    groups
+    SolverOutput { groups, apex_y }
 }
 
 fn push_candidate(
