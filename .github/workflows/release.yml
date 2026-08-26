@@ -10,8 +10,58 @@ jobs:
     name: Run Tests
     uses: ./.github/workflows/test.yml
 
-  publish:
+  create-release:
     needs: call-test-workflow
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    name: Create Release
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Generate Release Body with git-cliff
+        uses: orhun/git-cliff-action@v4
+        id: git-cliff
+        with:
+          config: .github/cliff.toml
+          args: --latest --strip header
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPO: ${{ github.repository }}
+
+      - name: Create or Update Release
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG_NAME: ${{ github.ref_name }}
+          RELEASE_BODY: ${{ steps.git-cliff.outputs.content }}
+        run: |
+          set -euo pipefail
+          printf '%s' "$RELEASE_BODY" > release_notes.md
+
+          PRERELEASE=false
+          case "$TAG_NAME" in
+            *beta*) PRERELEASE=true ;;
+          esac
+
+          if [ ! -s release_notes.md ]; then
+            echo "::warning::git-cliff produced an empty changelog for $TAG_NAME"
+          fi
+
+          if gh release view "$TAG_NAME" >/dev/null 2>&1; then
+            if [ -s release_notes.md ]; then
+              gh release edit "$TAG_NAME" --notes-file release_notes.md
+            fi
+          elif [ -s release_notes.md ]; then
+            gh release create "$TAG_NAME" --title "$TAG_NAME" --draft --prerelease="$PRERELEASE" --notes-file release_notes.md
+          else
+            gh release create "$TAG_NAME" --title "$TAG_NAME" --draft --prerelease="$PRERELEASE" --generate-notes
+          fi
+
+  publish:
+    needs: [call-test-workflow, create-release]
     permissions:
       contents: write
     strategy:
@@ -248,28 +298,6 @@ jobs:
         if: matrix.target != 'android'
         working-directory: pearl_calculator_ui
         run: pnpm tauri build ${{ matrix.args }}
-
-      # ===== Release body generation (only on linux-x86_64) =====
-      - name: Generate Release Body with git-cliff
-        if: matrix.platform == 'linux-x86_64'
-        uses: orhun/git-cliff-action@v4
-        id: git-cliff
-        with:
-          config: .github/cliff.toml
-          args: --latest --strip header
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_REPO: ${{ github.repository }}
-
-      - name: Create Release
-        uses: softprops/action-gh-release@v3
-        if: startsWith(github.ref, 'refs/tags/')
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          body: ${{ steps.git-cliff.outputs.content }}
-          draft: true
-          prerelease: ${{ contains(github.ref_name, 'beta') }}
 
       # ===== Upload assets =====
       - name: Upload Desktop Assets
