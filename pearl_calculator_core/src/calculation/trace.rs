@@ -17,6 +17,7 @@ pub fn validate_candidates(
     pearl_position: Space3D,
     pearl_motion: Space3D,
     destination: Space3D,
+    max_ticks: u32,
     max_distance_sq: f64,
     plane_intercept_y: bool,
     version: PearlVersion,
@@ -36,10 +37,21 @@ pub fn validate_candidates(
                 return Vec::new();
             }
 
-            let mut valid_ticks_map = vec![false; (max_sim_tick + 1) as usize];
-            for &t in &ticks {
-                valid_ticks_map[t as usize] = true;
-            }
+            let valid_ticks_map = if plane_intercept_y {
+                Vec::new()
+            } else {
+                let mut map = vec![false; (max_sim_tick + 1) as usize];
+                for &t in &ticks {
+                    map[t as usize] = true;
+                }
+                map
+            };
+
+            let scan_tick = if plane_intercept_y {
+                max_ticks.max(max_sim_tick)
+            } else {
+                max_sim_tick
+            };
 
             let total = r_u32 + b_u32 + v_u32;
 
@@ -55,12 +67,13 @@ pub fn validate_candidates(
             let hits = simulation::scan_trajectory(
                 &data,
                 destination,
-                max_sim_tick,
+                scan_tick,
                 &valid_ticks_map,
                 &[],
                 version,
                 max_distance_sq,
                 check_3d,
+                plane_intercept_y,
             );
 
             let mut results = Vec::new();

@@ -47,6 +47,7 @@ pub fn calculate_tnt_amount(
             max_distance,
             search_radius: SEARCH_RADIUS,
             check_3d: plane_intercept_y || is_valid_3d,
+            plane_intercept_y,
             version,
         };
         let theoretical_groups = super::solver::solve_theoretical_tnt(&solver_input).groups;
@@ -69,6 +70,7 @@ pub fn calculate_tnt_amount(
             cannon.pearl.position,
             cannon.pearl.motion,
             destination,
+            max_ticks,
             max_distance_sq,
             plane_intercept_y,
             version,
@@ -107,6 +109,7 @@ pub fn max_reachable_y(
                 max_distance: f64::INFINITY,
                 search_radius: SEARCH_RADIUS,
                 check_3d: false,
+                plane_intercept_y: false,
                 version,
             })
             .apex_y

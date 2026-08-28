@@ -38,6 +38,7 @@ pub struct CalculationInput {
     pub vertical_tnt: Option<Space3DInput>,
     pub max_vertical_tnt: Option<u32>,
     pub mode: Option<String>,
+    pub plane_intercept_y: Option<bool>,
 }
 
 impl CalculationInput {
@@ -76,7 +77,7 @@ impl CalculationInput {
     }
 
     pub fn uses_plane_intercept_y(&self) -> bool {
-        uses_plane_intercept_y(self.mode.as_deref(), self.destination_y)
+        uses_plane_intercept_y(self.plane_intercept_y, self.destination_y)
     }
 }
 
@@ -202,8 +203,8 @@ fn parse_version(s: &str) -> Result<PearlVersion, String> {
     }
 }
 
-fn uses_plane_intercept_y(mode: Option<&str>, destination_y: Option<f64>) -> bool {
-    matches!(destination_y, Some(_)) && !matches!(mode, Some("Vector3D"))
+fn uses_plane_intercept_y(requested: Option<bool>, destination_y: Option<f64>) -> bool {
+    requested.unwrap_or(false) && destination_y.is_some()
 }
 
 fn parse_layout_direction(s: &str) -> Option<LayoutDirection> {
