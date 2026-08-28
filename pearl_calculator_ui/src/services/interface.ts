@@ -29,6 +29,7 @@ export interface CalculationInput {
 	version: string;
 	verticalTnt?: Space3DInput;
 	mode?: string;
+	planeInterceptY?: boolean;
 }
 
 export interface PearlTraceInput {

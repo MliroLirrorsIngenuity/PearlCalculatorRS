@@ -34,7 +34,6 @@ export default function TNTCalculationForm({
 }: TNTCalculationFormProps) {
 	const { t } = useTranslation();
 	const { calculationMode } = useConfigurationState();
-	const showPlaneInterceptToggle = calculationMode !== "Vector3D";
 	const showDestY =
 		calculationMode === "Vector3D" ? true : inputs.planeInterceptY;
 
@@ -94,23 +93,21 @@ export default function TNTCalculationForm({
 										</Tooltip>
 									</TooltipProvider>
 								</div>
-								{showPlaneInterceptToggle && (
-									<label
-										htmlFor="plane-intercept-y"
-										className="flex items-center gap-2 text-sm font-normal text-muted-foreground"
-									>
-										<input
-											id="plane-intercept-y"
-											type="checkbox"
-											checked={inputs.planeInterceptY}
-											onChange={(e) =>
-												onInputChange("planeInterceptY", e.target.checked)
-											}
-											className="h-4 w-4 rounded border-input accent-foreground"
-										/>
-										<span>{t("calculator.plane_intercept_toggle")}</span>
-									</label>
-								)}
+								<label
+									htmlFor="plane-intercept-y"
+									className="flex items-center gap-2 text-sm font-normal text-muted-foreground"
+								>
+									<input
+										id="plane-intercept-y"
+										type="checkbox"
+										checked={inputs.planeInterceptY}
+										onChange={(e) =>
+											onInputChange("planeInterceptY", e.target.checked)
+										}
+										className="h-4 w-4 rounded border-input accent-foreground"
+									/>
+									<span>{t("calculator.plane_intercept_toggle")}</span>
+								</label>
 							</div>
 							<BufferedNumberInput
 								id="cannon-y"

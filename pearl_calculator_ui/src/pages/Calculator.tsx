@@ -124,13 +124,6 @@ function CalculatorContent() {
 	}, [calculationMode, inputs.tickRange, inputs.distanceRange, updateInput]);
 
 	useEffect(() => {
-		if (calculationMode === "Vector3D") {
-			prevPlaneInterceptY.current = inputs.planeInterceptY;
-			planeInterceptPreviousTickRange.current = null;
-			planeInterceptPreviousDistanceRange.current = null;
-			return;
-		}
-
 		if (prevPlaneInterceptY.current !== inputs.planeInterceptY) {
 			const expandedTickRange: [number, number] = [0, 10000];
 			const expandedDistanceRange: [number, number] = [0, 50];
@@ -365,7 +358,9 @@ function CalculatorContent() {
 									<PearlTracePanel
 										pearlTraceData={pearlTraceData}
 										destX={inputs.destX}
+										destY={inputs.destY}
 										destZ={inputs.destZ}
+										planeInterceptY={inputs.planeInterceptY}
 										traceDirection={traceDirection}
 										traceTNT={traceTNT}
 									/>
