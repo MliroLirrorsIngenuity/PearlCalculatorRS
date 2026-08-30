@@ -101,6 +101,7 @@ pub struct PearlTraceInput {
     pub default_red_direction: String,
     pub default_blue_direction: String,
     pub destination_x: f64,
+    pub destination_y: Option<f64>,
     pub destination_z: f64,
     pub direction: Option<String>,
     pub version: String,

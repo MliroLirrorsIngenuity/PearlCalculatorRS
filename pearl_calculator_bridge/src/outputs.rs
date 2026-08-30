@@ -67,38 +67,14 @@ impl PearlTraceOutput {
     pub fn from_core(
         result: CalculationResult,
         destination: Option<(f64, f64)>,
+        destination_y: Option<f64>,
         origin: Space3D,
     ) -> Self {
-        let mut min_distance = f64::INFINITY;
-        let mut closest_tick = 0;
-        let mut closest_point = Space3DOutput {
-            x: 0.0,
-            y: 0.0,
-            z: 0.0,
-        };
-
         let pearl_trace_output: Vec<Space3DOutput> = result
             .pearl_trace
             .iter()
-            .enumerate()
-            .map(|(index, pos)| {
+            .map(|pos| {
                 let pos = *pos + origin;
-                if let Some((dest_x, dest_z)) = destination {
-                    let dx = pos.x - dest_x;
-                    let dz = pos.z - dest_z;
-                    let distance = (dx * dx + dz * dz).sqrt();
-
-                    if distance < min_distance {
-                        min_distance = distance;
-                        closest_tick = index as u32;
-                        closest_point = Space3DOutput {
-                            x: pos.x,
-                            y: pos.y,
-                            z: pos.z,
-                        };
-                    }
-                }
-
                 Space3DOutput {
                     x: pos.x,
                     y: pos.y,
@@ -106,6 +82,42 @@ impl PearlTraceOutput {
                 }
             })
             .collect();
+
+        let closest_approach = destination.and_then(|(dest_x, dest_z)| {
+            let closest = if let Some(target_y) = destination_y {
+                pearl_trace_output
+                    .windows(2)
+                    .enumerate()
+                    .filter_map(|(tick, window)| {
+                        let upper = window[0];
+                        let lower = window[1];
+                        (upper.y >= target_y && lower.y < target_y).then_some((
+                            tick as u32,
+                            upper,
+                            horizontal_axis_distance(upper, dest_x, dest_z),
+                        ))
+                    })
+                    .min_by(|a, b| a.2.partial_cmp(&b.2).unwrap().then_with(|| a.0.cmp(&b.0)))
+            } else {
+                pearl_trace_output
+                    .iter()
+                    .enumerate()
+                    .map(|(tick, &point)| {
+                        (
+                            tick as u32,
+                            point,
+                            horizontal_distance(point, dest_x, dest_z),
+                        )
+                    })
+                    .min_by(|a, b| a.2.partial_cmp(&b.2).unwrap().then_with(|| a.0.cmp(&b.0)))
+            };
+
+            closest.map(|(tick, point, distance)| ClosestApproachOutput {
+                tick,
+                point,
+                distance,
+            })
+        });
 
         let pearl_motion_trace_output: Vec<Space3DOutput> = result
             .pearl_motion_trace
@@ -117,18 +129,7 @@ impl PearlTraceOutput {
             })
             .collect();
 
-        let (distance, closest_approach) = if destination.is_some() {
-            (
-                result.distance,
-                Some(ClosestApproachOutput {
-                    tick: closest_tick,
-                    point: closest_point,
-                    distance: min_distance,
-                }),
-            )
-        } else {
-            (0.0, None)
-        };
+        let distance = destination.map_or(0.0, |_| result.distance);
 
         let landing_position = result.landing_position + origin;
 
@@ -151,6 +152,14 @@ impl PearlTraceOutput {
             closest_approach,
         }
     }
+}
+
+fn horizontal_distance(point: Space3DOutput, dest_x: f64, dest_z: f64) -> f64 {
+    (point.x - dest_x).hypot(point.z - dest_z)
+}
+
+fn horizontal_axis_distance(point: Space3DOutput, dest_x: f64, dest_z: f64) -> f64 {
+    (point.x - dest_x).abs().max((point.z - dest_z).abs())
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

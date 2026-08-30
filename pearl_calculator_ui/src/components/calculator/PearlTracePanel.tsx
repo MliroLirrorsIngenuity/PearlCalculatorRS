@@ -15,9 +15,7 @@ import type { PearlTraceResult, TraceTNT } from "@/types/domain";
 interface PearlTracePanelProps {
 	pearlTraceData: PearlTraceResult | null;
 	destX: string;
-	destY?: string;
 	destZ: string;
-	planeInterceptY?: boolean;
 	traceDirection: string;
 	traceTNT: TraceTNT | null;
 }
@@ -25,9 +23,7 @@ interface PearlTracePanelProps {
 export default function PearlTracePanel({
 	pearlTraceData,
 	destX,
-	destY,
 	destZ,
-	planeInterceptY,
 	traceDirection,
 	traceTNT,
 }: PearlTracePanelProps) {
@@ -37,44 +33,7 @@ export default function PearlTracePanel({
 	const { updateBitCalculation } = useCalculatorState();
 	const { calculationMode } = useConfigurationState();
 	const [summaryExpanded, setSummaryExpanded] = useState(false);
-
-	const closestApproach =
-		planeInterceptY && destY && pearlTraceData
-			? (() => {
-					const targetX = Number(destX);
-					const targetY = Number(destY);
-					const targetZ = Number(destZ);
-					if ([targetX, targetY, targetZ].some(Number.isNaN)) {
-						return pearlTraceData.closest_approach;
-					}
-
-					let best = null;
-					for (let i = 1; i < pearlTraceData.pearl_trace.length; i++) {
-						const prev = pearlTraceData.pearl_trace[i - 1];
-						const curr = pearlTraceData.pearl_trace[i];
-						const prevDelta = prev.Y - targetY;
-						const currDelta = curr.Y - targetY;
-						if (
-							prevDelta === 0 ||
-							currDelta === 0 ||
-							prevDelta * currDelta < 0
-						) {
-							const ratio =
-								curr.Y === prev.Y ? 0 : (targetY - prev.Y) / (curr.Y - prev.Y);
-							const point = {
-								X: prev.X + (curr.X - prev.X) * ratio,
-								Y: targetY,
-								Z: prev.Z + (curr.Z - prev.Z) * ratio,
-							};
-							const distance = Math.hypot(point.X - targetX, point.Z - targetZ);
-							if (!best || distance < best.distance) {
-								best = { tick: i, point, distance };
-							}
-						}
-					}
-					return best ?? pearlTraceData.closest_approach;
-				})()
-			: pearlTraceData?.closest_approach;
+	const closestApproach = pearlTraceData?.closest_approach;
 
 	const handleJumpToTick = () => {
 		if (closestApproach && traceDataPanelRef.current) {

@@ -15,6 +15,7 @@ export interface PearlTraceInputs {
 	destX: string;
 	destY?: string;
 	destZ: string;
+	planeInterceptY?: boolean;
 }
 
 export function usePearlTrace() {
@@ -69,6 +70,10 @@ export function usePearlTrace() {
 				defaultRedDirection: configData.default_red_tnt_position,
 				defaultBlueDirection: configData.default_blue_tnt_position,
 				destinationX: parseFloat(inputs.destX) || 0,
+				destinationY:
+					inputs.planeInterceptY && inputs.destY
+						? parseFloat(inputs.destY) || 0
+						: undefined,
 				destinationZ: parseFloat(inputs.destZ) || 0,
 				redTnt: tntResult.red,
 				blueTnt: tntResult.blue,

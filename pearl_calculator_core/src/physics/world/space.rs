@@ -1,4 +1,3 @@
-use crate::physics::constants::constants::FLOAT_PRECISION_EPSILON;
 use crate::utils::utils;
 use serde::{Deserialize, Serialize};
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub};
@@ -58,25 +57,6 @@ impl Space3D {
             y: self.z * other.x - self.x * other.z,
             z: self.x * other.y - self.y * other.x,
         }
-    }
-
-    pub fn horizontal_plane_intersection(&self, other: Space3D, target_y: f64) -> Option<Space3D> {
-        let self_delta = self.y - target_y;
-        if self_delta.abs() <= FLOAT_PRECISION_EPSILON {
-            return Some(*self);
-        }
-
-        let other_delta = other.y - target_y;
-        if other_delta.abs() <= FLOAT_PRECISION_EPSILON {
-            return Some(other);
-        }
-
-        let y_delta = other.y - self.y;
-        if y_delta.abs() <= FLOAT_PRECISION_EPSILON || self_delta.signum() == other_delta.signum() {
-            return None;
-        }
-
-        Some(*self + ((other - *self) * ((target_y - self.y) / y_delta)))
     }
 }
 

@@ -50,6 +50,7 @@ export interface PearlTraceInput {
 	defaultRedDirection: string;
 	defaultBlueDirection: string;
 	destinationX: number;
+	destinationY?: number;
 	destinationZ: number;
 	direction?: string;
 	version: string;

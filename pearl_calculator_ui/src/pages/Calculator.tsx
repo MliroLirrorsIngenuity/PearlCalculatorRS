@@ -358,9 +358,7 @@ function CalculatorContent() {
 									<PearlTracePanel
 										pearlTraceData={pearlTraceData}
 										destX={inputs.destX}
-										destY={inputs.destY}
 										destZ={inputs.destZ}
-										planeInterceptY={inputs.planeInterceptY}
 										traceDirection={traceDirection}
 										traceTNT={traceTNT}
 									/>

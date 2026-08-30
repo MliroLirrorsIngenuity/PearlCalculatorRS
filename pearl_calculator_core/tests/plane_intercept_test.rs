@@ -11,7 +11,11 @@ use pearl_calculator_core::settings::CannonMode;
 const MAX_DISTANCE: f64 = 50.0;
 const MAX_TICKS: u32 = 2000;
 const MAX_TNT: u32 = 2000;
-const VERSION: PearlVersion = PearlVersion::Post1212;
+const VERSIONS: [PearlVersion; 3] = [
+    PearlVersion::Legacy,
+    PearlVersion::Post1205,
+    PearlVersion::Post1212,
+];
 
 fn cannon(vertical: Option<Space3D>) -> Cannon {
     let spread = 0.009999990463256836;
@@ -34,7 +38,12 @@ fn cannon(vertical: Option<Space3D>) -> Cannon {
     }
 }
 
-fn crossing_miss(cannon: &Cannon, result: &TNTResult, destination: Space3D) -> Option<f64> {
+fn best_discrete_crossing(
+    cannon: &Cannon,
+    result: &TNTResult,
+    destination: Space3D,
+    version: PearlVersion,
+) -> Option<(u32, Space3D, f64)> {
     let trace = calculate_pearl_trace(
         cannon,
         result.red,
@@ -43,20 +52,30 @@ fn crossing_miss(cannon: &Cannon, result: &TNTResult, destination: Space3D) -> O
         result.direction,
         MAX_TICKS,
         &[],
-        VERSION,
+        version,
     )?
     .pearl_trace;
+    assert_eq!(trace.len(), MAX_TICKS as usize + 1);
 
-    let mut best: Option<f64> = None;
-    for window in trace.windows(2) {
-        let (prev, curr) = (window[0], window[1]);
-        if let Some(point) = prev.horizontal_plane_intersection(curr, destination.y) {
-            let miss =
-                ((point.x - destination.x).powi(2) + (point.z - destination.z).powi(2)).sqrt();
-            best = Some(best.map_or(miss, |current: f64| current.min(miss)));
-        }
-    }
-    best
+    trace
+        .windows(2)
+        .enumerate()
+        .filter_map(|(tick, window)| {
+            let upper = window[0];
+            let lower = window[1];
+            (upper.y >= destination.y && lower.y < destination.y).then_some((
+                tick as u32,
+                upper,
+                plane_distance(upper, destination),
+            ))
+        })
+        .min_by(|a, b| a.2.partial_cmp(&b.2).unwrap().then_with(|| a.0.cmp(&b.0)))
+}
+
+fn plane_distance(point: Space3D, destination: Space3D) -> f64 {
+    (point.x - destination.x)
+        .abs()
+        .max((point.z - destination.z).abs())
 }
 
 fn destinations() -> Vec<Space3D> {
@@ -74,7 +93,12 @@ fn destinations() -> Vec<Space3D> {
     targets
 }
 
-fn solve(cannon: &Cannon, destination: Space3D, plane_intercept_y: bool) -> Vec<TNTResult> {
+fn solve(
+    cannon: &Cannon,
+    destination: Space3D,
+    plane_intercept_y: bool,
+    version: PearlVersion,
+) -> Vec<TNTResult> {
     calculate_tnt_amount(
         cannon,
         destination,
@@ -82,72 +106,84 @@ fn solve(cannon: &Cannon, destination: Space3D, plane_intercept_y: bool) -> Vec<
         None,
         MAX_TICKS,
         MAX_DISTANCE,
-        VERSION,
+        version,
         plane_intercept_y,
     )
 }
 
 #[test]
-fn plane_intercept_reports_the_crossing_not_the_closest_tick() {
-    for vertical in [None, Some(Space3D::new(0.0, 254.5, 0.0))] {
-        let cannon = cannon(vertical);
+fn plane_intercept_reports_the_upper_integer_tick() {
+    for version in VERSIONS {
+        for vertical in [None, Some(Space3D::new(0.0, 254.5, 0.0))] {
+            let cannon = cannon(vertical);
 
-        for destination in destinations() {
-            let results = solve(&cannon, destination, true);
-            assert!(
-                !results.is_empty(),
-                "no plane intercept solution for {destination:?} vertical={vertical:?}"
-            );
-
-            for result in &results {
+            for destination in destinations() {
+                let results = solve(&cannon, destination, true, version);
                 assert!(
-                    (result.pearl_end_pos.y - destination.y).abs() < 1e-6,
-                    "landing not on the plane: {} vs {}",
-                    result.pearl_end_pos.y,
-                    destination.y
+                    !results.is_empty(),
+                    "no plane intercept solution for {destination:?} vertical={vertical:?} version={version:?}"
                 );
 
-                let reported_horizontal = ((result.pearl_end_pos.x - destination.x).powi(2)
-                    + (result.pearl_end_pos.z - destination.z).powi(2))
-                .sqrt();
-                assert!(
-                    (result.distance - reported_horizontal).abs() < 1e-6,
-                    "distance is not the horizontal miss on the plane: {} vs {reported_horizontal}",
-                    result.distance
-                );
+                for result in &results {
+                    let (expected_tick, expected_position, expected_distance) =
+                        best_discrete_crossing(&cannon, result, destination, version)
+                            .expect("traced trajectory must cross the plane");
 
-                let simulated = crossing_miss(&cannon, result, destination)
-                    .expect("traced trajectory must cross the plane");
-                assert!(
-                    (simulated - result.distance).abs() < 1e-6,
-                    "reported miss {} disagrees with the traced crossing {simulated}",
-                    result.distance
-                );
+                    assert_eq!(
+                        result.tick, expected_tick,
+                        "result tick does not identify the best upper tick at {destination:?} vertical={vertical:?} version={version:?}"
+                    );
+                    assert!(
+                        (result.pearl_end_pos.x - expected_position.x).abs() < 1e-9
+                            && (result.pearl_end_pos.y - expected_position.y).abs() < 1e-9
+                            && (result.pearl_end_pos.z - expected_position.z).abs() < 1e-9,
+                        "result point is not the trajectory point at tick {}: {:?} vs {:?}",
+                        expected_tick,
+                        result.pearl_end_pos,
+                        expected_position
+                    );
+                    assert!(
+                        (result.distance - expected_distance).abs() < 1e-9,
+                        "distance is not the horizontal miss at the upper tick: {} vs {expected_distance}",
+                        result.distance
+                    );
+                    assert!(
+                        result.pearl_end_pos.y >= destination.y,
+                        "upper tick is below target Y: {} < {}",
+                        result.pearl_end_pos.y,
+                        destination.y
+                    );
+                }
             }
         }
     }
 }
 
 #[test]
-fn plane_intercept_beats_point_targeting_on_the_plane() {
-    for vertical in [None, Some(Space3D::new(0.0, 254.5, 0.0))] {
-        let cannon = cannon(vertical);
+fn plane_intercept_applies_max_distance_per_horizontal_axis() {
+    let cannon = cannon(None);
+    let destination = Space3D::new(4700.0, 129.0, 3700.0);
+    let results = calculate_tnt_amount(
+        &cannon,
+        destination,
+        800,
+        None,
+        MAX_TICKS,
+        MAX_DISTANCE,
+        PearlVersion::Post1212,
+        true,
+    );
 
-        for destination in destinations() {
-            let plane_best = solve(&cannon, destination, true)
-                .first()
-                .map(|result| result.distance)
-                .expect("plane intercept must produce a solution");
+    assert_eq!(results.len(), 2);
+    assert!(results.iter().all(|result| {
+        (result.pearl_end_pos.x - destination.x).abs() <= MAX_DISTANCE
+            && (result.pearl_end_pos.z - destination.z).abs() <= MAX_DISTANCE
+    }));
 
-            let point_best = solve(&cannon, destination, false)
-                .iter()
-                .filter_map(|result| crossing_miss(&cannon, result, destination))
-                .fold(f64::INFINITY, f64::min);
-
-            assert!(
-                plane_best <= point_best + 1e-9,
-                "plane intercept miss {plane_best} is worse than point targeting {point_best} at {destination:?} (vertical={vertical:?})"
-            );
-        }
-    }
+    let diagonal = results
+        .iter()
+        .find(|result| result.red == 10 && result.blue == 84)
+        .expect("axis-aligned bounds must retain the diagonal solution");
+    assert!((diagonal.distance - 46.582587).abs() < 1e-6);
+    assert!(diagonal.pearl_end_pos.distance_2d(&destination) > MAX_DISTANCE);
 }

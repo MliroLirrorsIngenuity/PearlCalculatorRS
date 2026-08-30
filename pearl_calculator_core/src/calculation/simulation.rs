@@ -82,11 +82,8 @@ fn run_internal<M: PearlMovement + Clone>(
         None => (0.0, false),
     };
 
-    let mut final_traces: Vec<Space3D> = traces.into_iter().collect();
-    let mut final_motion_traces: Vec<Space3D> = motion_traces.into_iter().collect();
-
-    final_traces.dedup();
-    final_motion_traces.dedup();
+    let final_traces: Vec<Space3D> = traces.into_iter().collect();
+    let final_motion_traces: Vec<Space3D> = motion_traces.into_iter().collect();
 
     Some(CalculationResult {
         landing_position: final_landing_pos,
@@ -195,6 +192,7 @@ fn scan_internal<M: PearlMovement + Clone>(
         .map(|tnt| TNTEntity::new(tnt.position, tnt.fuse))
         .collect();
     let mut previous_pos = pearl.data.position;
+    let mut previous_motion = pearl.data.motion;
 
     for tick in 1..=max_tick {
         for tnt in &mut tnt_entities {
@@ -208,21 +206,24 @@ fn scan_internal<M: PearlMovement + Clone>(
         let current_pos = pearl.data.position;
 
         let hit = if plane_intercept_y {
-            previous_pos
-                .horizontal_plane_intersection(current_pos, destination.y)
-                .map(|point| (point, point.distance_2d_sq(&destination)))
+            (previous_pos.y >= destination.y && current_pos.y < destination.y).then(|| {
+                let dx = (previous_pos.x - destination.x).abs();
+                let dz = (previous_pos.z - destination.z).abs();
+                (tick - 1, previous_pos, previous_motion, dx.max(dz).powi(2))
+            })
         } else if (tick as usize) < valid_ticks.len() && valid_ticks[tick as usize] {
             measure_hit(current_pos, destination, check_3d)
+                .map(|(position, distance)| (tick, position, pearl.data.motion, distance))
         } else {
             None
         };
 
-        if let Some((hit_pos, dist_sq)) = hit {
+        if let Some((hit_tick, hit_pos, hit_motion, dist_sq)) = hit {
             if dist_sq <= max_distance_sq {
                 results.push(SimResult {
-                    tick,
+                    tick: hit_tick,
                     position: hit_pos,
-                    motion: pearl.data.motion,
+                    motion: hit_motion,
                     distance: dist_sq.sqrt(),
                 });
             }
@@ -232,11 +233,8 @@ fn scan_internal<M: PearlMovement + Clone>(
             break;
         }
 
-        if plane_intercept_y && current_pos.y < destination.y && pearl.data.motion.y <= 0.0 {
-            break;
-        }
-
         previous_pos = current_pos;
+        previous_motion = pearl.data.motion;
     }
     results
 }

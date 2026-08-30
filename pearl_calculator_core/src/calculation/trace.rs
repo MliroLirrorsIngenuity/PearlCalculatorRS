@@ -48,7 +48,7 @@ pub fn validate_candidates(
             };
 
             let scan_tick = if plane_intercept_y {
-                max_ticks.max(max_sim_tick)
+                max_ticks.saturating_add(1).max(max_sim_tick)
             } else {
                 max_sim_tick
             };

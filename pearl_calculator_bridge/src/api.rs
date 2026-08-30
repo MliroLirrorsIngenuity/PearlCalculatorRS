@@ -49,6 +49,7 @@ pub fn calculate_pearl_trace(input: PearlTraceInput) -> Result<PearlTraceOutput,
     Ok(PearlTraceOutput::from_core(
         result,
         Some((input.destination_x, input.destination_z)),
+        input.destination_y,
         input.get_origin(),
     ))
 }
@@ -75,6 +76,7 @@ pub fn calculate_raw_trace(input: RawTraceInput) -> Result<PearlTraceOutput, Str
 
     Ok(PearlTraceOutput::from_core(
         result,
+        None,
         None,
         Space3D::default(),
     ))
