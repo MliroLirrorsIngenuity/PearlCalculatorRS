@@ -1,205 +1,236 @@
-import { ArrowRight, ChevronDown, ChevronUp, Info } from "lucide-react";
-import { AnimatePresence, motion } from "motion/react";
 import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import type { DataTableRef } from "@/components/calculator/results/data-table";
-import TraceDataPanel from "@/components/calculator/results/TraceDataPanel";
-import { Badge } from "@/components/ui/badge";
+import TraceDataPanel, {
+	type TraceDataPanelRef,
+} from "@/components/calculator/results/TraceDataPanel";
+import { HeightProfileChart } from "@/components/charts/HeightProfileChart";
+import { LandingBlockView } from "@/components/charts/LandingBlockView";
+import { LandingFaceView } from "@/components/charts/LandingFaceView";
+import {
+	LandingZoomView,
+	landingOffset,
+} from "@/components/charts/LandingZoomView";
+import { TopDownChart } from "@/components/charts/TopDownChart";
+import {
+	descentAngle,
+	hitBlock,
+	incomingDirection,
+	landingIndex,
+	landingPoint,
+	peakIndex,
+	toProfile,
+} from "@/components/charts/trajectory";
+import {
+	Metric,
+	Segmented,
+	sectionLabelClass as sectionLabel,
+	TntCounts,
+	Unit,
+} from "@/components/common/Metric";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCalculatorState } from "@/context/CalculatorStateContext";
 import { useConfigurationState } from "@/context/ConfigurationStateContext";
+import { useMobileView } from "@/context/MobileViewContext";
 import { useDirectionLabel } from "@/hooks/use-direction-label";
-import type { PearlTraceResult, TraceTNT } from "@/types/domain";
+import { targetHeight } from "@/lib/calculator-defaults";
+import { cn } from "@/lib/utils";
 
-interface PearlTracePanelProps {
-	pearlTraceData: PearlTraceResult | null;
-	destX: string;
-	destZ: string;
-	traceDirection: string;
-	traceTNT: TraceTNT | null;
-}
-
-export default function PearlTracePanel({
-	pearlTraceData,
-	destX,
-	destZ,
-	traceDirection,
-	traceTNT,
-}: PearlTracePanelProps) {
+export default function PearlTracePanel() {
 	const { t } = useTranslation();
 	const { getCardinalLabel } = useDirectionLabel();
-	const traceDataPanelRef = useRef<DataTableRef>(null);
-	const { updateBitCalculation } = useCalculatorState();
+	const { defaultCalculator, updateBitCalculation } = useCalculatorState();
 	const { calculationMode } = useConfigurationState();
-	const [summaryExpanded, setSummaryExpanded] = useState(false);
-	const closestApproach = pearlTraceData?.closest_approach;
-
-	const handleJumpToTick = () => {
-		if (closestApproach && traceDataPanelRef.current) {
-			traceDataPanelRef.current.scrollToRow(closestApproach.tick);
-		}
-	};
-
-	if (!pearlTraceData) {
-		return null;
-	}
-
-	const SummaryCard = ({ className }: { className?: string }) => (
-		<Card className={className}>
-			<CardHeader className="pb-3">
-				<CardTitle className="text-base">
-					{t("calculator.trace_summary_title")}
-				</CardTitle>
-			</CardHeader>
-			<CardContent className="space-y-2 text-sm flex-1 flex flex-col">
-				<div className="flex flex-col gap-1">
-					<span className="text-muted-foreground">
-						{t("calculator.trace_dest_target")}
-					</span>
-					<div className="grid grid-cols-3 gap-2 font-medium">
-						<span>{t("calculator.trace_x", { value: destX || "N/A" })}</span>
-						<span>{t("calculator.trace_z", { value: destZ || "N/A" })}</span>
-						<span>
-							<Badge className="rounded-full">
-								{getCardinalLabel(traceDirection) || "N/A"}
-							</Badge>
-						</span>
-					</div>
-				</div>
-				<div className="flex flex-col gap-1">
-					<span className="text-muted-foreground">
-						{t("calculator.trace_tnt_config")}
-					</span>
-					<div className="grid grid-cols-3 gap-2 font-medium">
-						<span>
-							{t("calculator.trace_blue", {
-								value: traceTNT?.blue ?? "N/A",
-							})}
-						</span>
-						<span>
-							{t("calculator.trace_red", { value: traceTNT?.red ?? "N/A" })}
-						</span>
-						<span>
-							{t("calculator.trace_total", {
-								value: traceTNT?.total ?? "N/A",
-							})}
-						</span>
-					</div>
-				</div>
-				{calculationMode === "Vector3D" && traceTNT?.vertical !== undefined && (
-					<div className="flex flex-col gap-1">
-						<span className="text-muted-foreground">
-							{t("calculator.trace_vertical_tnt")}
-						</span>
-						<span className="font-medium">{traceTNT.vertical}</span>
-					</div>
-				)}
-				{closestApproach && (
-					<>
-						<div className="flex flex-col gap-1">
-							<span className="text-muted-foreground">
-								{t("calculator.trace_closest_approach")}
-							</span>
-							<div className="grid grid-cols-3 gap-2 font-medium">
-								<span>
-									{t("calculator.trace_x", {
-										value: closestApproach.point.X.toFixed(2),
-									})}
-								</span>
-								<span>
-									{t("calculator.trace_y", {
-										value: closestApproach.point.Y.toFixed(2),
-									})}
-								</span>
-								<span>
-									{t("calculator.trace_z", {
-										value: closestApproach.point.Z.toFixed(2),
-									})}
-								</span>
-							</div>
-						</div>
-						<div className="flex flex-col gap-1">
-							<span className="text-muted-foreground">
-								{t("calculator.trace_approach_tick")}
-							</span>
-							<div className="grid grid-cols-3 gap-2 font-medium items-center">
-								<span>{closestApproach.tick}</span>
-								<span>
-									<Button
-										variant="outline"
-										className="h-auto rounded-full px-2.5 py-0.5 text-xs font-semibold"
-										onClick={() => {
-											setSummaryExpanded(false);
-											handleJumpToTick();
-										}}
-									>
-										<ArrowRight className="h-3 w-3" />
-									</Button>
-								</span>
-								<span />
-							</div>
-						</div>
-						<div className="flex flex-col gap-1">
-							<span className="text-muted-foreground">
-								{t("calculator.trace_distance_target")}
-							</span>
-							<span className="font-medium">
-								{closestApproach.distance.toFixed(2)}{" "}
-								{t("calculator.suffix_blocks")}
-							</span>
-						</div>
-					</>
-				)}
-				<div className="pt-4 mt-auto">
-					<Button
-						variant="outline"
-						className="w-full"
-						onClick={() => updateBitCalculation({ show: true })}
-					>
-						{t("calculator.bit_calc_btn")}
-					</Button>
-				</div>
-			</CardContent>
-		</Card>
+	const { isMobile } = useMobileView();
+	const tableRef = useRef<TraceDataPanelRef>(null);
+	const [chartView, setChartView] = useState<"side" | "top">("side");
+	const [landingView, setLandingView] = useState<"block" | "face" | "zoom">(
+		"block",
 	);
 
+	const { data: trace, tnt, direction } = defaultCalculator.trace;
+	const inputs = defaultCalculator.inputs;
+	if (!trace) return null;
+
+	const target = {
+		x: parseFloat(inputs.destX) || 0,
+		z: parseFloat(inputs.destZ) || 0,
+	};
+	const landing = landingIndex(trace);
+	const profile = toProfile(trace);
+	const peak = peakIndex(profile.slice(0, landing + 1));
+	const deviation = trace.closest_approach?.distance ?? trace.distance;
+	const { east, south } = landingOffset(trace, target);
+	const { block, face } = hitBlock(
+		landingPoint(trace),
+		incomingDirection(trace),
+	);
+	const offsetText = t("trace.offset", {
+		ewDir:
+			east >= 0
+				? t("calculator.direction_east")
+				: t("calculator.direction_west"),
+		ewValue: Math.abs(east).toFixed(4),
+		nsDir:
+			south >= 0
+				? t("calculator.direction_south")
+				: t("calculator.direction_north"),
+		nsValue: Math.abs(south).toFixed(4),
+	});
+
 	return (
-		<div className="h-full w-full bg-background relative">
-			<div className="flex h-full w-full flex-col md:flex-row p-4 md:p-6 gap-4">
-				<div className="hidden md:block w-[40%] h-full">
-					<SummaryCard className="h-full flex flex-col" />
+		<div
+			className={cn(
+				"flex h-full w-full gap-4 bg-card p-4",
+				isMobile && "flex-col overflow-auto",
+			)}
+		>
+			<div
+				className={cn(
+					"@container flex min-w-0 flex-1 flex-col gap-4",
+					!isMobile && "overflow-y-auto",
+				)}
+			>
+				<div className="relative h-[clamp(200px,42vh,300px)] shrink-0 rounded-lg border">
+					<span className={cn(sectionLabel, "absolute top-3.5 left-3.5")}>
+						{t("trace.flight_title")}
+					</span>
+					<div className="absolute top-2 right-3 z-10">
+						<Segmented
+							value={chartView}
+							onChange={setChartView}
+							options={[
+								{ value: "side", label: t("trace.view_side") },
+								{ value: "top", label: t("trace.view_top") },
+							]}
+						/>
+					</div>
+					{chartView === "side" ? (
+						<HeightProfileChart
+							trace={trace}
+							targetY={targetHeight(inputs, calculationMode)}
+							variant="full"
+						/>
+					) : (
+						<TopDownChart trace={trace} target={target} />
+					)}
 				</div>
-				<div className="flex-1 h-full overflow-hidden flex flex-col gap-2">
-					<TraceDataPanel ref={traceDataPanelRef} data={pearlTraceData} />
+
+				<div
+					className={cn(
+						"flex min-h-[240px] flex-1 flex-col gap-5 @2xl:flex-row",
+					)}
+				>
+					<div className="flex min-w-0 flex-1 flex-col gap-4">
+						<span className={sectionLabel}>{t("trace.summary_title")}</span>
+						<div className="grid grid-cols-1 gap-x-6 gap-y-5 @sm:grid-cols-2">
+							<Metric
+								label="TNT"
+								sub={t("trace.tnt_sub", {
+									total: tnt?.total ?? 0,
+									direction: getCardinalLabel(direction),
+								})}
+							>
+								<TntCounts
+									blue={tnt?.blue}
+									red={tnt?.red}
+									vertical={
+										calculationMode === "Vector3D" ? tnt?.vertical : undefined
+									}
+								/>
+							</Metric>
+							<Metric label={t("trace.deviation")} sub={offsetText}>
+								{deviation.toFixed(4)}
+								<Unit>{t("trace.blocks_unit")}</Unit>
+							</Metric>
+							<Metric
+								label={t("trace.flight")}
+								sub={
+									<>
+										{t("trace.seconds", { value: (landing / 20).toFixed(2) })} ·{" "}
+										<button
+											type="button"
+											className="underline-offset-2 hover:text-foreground hover:underline"
+											onClick={() => tableRef.current?.scrollToRow(landing)}
+										>
+											{t("trace.locate")}
+										</button>
+									</>
+								}
+							>
+								{landing}
+								<Unit>tick</Unit>
+							</Metric>
+							<Metric
+								label={t("trace.peak")}
+								sub={t("trace.peak_tick", { tick: peak })}
+							>
+								<Unit>Y</Unit>
+								{profile[peak]?.y.toFixed(1)}
+							</Metric>
+						</div>
+						<div className="flex-1" />
+						<Button onClick={() => updateBitCalculation({ show: true })}>
+							{t("calculator.bit_calc_btn")}
+						</Button>
+					</div>
+
+					<div className="hidden w-px bg-border/60 @2xl:block" />
+
+					<div className="flex w-full shrink-0 flex-col gap-2 @2xl:w-60">
+						<div className="flex items-center justify-between">
+							<span className={sectionLabel}>{t("trace.landing_title")}</span>
+							<Segmented
+								value={landingView}
+								onChange={setLandingView}
+								options={[
+									{ value: "block", label: t("trace.view_block") },
+									{ value: "face", label: t("trace.view_face") },
+									{ value: "zoom", label: t("trace.view_zoom") },
+								]}
+							/>
+						</div>
+						<div className="flex min-h-0 flex-1 items-center justify-center">
+							{landingView === "block" ? (
+								<LandingBlockView trace={trace} size="full" />
+							) : landingView === "face" ? (
+								<LandingFaceView trace={trace} size="full" />
+							) : (
+								<LandingZoomView trace={trace} target={target} />
+							)}
+						</div>
+						{landingView !== "zoom" ? (
+							<div className="flex flex-col gap-0.5 text-xs tabular-nums">
+								<span>
+									{t("trace.hit_face", {
+										face: t(`trace.face.${face}`),
+										angle: descentAngle(trace).toFixed(1),
+									})}
+								</span>
+								<span className="text-muted-foreground">
+									{t("trace.hit_block", {
+										x: block.X,
+										y: block.Y,
+										z: block.Z,
+									})}
+								</span>
+							</div>
+						) : (
+							<span className="text-xs text-muted-foreground tabular-nums">
+								{offsetText}
+							</span>
+						)}
+					</div>
 				</div>
 			</div>
-			<Button
-				variant="secondary"
-				size="sm"
-				className="md:hidden absolute top-2 right-2 z-20 shadow-md"
-				onClick={() => setSummaryExpanded(!summaryExpanded)}
+
+			<div
+				className={cn(
+					"flex w-[min(460px,44%)] shrink-0 flex-col",
+					isMobile && "h-[480px] w-full",
+				)}
 			>
-				<Info className="h-4 w-4 mr-1" />
-				{summaryExpanded ? (
-					<ChevronUp className="h-4 w-4" />
-				) : (
-					<ChevronDown className="h-4 w-4" />
-				)}
-			</Button>
-			<AnimatePresence>
-				{summaryExpanded && (
-					<motion.div
-						initial={{ opacity: 0, y: -20 }}
-						animate={{ opacity: 1, y: 0 }}
-						exit={{ opacity: 0, y: -20 }}
-						transition={{ duration: 0.2 }}
-						className="md:hidden absolute top-14 left-2 right-2 z-10 max-h-[calc(100%-60px)] overflow-auto rounded-lg"
-					>
-						<SummaryCard className="shadow-xl border" />
-					</motion.div>
-				)}
-			</AnimatePresence>
+				<TraceDataPanel ref={tableRef} data={trace} />
+			</div>
 		</div>
 	);
 }

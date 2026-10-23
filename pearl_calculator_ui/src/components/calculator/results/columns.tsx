@@ -2,7 +2,7 @@
 import type { Column, ColumnDef } from "@tanstack/react-table";
 import { ArrowRight } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 export type CalculationResult = {
 	id: string;
@@ -28,21 +28,31 @@ function SortableHeader<T>({
 }) {
 	const { t } = useTranslation();
 	return (
-		<div className="flex justify-center">
-			<Button
-				variant="ghost"
-				onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-				className="font-bold hover:bg-accent"
-			>
-				{/* @ts-expect-error - labelKey comes from known translation keys */}
-				{t(labelKey, fallback)}
-			</Button>
-		</div>
+		<button
+			type="button"
+			onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+			className="w-full truncate text-center font-semibold hover:text-foreground/70"
+		>
+			{/* @ts-expect-error - labelKey comes from known translation keys */}
+			{t(labelKey, fallback)}
+		</button>
 	);
 }
 
-function SimpleCell({ value }: { value: React.ReactNode }) {
-	return <div className="text-left font-medium">{value}</div>;
+function SimpleCell({
+	value,
+	className,
+}: {
+	value: React.ReactNode;
+	className?: string;
+}) {
+	return (
+		<div
+			className={cn("truncate text-center font-medium tabular-nums", className)}
+		>
+			{value}
+		</div>
+	);
 }
 
 type ColumnConfig = {
@@ -50,10 +60,12 @@ type ColumnConfig = {
 	labelKey: string;
 	fallback?: string;
 	cellRenderer?: (value: unknown) => React.ReactNode;
+	cellClassName?: string;
 };
 
 function createColumn(config: ColumnConfig): ColumnDef<CalculationResult> {
-	const { accessorKey, labelKey, fallback, cellRenderer } = config;
+	const { accessorKey, labelKey, fallback, cellRenderer, cellClassName } =
+		config;
 	return {
 		accessorKey,
 		header: ({ column }) => (
@@ -64,7 +76,7 @@ function createColumn(config: ColumnConfig): ColumnDef<CalculationResult> {
 			const displayValue = cellRenderer
 				? cellRenderer(value)
 				: (value as React.ReactNode);
-			return <SimpleCell value={displayValue} />;
+			return <SimpleCell value={displayValue} className={cellClassName} />;
 		},
 		enableResizing: false,
 	};
@@ -83,10 +95,12 @@ export const columns: ColumnDef<CalculationResult>[] = [
 	createColumn({
 		accessorKey: "blue",
 		labelKey: "calculator.header_blue",
+		cellClassName: "text-blue-600 dark:text-blue-400",
 	}),
 	createColumn({
 		accessorKey: "red",
 		labelKey: "calculator.header_red",
+		cellClassName: "text-red-600 dark:text-red-400",
 	}),
 	createColumn({
 		accessorKey: "vertical",
@@ -110,35 +124,14 @@ export const columns: ColumnDef<CalculationResult>[] = [
 		meta: {
 			className: "w-[50px]",
 		},
-		cell: ({ row, table }) => {
-			const { t } = useTranslation();
-			const meta = table.options.meta as {
-				onTrace: (
-					red: number,
-					blue: number,
-					direction: string,
-					vertical?: number,
-				) => void;
-			};
-			const red = row.getValue("red") as number;
-			const blue = row.getValue("blue") as number;
-			const direction = row.original.direction;
-			const vertical = row.original.vertical;
-
-			return (
-				<div className="flex justify-center">
-					<Button
-						variant="ghost"
-						size="icon"
-						className="h-6 w-6"
-						onClick={() => meta?.onTrace(red, blue, direction, vertical)}
-					>
-						<ArrowRight className="h-3.5 w-3.5" />
-						<span className="sr-only">{t("calculator.sr_view_trace")}</span>
-					</Button>
-				</div>
-			);
-		},
+		cell: () => (
+			<div className="flex justify-center">
+				<ArrowRight
+					aria-hidden="true"
+					className="size-3.5 text-muted-foreground transition-transform group-hover/row:translate-x-0.5 group-hover/row:text-foreground"
+				/>
+			</div>
+		),
 		enableResizing: false,
 	},
 ];

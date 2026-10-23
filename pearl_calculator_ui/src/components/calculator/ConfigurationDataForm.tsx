@@ -1,9 +1,6 @@
-import { Save, Share } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { CompactInput } from "@/components/configuration/CompactInput";
-import { Button } from "@/components/ui/button";
-import { FieldLegend, FieldSet } from "@/components/ui/field";
-import { Label } from "@/components/ui/label";
+import { AxisInput } from "@/components/common/AxisInput";
+import { sectionLabelClass } from "@/components/common/Metric";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
 	Select,
@@ -12,61 +9,13 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipProvider,
-	TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { useConfig } from "@/context/ConfigContext";
 import { useConfigurationState } from "@/context/ConfigurationStateContext";
-import { useToastNotifications } from "@/hooks/use-toast-notifications";
-import { buildEncodableConfig, encodeConfig } from "@/lib/config-codec";
-import { exportConfiguration } from "@/lib/config-service";
 import { getOppositeDirection } from "@/lib/config-utils";
 import { preciseAdd, preciseSubtract } from "@/lib/floating-point-utils";
-import { cn } from "@/lib/utils";
 import type { GeneralConfig } from "@/types/domain";
 
-function TNTBlock({
-	title,
-	data,
-	onUpdate,
-	yOffset,
-}: {
-	title: string;
-	data: { x: number; y: number; z: number };
-	onUpdate: (key: "x" | "y" | "z", val: number) => void;
-	yOffset: number;
-}) {
-	return (
-		<div className="space-y-1">
-			<div className="text-xs font-bold text-foreground/80">{title}</div>
-			<div className="grid gap-1">
-				<CompactInput
-					label="X"
-					labelClassName="w-3 text-left pr-0"
-					value={data.x}
-					onChange={(v) => onUpdate("x", parseFloat(v) || 0)}
-				/>
-				<CompactInput
-					label="Y"
-					labelClassName="w-3 text-left pr-0"
-					value={data.y + yOffset}
-					onChange={(v) =>
-						onUpdate("y", preciseSubtract(parseFloat(v) || 0, yOffset))
-					}
-				/>
-				<CompactInput
-					label="Z"
-					labelClassName="w-3 text-left pr-0"
-					value={data.z}
-					onChange={(v) => onUpdate("z", parseFloat(v) || 0)}
-				/>
-			</div>
-		</div>
-	);
-}
+type Vec = { x: number; y: number; z: number };
+type DirectionValue = "SouthEast" | "NorthWest" | "SouthWest" | "NorthEast";
 
 const DIRECTION_OPTIONS = [
 	{ value: "SouthEast", labelKey: "calculator.direction_se_short" },
@@ -75,38 +24,93 @@ const DIRECTION_OPTIONS = [
 	{ value: "NorthEast", labelKey: "calculator.direction_ne_short" },
 ] as const;
 
-type DirectionValue = "SouthEast" | "NorthWest" | "SouthWest" | "NorthEast";
+const blockLabelClass = "text-[13px] font-medium";
+const toNumber = (value: string) => parseFloat(value) || 0;
+
+function Section({
+	title,
+	aside,
+	children,
+}: {
+	title: string;
+	aside?: React.ReactNode;
+	children: React.ReactNode;
+}) {
+	return (
+		<section className="flex flex-col gap-2">
+			<div className="flex items-baseline justify-between gap-2">
+				<span className={sectionLabelClass}>{title}</span>
+				{aside}
+			</div>
+			{children}
+		</section>
+	);
+}
+
+function VectorBlock({
+	id,
+	label,
+	value,
+	yOffset,
+	onChange,
+}: {
+	id: string;
+	label: string;
+	value: Vec;
+	yOffset: number;
+	onChange: (value: Vec) => void;
+}) {
+	return (
+		<div className="flex min-w-0 flex-col gap-1.5">
+			<span className={blockLabelClass}>{label}</span>
+			<AxisInput
+				compact
+				axis="X"
+				id={`${id}-x`}
+				value={value.x}
+				onValueChange={(v) => onChange({ ...value, x: toNumber(v) })}
+			/>
+			<AxisInput
+				compact
+				axis="Y"
+				id={`${id}-y`}
+				value={value.y + yOffset}
+				onValueChange={(v) =>
+					onChange({ ...value, y: preciseSubtract(toNumber(v), yOffset) })
+				}
+			/>
+			<AxisInput
+				compact
+				axis="Z"
+				id={`${id}-z`}
+				value={value.z}
+				onValueChange={(v) => onChange({ ...value, z: toNumber(v) })}
+			/>
+		</div>
+	);
+}
 
 function DirectionSelect({
 	label,
 	value,
 	onChange,
-	labelClassName,
 }: {
 	label: string;
 	value: DirectionValue;
 	onChange: (value: DirectionValue) => void;
-	labelClassName: string;
 }) {
 	const { t } = useTranslation();
 	return (
-		<div className="flex items-center gap-1.5">
-			<Label
-				className={cn(
-					"font-mono text-muted-foreground shrink-0 pt-0.5",
-					labelClassName,
-				)}
-			>
-				{label}
-			</Label>
+		<div className="flex min-w-0 items-center gap-2">
+			<span className="shrink-0 text-[13px] font-medium">{label}</span>
 			<Select value={value} onValueChange={onChange}>
-				<SelectTrigger className="h-7 text-xs font-mono shadow-none focus:ring-1 w-full flex-1">
+				<SelectTrigger size="sm" className="h-8 min-w-0 flex-1 text-[13px]">
 					<SelectValue />
 				</SelectTrigger>
 				<SelectContent>
-					{DIRECTION_OPTIONS.map((opt) => (
-						<SelectItem key={opt.value} value={opt.value}>
-							{t(opt.labelKey)}
+					{DIRECTION_OPTIONS.map((option) => (
+						<SelectItem key={option.value} value={option.value}>
+							{t(option.labelKey)}
 						</SelectItem>
 					))}
 				</SelectContent>
@@ -129,297 +133,159 @@ export default function ConfigurationDataForm({
 	onCannonYChange,
 }: ConfigurationDataFormProps) {
 	const { t } = useTranslation();
-	const { bitTemplateConfig } = useConfig();
 	const { calculationMode } = useConfigurationState();
-	const { showSuccess, showError } = useToastNotifications();
 	const baseY = Math.floor(config.pearl_y_position);
 	const yOffset = preciseSubtract(parseFloat(cannonYDisplay) || baseY, baseY);
-	const alignedLabelClass = "w-8 text-right pr-1 text-[10px] uppercase";
 
-	const handleCopyCode = async () => {
-		try {
-			const encodable = buildEncodableConfig(config, bitTemplateConfig);
-			const encoded = encodeConfig(encodable);
-			const { calculatorService } = await import("@/services");
-			await calculatorService.copyToClipboard(encoded);
-			showSuccess(t("configuration_page.toast_code_copied"));
-		} catch (error) {
-			console.error(error);
-			showError(t("error.configuration_page.copy_code_failed"));
+	const update = (patch: Partial<GeneralConfig>) =>
+		onConfigChange({ ...config, ...patch });
+
+	const updatePearlY = (value: string) => {
+		const newPearlY = preciseSubtract(toNumber(value), yOffset);
+		const oldBaseY = Math.floor(config.pearl_y_position);
+		const diff = Math.floor(newPearlY) - oldBaseY;
+		if (diff !== 0) {
+			const currentCannonY = parseFloat(cannonYDisplay) || oldBaseY;
+			onCannonYChange(preciseAdd(currentCannonY, diff).toString());
 		}
+		update({ pearl_y_position: newPearlY });
 	};
 
-	const handleExportConfig = async () => {
-		try {
-			const encodable = buildEncodableConfig(config, bitTemplateConfig);
-			await exportConfiguration(encodable);
-			showSuccess(t("configuration_page.toast_exported"));
-		} catch (error) {
-			console.error(error);
-			showError(t("error.configuration_page.export_failed"));
-		}
-	};
-
-	const handleRedTntPositionChange = (
-		value: "SouthEast" | "NorthWest" | "SouthWest" | "NorthEast",
-	) => {
-		onConfigChange({
-			...config,
-			default_red_tnt_position: value,
-			default_blue_tnt_position: getOppositeDirection(value),
-		});
-	};
-
-	const handleBlueTntPositionChange = (
-		value: "SouthEast" | "NorthWest" | "SouthWest" | "NorthEast",
-	) => {
-		onConfigChange({
-			...config,
-			default_blue_tnt_position: value,
-			default_red_tnt_position: getOppositeDirection(value),
-		});
-	};
+	const tntRows = [
+		{ key: "north_west_tnt", label: t("calculator.direction_badge_nw") },
+		{ key: "north_east_tnt", label: t("calculator.direction_badge_ne") },
+		{ key: "south_west_tnt", label: t("calculator.direction_badge_sw") },
+		{ key: "south_east_tnt", label: t("calculator.direction_badge_se") },
+	] as const;
 
 	return (
 		<ScrollArea className="h-full">
-			<div className="pl-1 pr-3">
-				<FieldSet className="w-full space-y-2 pb-1">
-					<FieldLegend className="text-lg font-semibold flex items-center justify-between w-full">
-						<div className="flex items-center gap-2">
-							{t("calculator.configuration_legend")}
-							{yOffset !== 0 && (
-								<span className="text-xs font-normal text-muted-foreground">
-									{t("calculator.y_offset", {
-										offset: (yOffset > 0 ? "+" : "") + yOffset,
-									})}
-								</span>
-							)}
-						</div>
-						<div className="flex items-center gap-1">
-							<TooltipProvider delayDuration={0}>
-								<Tooltip>
-									<TooltipTrigger asChild>
-										<Button
-											variant="ghost"
-											size="icon"
-											className="h-6 w-6"
-											onClick={handleExportConfig}
-										>
-											<Save className="h-4 w-4" />
-										</Button>
-									</TooltipTrigger>
-									<TooltipContent>
-										<p>{t("configuration_page.export_btn")}</p>
-									</TooltipContent>
-								</Tooltip>
-
-								<Tooltip>
-									<TooltipTrigger asChild>
-										<Button
-											variant="ghost"
-											size="icon"
-											className="h-6 w-6"
-											onClick={handleCopyCode}
-										>
-											<Share className="h-4 w-4" />
-										</Button>
-									</TooltipTrigger>
-									<TooltipContent>
-										<p>{t("calculator.copy_code_tooltip")}</p>
-									</TooltipContent>
-								</Tooltip>
-							</TooltipProvider>
-						</div>
-					</FieldLegend>
-
-					<div className="grid grid-cols-2 gap-x-2 gap-y-2">
-						<TNTBlock
-							title={t("calculator.direction_nw")}
-							data={config.north_west_tnt}
-							yOffset={yOffset}
-							onUpdate={(k, v) =>
-								onConfigChange({
-									...config,
-									north_west_tnt: { ...config.north_west_tnt, [k]: v },
-								})
-							}
-						/>
-						<TNTBlock
-							title={t("calculator.direction_ne")}
-							data={config.north_east_tnt}
-							yOffset={yOffset}
-							onUpdate={(k, v) =>
-								onConfigChange({
-									...config,
-									north_east_tnt: { ...config.north_east_tnt, [k]: v },
-								})
-							}
-						/>
-						<TNTBlock
-							title={t("calculator.direction_sw")}
-							data={config.south_west_tnt}
-							yOffset={yOffset}
-							onUpdate={(k, v) =>
-								onConfigChange({
-									...config,
-									south_west_tnt: { ...config.south_west_tnt, [k]: v },
-								})
-							}
-						/>
-						<TNTBlock
-							title={t("calculator.direction_se")}
-							data={config.south_east_tnt}
-							yOffset={yOffset}
-							onUpdate={(k, v) =>
-								onConfigChange({
-									...config,
-									south_east_tnt: { ...config.south_east_tnt, [k]: v },
-								})
-							}
-						/>
-
+			<div className="flex flex-col gap-5 pt-1 pr-3 pb-4 pl-1">
+				<Section
+					title={t("calculator.tnt_positions")}
+					aside={
+						yOffset !== 0 && (
+							<span className="text-xs text-muted-foreground tabular-nums">
+								{t("calculator.y_offset", {
+									offset: (yOffset > 0 ? "+" : "") + yOffset,
+								})}
+							</span>
+						)
+					}
+				>
+					<div className="grid grid-cols-2 gap-x-3 gap-y-3">
+						{tntRows.map(({ key, label }) => (
+							<VectorBlock
+								key={key}
+								id={key}
+								label={label}
+								value={config[key]}
+								yOffset={yOffset}
+								onChange={(value) => update({ [key]: value })}
+							/>
+						))}
 						{calculationMode === "Vector3D" && (
-							<div className="col-span-2">
-								<TNTBlock
-									title={t("calculator.direction_vertical", "Vertical TNT")}
-									data={config.vertical_tnt || { x: 0, y: 0, z: 0 }}
-									yOffset={yOffset}
-									onUpdate={(k, v) => {
-										const current = config.vertical_tnt || { x: 0, y: 0, z: 0 };
-										onConfigChange({
-											...config,
-											vertical_tnt: { ...current, [k]: v },
-										});
-									}}
-								/>
-							</div>
+							<VectorBlock
+								id="vertical_tnt"
+								label={t("calculator.vertical_short")}
+								value={config.vertical_tnt ?? { x: 0, y: 0, z: 0 }}
+								yOffset={yOffset}
+								onChange={(value) => update({ vertical_tnt: value })}
+							/>
 						)}
-
-						{calculationMode === "Vector3D" && (
-							<div className="col-span-2 space-y-1.5">
-								<div className="text-xs font-bold text-foreground/80">
-									{t("configuration_page.max_vertical_tnt_label")}
-								</div>
-								<div className="grid grid-cols-2 gap-x-2">
-									<CompactInput
-										label="MAX"
-										labelClassName={alignedLabelClass}
-										value={config.max_vertical_tnt ?? 0}
-										onChange={(v) =>
-											onConfigChange({
-												...config,
-												max_vertical_tnt: Number.isNaN(parseFloat(v))
-													? undefined
-													: parseFloat(v),
-											})
-										}
-									/>
-								</div>
-							</div>
-						)}
-
-						{calculationMode === "Standard" && (
-							<div className="col-span-2 space-y-1.5">
-								<div className="text-xs font-bold text-foreground/80">
-									{t("calculator.max_tnt")}
-								</div>
-								<div className="grid grid-cols-2 gap-x-2">
-									<CompactInput
-										label="MAX"
-										labelClassName={alignedLabelClass}
-										value={config.max_tnt}
-										onChange={(v) =>
-											onConfigChange({ ...config, max_tnt: parseFloat(v) || 0 })
-										}
-									/>
-								</div>
-							</div>
-						)}
-
-						<div className="col-span-2 space-y-1">
-							<div className="text-xs font-bold text-foreground/80">
-								{t("calculator.pearl_properties")}
-							</div>
-							<div className="grid grid-cols-2 gap-x-2 gap-y-1">
-								<CompactInput
-									label="Y"
-									labelClassName={alignedLabelClass}
-									value={config.pearl_y_position + yOffset}
-									onChange={(v) => {
-										const val = parseFloat(v) || 0;
-										const newPearlY = preciseSubtract(val, yOffset);
-										const oldBaseY = Math.floor(config.pearl_y_position);
-										const newBaseY = Math.floor(newPearlY);
-										const diff = newBaseY - oldBaseY;
-
-										if (diff !== 0) {
-											const currentCannonY =
-												parseFloat(cannonYDisplay) || oldBaseY;
-											onCannonYChange(
-												preciseAdd(currentCannonY, diff).toString(),
-											);
-										}
-
-										onConfigChange({ ...config, pearl_y_position: newPearlY });
-									}}
-								/>
-								<CompactInput
-									label="MX"
-									labelClassName={alignedLabelClass}
-									value={config.pearl_x_motion ?? 0}
-									onChange={(v) =>
-										onConfigChange({
-											...config,
-											pearl_x_motion: parseFloat(v) || 0,
-										})
-									}
-								/>
-								<CompactInput
-									label="MY"
-									labelClassName={alignedLabelClass}
-									value={config.pearl_y_motion}
-									onChange={(v) =>
-										onConfigChange({
-											...config,
-											pearl_y_motion: parseFloat(v) || 0,
-										})
-									}
-								/>
-								<CompactInput
-									label="MZ"
-									labelClassName={alignedLabelClass}
-									value={config.pearl_z_motion ?? 0}
-									onChange={(v) =>
-										onConfigChange({
-											...config,
-											pearl_z_motion: parseFloat(v) || 0,
-										})
-									}
-								/>
-							</div>
-						</div>
-
-						<div className="col-span-2 space-y-1">
-							<div className="text-xs font-bold text-foreground/80">
-								{t("calculator.default_positions")}
-							</div>
-							<div className="grid grid-cols-2 gap-x-2">
-								<DirectionSelect
-									label={t("calculator.color_blue")}
-									value={config.default_blue_tnt_position}
-									onChange={handleBlueTntPositionChange}
-									labelClassName={alignedLabelClass}
-								/>
-								<DirectionSelect
-									label={t("calculator.color_red")}
-									value={config.default_red_tnt_position}
-									onChange={handleRedTntPositionChange}
-									labelClassName={alignedLabelClass}
-								/>
-							</div>
-						</div>
 					</div>
-				</FieldSet>
+				</Section>
+
+				<Section title={t("calculator.pearl_properties")}>
+					<div className="grid grid-cols-2 gap-x-3 gap-y-1.5">
+						<AxisInput
+							compact
+							axis="Y"
+							id="pearl-y"
+							value={config.pearl_y_position + yOffset}
+							onValueChange={updatePearlY}
+						/>
+						<AxisInput
+							compact
+							axis="VX"
+							id="pearl-mx"
+							value={config.pearl_x_motion ?? 0}
+							onValueChange={(v) => update({ pearl_x_motion: toNumber(v) })}
+						/>
+						<AxisInput
+							compact
+							axis="VY"
+							id="pearl-my"
+							value={config.pearl_y_motion}
+							onValueChange={(v) => update({ pearl_y_motion: toNumber(v) })}
+						/>
+						<AxisInput
+							compact
+							axis="VZ"
+							id="pearl-mz"
+							value={config.pearl_z_motion ?? 0}
+							onValueChange={(v) => update({ pearl_z_motion: toNumber(v) })}
+						/>
+					</div>
+				</Section>
+
+				{calculationMode === "Standard" && (
+					<Section title={t("calculator.max_tnt")}>
+						<div className="grid grid-cols-2 gap-x-3">
+							<AxisInput
+								compact
+								axis="#"
+								id="max-tnt"
+								value={config.max_tnt}
+								onValueChange={(v) => update({ max_tnt: toNumber(v) })}
+							/>
+						</div>
+					</Section>
+				)}
+				{calculationMode === "Vector3D" && (
+					<Section title={t("configuration_page.max_vertical_tnt_label")}>
+						<div className="grid grid-cols-2 gap-x-3">
+							<AxisInput
+								compact
+								axis="#"
+								id="max-vertical-tnt"
+								value={config.max_vertical_tnt ?? 0}
+								onValueChange={(v) =>
+									update({
+										max_vertical_tnt: Number.isNaN(parseFloat(v))
+											? undefined
+											: parseFloat(v),
+									})
+								}
+							/>
+						</div>
+					</Section>
+				)}
+
+				<Section title={t("calculator.default_positions")}>
+					<div className="grid grid-cols-2 gap-3">
+						<DirectionSelect
+							label={t("calculator.color_blue")}
+							value={config.default_blue_tnt_position}
+							onChange={(value) =>
+								update({
+									default_blue_tnt_position: value,
+									default_red_tnt_position: getOppositeDirection(value),
+								})
+							}
+						/>
+						<DirectionSelect
+							label={t("calculator.color_red")}
+							value={config.default_red_tnt_position}
+							onChange={(value) =>
+								update({
+									default_red_tnt_position: value,
+									default_blue_tnt_position: getOppositeDirection(value),
+								})
+							}
+						/>
+					</div>
+				</Section>
 			</div>
 		</ScrollArea>
 	);

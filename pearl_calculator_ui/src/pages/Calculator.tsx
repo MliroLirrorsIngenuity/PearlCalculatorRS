@@ -1,14 +1,12 @@
-import { FileJson } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import AdvancedSettingsForm from "@/components/calculator/AdvancedSettingsForm";
 import BitCalculationPanel from "@/components/calculator/BitCalculationPanel";
 import ConfigurationDataForm from "@/components/calculator/ConfigurationDataForm";
 import PearlTracePanel from "@/components/calculator/PearlTracePanel";
 import RightPanel from "@/components/calculator/RightPanel";
 import TNTCalculationForm from "@/components/calculator/TNTCalculationForm";
-import { OnboardingPanel } from "@/components/common/OnboardingPanel";
+import { ConfigOnboarding } from "@/components/common/ConfigOnboarding";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import SpinnerCircle1 from "@/components/ui/spinner-circle";
@@ -20,238 +18,154 @@ import { useMobileView } from "@/context/MobileViewContext";
 import { useTNTCalculator } from "@/hooks/use-calculator";
 import { usePearlTrace } from "@/hooks/use-pearl-trace";
 import { useToastNotifications } from "@/hooks/use-toast-notifications";
-import { decodeConfig } from "@/lib/config-codec";
-import { loadConfiguration } from "@/lib/config-service";
-import { dispatchTauriAppStateAction } from "@/lib/tauri-app-state";
-import { isTauri } from "@/services";
+import {
+	defaultDistanceRange,
+	defaultTickRange,
+} from "@/lib/calculator-defaults";
+import {
+	type CalculatorTab,
+	setCalculatorTab,
+	useCalculatorTab,
+} from "@/lib/calculator-tab";
 import type { CalculatorInputs } from "@/types/domain";
 
-function CalculatorContent() {
-	const {
-		hasConfig,
-		setHasConfig,
-		configData,
-		setConfigData,
-		setConfigPath,
-		setBitTemplateConfig,
-		setMultiplierConfig,
-		version,
-		resetConfig,
-	} = useConfig();
+const sameRange = (a: number[], b: number[]) => a[0] === b[0] && a[1] === b[1];
 
+function InputTabs({
+	onCalculate,
+	isCalculating,
+}: {
+	onCalculate: () => void;
+	isCalculating: boolean;
+}) {
 	const { t } = useTranslation();
+	const tab = useCalculatorTab();
+	const { configData, setConfigData } = useConfig();
+	const { defaultCalculator, updateDefaultInput } = useCalculatorState();
+	const inputs = defaultCalculator.inputs;
+	const updateInput = (field: keyof CalculatorInputs, value: any) =>
+		updateDefaultInput(field, value);
 
+	return (
+		<>
+			<Tabs
+				value={tab}
+				onValueChange={(value) => setCalculatorTab(value as CalculatorTab)}
+				className="flex min-h-0 flex-1 flex-col gap-3.5"
+			>
+				<TabsList className="grid h-[34px] w-full grid-cols-2">
+					<TabsTrigger value="general" className="text-[13px]">
+						{t("calculator.tab_general")}
+					</TabsTrigger>
+					<TabsTrigger value="config" className="text-[13px]">
+						{t("calculator.tab_configuration")}
+					</TabsTrigger>
+				</TabsList>
+				<TabsContent value="general" className="min-h-0 flex-1 overflow-hidden">
+					<TNTCalculationForm inputs={inputs} onInputChange={updateInput} />
+				</TabsContent>
+				<TabsContent value="config" className="min-h-0 flex-1 overflow-hidden">
+					<ConfigurationDataForm
+						config={configData}
+						cannonYDisplay={inputs.cannonY}
+						onConfigChange={setConfigData}
+						onCannonYChange={(v) => updateInput("cannonY", v)}
+					/>
+				</TabsContent>
+			</Tabs>
+			<Button
+				className="mt-2 w-full"
+				onClick={onCalculate}
+				disabled={isCalculating}
+			>
+				{isCalculating ? <SpinnerCircle1 /> : t("calculator.calculate_btn")}
+			</Button>
+		</>
+	);
+}
+
+function CalculatorContent() {
+	const { t } = useTranslation();
+	const { hasConfig, configData, version } = useConfig();
 	const {
 		defaultCalculator,
 		updateDefaultInput,
 		updateDefaultTrace,
 		setDefaultResults,
-		resetDefaultCalculator,
 	} = useCalculatorState();
-
-	const inputs = defaultCalculator.inputs;
-	const calculationResults = defaultCalculator.results;
-	const pearlTraceData = defaultCalculator.trace.data;
-	const showPearlTrace = defaultCalculator.trace.show;
-	const traceDirection = defaultCalculator.trace.direction;
-	const traceTNT = defaultCalculator.trace.tnt;
-	const showBitCalculation = defaultCalculator.trace.bitCalculation?.show;
-
-	const updateInput = (field: keyof CalculatorInputs, value: any) => {
-		updateDefaultInput(field, value);
-	};
-
-	const isFirstRender = useRef(true);
+	const { calculationMode } = useConfigurationState();
+	const { isMobile, mobileView, showResults } = useMobileView();
 	const { calculate, isCalculating } = useTNTCalculator();
 	const { calculatePearlTrace } = usePearlTrace();
 	const { showSuccess, showError } = useToastNotifications();
-	const { calculationMode, setCalculationMode } = useConfigurationState();
-	const { isMobile, mobileView, showResults } = useMobileView();
+
+	const inputs = defaultCalculator.inputs;
+	const trace = defaultCalculator.trace;
+	const isFirstRender = useRef(true);
+	const prevMode = useRef(calculationMode);
+	const prevPlaneInterceptY = useRef(inputs.planeInterceptY);
+	const savedTickRange = useRef<[number, number] | null>(null);
+	const savedDistanceRange = useRef<[number, number] | null>(null);
 
 	useEffect(() => {
 		isFirstRender.current = false;
 	}, []);
 
-	const prevMode = useRef(calculationMode);
-	const prevPlaneInterceptY = useRef(inputs.planeInterceptY);
-	const planeInterceptPreviousTickRange = useRef<[number, number] | null>(null);
-	const planeInterceptPreviousDistanceRange = useRef<[number, number] | null>(
-		null,
-	);
-
-	const getDefaultTickRange = (mode: string) => {
-		if (mode === "Vector3D" || mode === "Accumulation") {
-			return [0, 100];
+	useEffect(() => {
+		if (prevMode.current === calculationMode) return;
+		if (sameRange(inputs.tickRange, defaultTickRange(prevMode.current))) {
+			updateDefaultInput("tickRange", defaultTickRange(calculationMode));
 		}
-		return [0, 20];
-	};
-
-	const getDefaultDistanceRange = (mode: string) => {
-		if (mode === "Vector3D" || mode === "Accumulation") {
-			return [0, 50];
+		if (
+			sameRange(inputs.distanceRange, defaultDistanceRange(prevMode.current))
+		) {
+			updateDefaultInput(
+				"distanceRange",
+				defaultDistanceRange(calculationMode),
+			);
 		}
-		return [0, 20];
-	};
+		prevMode.current = calculationMode;
+	}, [
+		calculationMode,
+		inputs.tickRange,
+		inputs.distanceRange,
+		updateDefaultInput,
+	]);
 
 	useEffect(() => {
-		if (prevMode.current !== calculationMode) {
-			const currentTickRange = inputs.tickRange;
-			const previousTickDefault = getDefaultTickRange(prevMode.current);
-
-			const isTickDefault =
-				currentTickRange[0] === previousTickDefault[0] &&
-				currentTickRange[1] === previousTickDefault[1];
-
-			if (isTickDefault) {
-				const newTickDefault = getDefaultTickRange(calculationMode);
-				updateInput("tickRange", newTickDefault);
-			}
-
-			const currentDistanceRange = inputs.distanceRange;
-			const previousDistanceDefault = getDefaultDistanceRange(prevMode.current);
-
-			const isDistanceDefault =
-				currentDistanceRange[0] === previousDistanceDefault[0] &&
-				currentDistanceRange[1] === previousDistanceDefault[1];
-
-			if (isDistanceDefault) {
-				const newDistanceDefault = getDefaultDistanceRange(calculationMode);
-				updateInput("distanceRange", newDistanceDefault);
-			}
-
-			prevMode.current = calculationMode;
-		}
-	}, [calculationMode, inputs.tickRange, inputs.distanceRange, updateInput]);
-
-	useEffect(() => {
-		if (prevPlaneInterceptY.current !== inputs.planeInterceptY) {
-			const expandedTickRange: [number, number] = [0, 10000];
-			const expandedDistanceRange: [number, number] = [0, 50];
-			const defaultTickRange = getDefaultTickRange(calculationMode) as [
-				number,
-				number,
+		if (prevPlaneInterceptY.current === inputs.planeInterceptY) return;
+		if (inputs.planeInterceptY) {
+			savedTickRange.current = [inputs.tickRange[0], inputs.tickRange[1]];
+			savedDistanceRange.current = [
+				inputs.distanceRange[0],
+				inputs.distanceRange[1],
 			];
-			const defaultDistanceRange = getDefaultDistanceRange(calculationMode) as [
-				number,
-				number,
-			];
-
-			if (inputs.planeInterceptY) {
-				planeInterceptPreviousTickRange.current = [
-					inputs.tickRange[0],
-					inputs.tickRange[1],
-				];
-				planeInterceptPreviousDistanceRange.current = [
-					inputs.distanceRange[0],
-					inputs.distanceRange[1],
-				];
-
-				if (
-					inputs.tickRange[0] !== expandedTickRange[0] ||
-					inputs.tickRange[1] !== expandedTickRange[1]
-				) {
-					updateInput("tickRange", expandedTickRange);
-				}
-
-				if (
-					inputs.distanceRange[0] !== expandedDistanceRange[0] ||
-					inputs.distanceRange[1] !== expandedDistanceRange[1]
-				) {
-					updateInput("distanceRange", expandedDistanceRange);
-				}
-			} else {
-				updateInput(
-					"tickRange",
-					planeInterceptPreviousTickRange.current ?? defaultTickRange,
-				);
-				updateInput(
-					"distanceRange",
-					planeInterceptPreviousDistanceRange.current ?? defaultDistanceRange,
-				);
-				planeInterceptPreviousTickRange.current = null;
-				planeInterceptPreviousDistanceRange.current = null;
+			if (!sameRange(inputs.tickRange, [0, 10000])) {
+				updateDefaultInput("tickRange", [0, 10000]);
 			}
-
-			prevPlaneInterceptY.current = inputs.planeInterceptY;
+			if (!sameRange(inputs.distanceRange, [0, 50])) {
+				updateDefaultInput("distanceRange", [0, 50]);
+			}
+		} else {
+			updateDefaultInput(
+				"tickRange",
+				savedTickRange.current ?? defaultTickRange(calculationMode),
+			);
+			updateDefaultInput(
+				"distanceRange",
+				savedDistanceRange.current ?? defaultDistanceRange(calculationMode),
+			);
+			savedTickRange.current = null;
+			savedDistanceRange.current = null;
 		}
+		prevPlaneInterceptY.current = inputs.planeInterceptY;
 	}, [
 		calculationMode,
 		inputs.planeInterceptY,
 		inputs.tickRange,
 		inputs.distanceRange,
-		updateInput,
+		updateDefaultInput,
 	]);
-
-	const handleImport = async () => {
-		try {
-			const result = await loadConfiguration();
-			if (result) {
-				if (isTauri) {
-					await dispatchTauriAppStateAction({
-						type: "applyConfigToCalculator",
-						config: result.config,
-						bitTemplate: result.bitTemplate,
-						multiplierTemplate: result.multiplierTemplate,
-						path: result.path,
-					});
-				} else {
-					setConfigData(result.config);
-					setConfigPath(result.path);
-					setBitTemplateConfig(result.bitTemplate);
-					setMultiplierConfig(result.multiplierTemplate);
-					setHasConfig(true);
-
-					updateDefaultInput("pearlX", "0");
-					updateDefaultInput("pearlZ", "0");
-					updateDefaultInput(
-						"cannonY",
-						Math.floor(result.config.pearl_y_position).toString(),
-					);
-					setCalculationMode(result.config.mode ?? "Standard");
-				}
-
-				showSuccess(t("calculator.toast_config_loaded"));
-			}
-		} catch (e) {
-			console.error("Import error:", e);
-			showError(t("error.calculator.load_failed"), e);
-		}
-	};
-
-	const handleImportFromClipboard = async () => {
-		try {
-			const { calculatorService } = await import("@/services");
-			const text = await calculatorService.readFromClipboard();
-			const decoded = decodeConfig(text.trim());
-			if (isTauri) {
-				await dispatchTauriAppStateAction({
-					type: "applyConfigToCalculator",
-					config: decoded.generalConfig,
-					bitTemplate: decoded.bitTemplate,
-					multiplierTemplate: null,
-					path: "",
-				});
-			} else {
-				setConfigData(decoded.generalConfig);
-				setBitTemplateConfig(decoded.bitTemplate);
-				setConfigPath("");
-				setHasConfig(true);
-
-				updateDefaultInput("pearlX", "0");
-				updateDefaultInput("pearlZ", "0");
-				updateDefaultInput(
-					"cannonY",
-					Math.floor(decoded.generalConfig.pearl_y_position).toString(),
-				);
-				setCalculationMode(decoded.generalConfig.mode ?? "Standard");
-			}
-
-			showSuccess(t("calculator.toast_code_imported"));
-		} catch (e) {
-			console.error("Import from clipboard error:", e);
-			showError(t("error.calculator.code_import_failed"), e);
-		}
-	};
 
 	const handleRunCalculation = async () => {
 		const result = await calculate(
@@ -260,18 +174,15 @@ function CalculatorContent() {
 			version,
 			calculationMode,
 		);
-
-		if (result.success) {
-			setDefaultResults(result.data);
-			showSuccess(
-				t("calculator.toast_found_configs", { count: result.data.length }),
-			);
-			if (isMobile) {
-				showResults();
-			}
-		} else {
+		if (!result.success) {
 			showError(t("error.calculator.calc_failed"), result.error);
+			return;
 		}
+		setDefaultResults(result.data);
+		showSuccess(
+			t("calculator.toast_found_configs", { count: result.data.length }),
+		);
+		if (isMobile) showResults();
 	};
 
 	const handlePearlTrace = async (
@@ -280,14 +191,12 @@ function CalculatorContent() {
 		direction: string,
 		vertical?: number,
 	) => {
-		const tntResult = {
+		const result = await calculatePearlTrace(inputs, {
 			red,
 			blue,
 			direction,
 			vertical,
-		};
-
-		const result = await calculatePearlTrace(inputs, tntResult);
+		});
 		if (result) {
 			updateDefaultTrace({
 				data: result,
@@ -298,258 +207,102 @@ function CalculatorContent() {
 		}
 	};
 
-	if (!hasConfig) {
-		return (
-			<OnboardingPanel
-				icon={<FileJson />}
-				title={t("calculator.no_configuration")}
-				description={t("calculator.import_config_desc")}
-			>
-				<Button className="w-48" onClick={handleImport}>
-					{t("calculator.import_config_btn")}
-				</Button>
-				<Button
-					className="w-48"
-					variant="outline"
-					onClick={handleImportFromClipboard}
-				>
-					{t("calculator.import_code_btn")}
-				</Button>
-				<Button
-					className="w-48"
-					variant="outline"
-					onClick={() => {
-						resetConfig();
-						resetDefaultCalculator();
-						setHasConfig(true);
-					}}
-				>
-					{t("calculator.skip_import")}
-				</Button>
-			</OnboardingPanel>
-		);
-	}
+	if (!hasConfig) return <ConfigOnboarding />;
+
+	const inputPanel = (
+		<InputTabs
+			onCalculate={handleRunCalculation}
+			isCalculating={isCalculating}
+		/>
+	);
+	const resultsPanel = (
+		<RightPanel
+			results={defaultCalculator.results}
+			inputs={inputs}
+			onTrace={handlePearlTrace}
+		/>
+	);
 
 	return (
 		<div className="h-full w-full overflow-hidden">
-			<AnimatePresence mode="wait">
-				<motion.div
-					key="calculator"
-					initial={
-						isFirstRender.current
-							? false
-							: { opacity: 0, y: 20, filter: "blur(10px)" }
-					}
-					animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-					transition={{ duration: 0.25, ease: "easeOut" }}
-					className="h-full w-full"
-				>
-					<Card className="h-full w-full relative overflow-hidden">
-						<AnimatePresence>
-							{showPearlTrace && (
-								<motion.div
-									key="pearl-trace"
-									initial={{ opacity: 0, scale: 0.98 }}
-									animate={{ opacity: 1, scale: 1 }}
-									exit={{ opacity: 0, scale: 0.98 }}
-									transition={{ duration: 0.2 }}
-									className="absolute inset-0 z-10"
-								>
-									<PearlTracePanel
-										pearlTraceData={pearlTraceData}
-										destX={inputs.destX}
-										destZ={inputs.destZ}
-										traceDirection={traceDirection}
-										traceTNT={traceTNT}
-									/>
-								</motion.div>
-							)}
-							{showPearlTrace && showBitCalculation && (
-								<motion.div
-									key="bit-calculation"
-									initial={{ opacity: 0, scale: 0.98 }}
-									animate={{ opacity: 1, scale: 1 }}
-									exit={{ opacity: 0, scale: 0.98 }}
-									transition={{ duration: 0.2 }}
-									className="absolute inset-0 z-20"
-								>
-									<BitCalculationPanel />
-								</motion.div>
-							)}
-						</AnimatePresence>
+			<motion.div
+				initial={
+					isFirstRender.current
+						? false
+						: { opacity: 0, y: 20, filter: "blur(10px)" }
+				}
+				animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+				transition={{ duration: 0.25, ease: "easeOut" }}
+				className="h-full w-full"
+			>
+				<Card className="relative h-full w-full overflow-hidden">
+					<AnimatePresence>
+						{trace.show && (
+							<motion.div
+								key="pearl-trace"
+								initial={{ opacity: 0, scale: 0.98 }}
+								animate={{ opacity: 1, scale: 1 }}
+								exit={{ opacity: 0, scale: 0.98 }}
+								transition={{ duration: 0.2 }}
+								className="absolute inset-0 z-10"
+							>
+								<PearlTracePanel />
+							</motion.div>
+						)}
+						{trace.show && trace.bitCalculation?.show && (
+							<motion.div
+								key="bit-calculation"
+								initial={{ opacity: 0, scale: 0.98 }}
+								animate={{ opacity: 1, scale: 1 }}
+								exit={{ opacity: 0, scale: 0.98 }}
+								transition={{ duration: 0.2 }}
+								className="absolute inset-0 z-20"
+							>
+								<BitCalculationPanel />
+							</motion.div>
+						)}
+					</AnimatePresence>
 
-						<CardContent className="flex h-full w-full p-0 relative">
-							{!isMobile && (
-								<>
-									<div className="h-full w-[46.7%] pt-2 px-6 pb-2 flex flex-col isolate">
-										<Tabs
-											defaultValue="general"
-											className="flex-1 flex flex-col min-h-0"
-										>
-											<TabsList className="grid w-full grid-cols-3">
-												<TabsTrigger value="general">
-													{t("calculator.tab_general")}
-												</TabsTrigger>
-												<TabsTrigger value="config">
-													{t("calculator.tab_configuration")}
-												</TabsTrigger>
-												<TabsTrigger value="advanced">
-													{t("calculator.tab_advanced")}
-												</TabsTrigger>
-											</TabsList>
-
-											<TabsContent
-												value="general"
-												className="flex-1 overflow-hidden min-h-0"
-											>
-												<TNTCalculationForm
-													inputs={inputs}
-													onInputChange={updateInput}
-												/>
-											</TabsContent>
-
-											<TabsContent
-												value="config"
-												className="flex-1 overflow-hidden min-h-0"
-											>
-												<ConfigurationDataForm
-													config={configData}
-													cannonYDisplay={inputs.cannonY}
-													onConfigChange={setConfigData}
-													onCannonYChange={(v) => updateInput("cannonY", v)}
-												/>
-											</TabsContent>
-
-											<TabsContent
-												value="advanced"
-												className="flex-1 overflow-hidden min-h-0"
-											>
-												<AdvancedSettingsForm
-													inputs={inputs}
-													onInputChange={updateInput}
-												/>
-											</TabsContent>
-										</Tabs>
-
-										<Button
-											className="w-full mt-2"
-											onClick={handleRunCalculation}
-											disabled={isCalculating}
-										>
-											{isCalculating ? (
-												<SpinnerCircle1 />
-											) : (
-												t("calculator.calculate_btn")
-											)}
-										</Button>
-									</div>
-									<div className="h-full w-[53.2%]">
-										<RightPanel
-											results={calculationResults}
-											tickRange={inputs.tickRange}
-											distanceRange={inputs.distanceRange}
-											onTrace={handlePearlTrace}
-										/>
-									</div>
-								</>
-							)}
-
-							{isMobile && (
-								<AnimatePresence mode="wait">
-									{mobileView === "input" && (
-										<motion.div
-											key="mobile-input"
-											initial={{ opacity: 0, x: -20 }}
-											animate={{ opacity: 1, x: 0 }}
-											exit={{ opacity: 0, x: -20 }}
-											transition={{ duration: 0.025, ease: "easeOut" }}
-											className="h-full w-full pt-2 px-6 pb-2 flex flex-col isolate absolute inset-0"
-										>
-											<Tabs
-												defaultValue="general"
-												className="flex-1 flex flex-col min-h-0"
-											>
-												<TabsList className="grid w-full grid-cols-3">
-													<TabsTrigger value="general">
-														{t("calculator.tab_general")}
-													</TabsTrigger>
-													<TabsTrigger value="config">
-														{t("calculator.tab_configuration")}
-													</TabsTrigger>
-													<TabsTrigger value="advanced">
-														{t("calculator.tab_advanced")}
-													</TabsTrigger>
-												</TabsList>
-
-												<TabsContent
-													value="general"
-													className="flex-1 overflow-hidden min-h-0"
-												>
-													<TNTCalculationForm
-														inputs={inputs}
-														onInputChange={updateInput}
-													/>
-												</TabsContent>
-
-												<TabsContent
-													value="config"
-													className="flex-1 overflow-hidden min-h-0"
-												>
-													<ConfigurationDataForm
-														config={configData}
-														cannonYDisplay={inputs.cannonY}
-														onConfigChange={setConfigData}
-														onCannonYChange={(v) => updateInput("cannonY", v)}
-													/>
-												</TabsContent>
-
-												<TabsContent
-													value="advanced"
-													className="flex-1 overflow-hidden min-h-0"
-												>
-													<AdvancedSettingsForm
-														inputs={inputs}
-														onInputChange={updateInput}
-													/>
-												</TabsContent>
-											</Tabs>
-
-											<Button
-												className="w-full mt-2"
-												onClick={handleRunCalculation}
-												disabled={isCalculating}
-											>
-												{isCalculating ? (
-													<SpinnerCircle1 />
-												) : (
-													t("calculator.calculate_btn")
-												)}
-											</Button>
-										</motion.div>
-									)}
-									{mobileView === "results" && (
-										<motion.div
-											key="mobile-results"
-											initial={{ opacity: 0, x: 20 }}
-											animate={{ opacity: 1, x: 0 }}
-											exit={{ opacity: 0, x: 20 }}
-											transition={{ duration: 0.2, ease: "easeOut" }}
-											className="h-full w-full absolute inset-0"
-										>
-											<RightPanel
-												results={calculationResults}
-												tickRange={inputs.tickRange}
-												distanceRange={inputs.distanceRange}
-												onTrace={handlePearlTrace}
-											/>
-										</motion.div>
-									)}
-								</AnimatePresence>
-							)}
-						</CardContent>
-					</Card>
-				</motion.div>
-			</AnimatePresence>
+					<CardContent className="relative flex h-full w-full p-0">
+						{!isMobile && (
+							<>
+								<div className="isolate flex h-full w-[min(440px,46.7%)] shrink-0 flex-col px-6 pt-2 pb-2">
+									{inputPanel}
+								</div>
+								<div className="h-full min-w-0 flex-1">{resultsPanel}</div>
+							</>
+						)}
+						{isMobile && (
+							<AnimatePresence mode="wait">
+								{mobileView === "input" && (
+									<motion.div
+										key="mobile-input"
+										initial={{ opacity: 0, x: -20 }}
+										animate={{ opacity: 1, x: 0 }}
+										exit={{ opacity: 0, x: -20 }}
+										transition={{ duration: 0.025, ease: "easeOut" }}
+										className="absolute inset-0 isolate flex h-full w-full flex-col px-6 pt-2 pb-2"
+									>
+										{inputPanel}
+									</motion.div>
+								)}
+								{mobileView === "results" && (
+									<motion.div
+										key="mobile-results"
+										initial={{ opacity: 0, x: 20 }}
+										animate={{ opacity: 1, x: 0 }}
+										exit={{ opacity: 0, x: 20 }}
+										transition={{ duration: 0.2, ease: "easeOut" }}
+										className="absolute inset-0 h-full w-full"
+									>
+										{resultsPanel}
+									</motion.div>
+								)}
+							</AnimatePresence>
+						)}
+					</CardContent>
+				</Card>
+			</motion.div>
 		</div>
 	);
 }

@@ -27,14 +27,11 @@ interface DataTableProps<TData, TValue> {
 	data: TData[];
 	defaultColumnSizing?: Record<string, number>;
 	minColumnSizes?: Record<string, number>;
-	onTrace?: (
-		red: number,
-		blue: number,
-		direction: string,
-		vertical?: number,
-	) => void;
 	columnVisibility?: VisibilityState;
 	defaultSortColumn?: string;
+	activeRowId?: string;
+	onRowHover?: (row: TData | null) => void;
+	onRowOpen?: (row: TData) => void;
 }
 
 const DEFAULT_COLUMN_SIZES: Record<string, number> = {
@@ -56,17 +53,38 @@ const MIN_COLUMN_SIZES: Record<string, number> = {
 };
 
 const DataTableRow = React.memo(
-	({ row, isHighlighted }: { row: Row<any>; isHighlighted?: boolean }) => {
+	({
+		row,
+		isHighlighted,
+		isActive,
+		onHover,
+		onOpen,
+	}: {
+		row: Row<any>;
+		isHighlighted?: boolean;
+		isActive?: boolean;
+		onHover?: (row: any) => void;
+		onOpen?: (row: any) => void;
+	}) => {
 		return (
 			<TableRow
 				data-state={row.getIsSelected() && "selected"}
-				className={`[&>td]:border-r last:border-r-0 odd:bg-muted/50 *:whitespace-nowrap h-[25px] transition-colors duration-500 ${isHighlighted ? "!bg-primary/20" : ""}`}
+				className={`group/row h-9 border-border/50 *:whitespace-nowrap transition-colors ${onOpen ? "cursor-pointer focus-visible:bg-muted focus-visible:outline-none" : ""} ${isHighlighted ? "!bg-primary/15" : ""} ${isActive ? "!bg-muted" : ""}`}
 				style={{
 					contain: "layout style paint",
 				}}
+				onMouseEnter={onHover && (() => onHover(row.original))}
+				tabIndex={onOpen ? 0 : undefined}
+				onClick={onOpen && (() => onOpen(row.original))}
+				onKeyDown={
+					onOpen &&
+					((event) => {
+						if (event.key === "Enter") onOpen(row.original);
+					})
+				}
 			>
 				{row.getVisibleCells().map((cell) => (
-					<TableCell key={cell.id} className="py-1 overflow-hidden">
+					<TableCell key={cell.id} className="overflow-hidden px-3 py-0">
 						{flexRender(cell.column.columnDef.cell, cell.getContext())}
 					</TableCell>
 				))}
@@ -88,9 +106,11 @@ export const DataTable = React.forwardRef<
 		data,
 		defaultColumnSizing = DEFAULT_COLUMN_SIZES,
 		minColumnSizes = MIN_COLUMN_SIZES,
-		onTrace,
 		columnVisibility = {},
 		defaultSortColumn,
+		activeRowId,
+		onRowHover,
+		onRowOpen,
 	},
 	ref,
 ) {
@@ -138,7 +158,7 @@ export const DataTable = React.forwardRef<
 		typeof setTimeout
 	> | null>(null);
 
-	const ROW_HEIGHT = 25;
+	const ROW_HEIGHT = 36;
 	const BUFFER_ROWS = 5;
 
 	React.useImperativeHandle(
@@ -200,9 +220,6 @@ export const DataTable = React.forwardRef<
 			columnVisibility,
 		},
 		onColumnVisibilityChange: () => {},
-		meta: {
-			onTrace,
-		},
 	});
 
 	const rows = table.getRowModel().rows;
@@ -300,7 +317,7 @@ export const DataTable = React.forwardRef<
 
 	return (
 		<ScrollArea
-			className="w-full h-full border rounded-md"
+			className="h-full w-full rounded-lg border"
 			viewportRef={viewportRef}
 			onScroll={handleScroll}
 		>
@@ -322,7 +339,7 @@ export const DataTable = React.forwardRef<
 					{table.getHeaderGroups().map((headerGroup) => (
 						<TableRow
 							key={headerGroup.id}
-							className="[&>th]:border-r last:border-r-0 *:whitespace-nowrap sticky top-0 bg-background z-10 shadow-sm after:content-[''] after:inset-x-0 after:h-px after:bg-border after:absolute after:bottom-0"
+							className="group/header sticky top-0 z-10 bg-card *:whitespace-nowrap after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-border after:content-[''] hover:bg-card"
 						>
 							{headerGroup.headers.map((header, index) => {
 								const nextHeader = headerGroup.headers[index + 1];
@@ -331,7 +348,7 @@ export const DataTable = React.forwardRef<
 								return (
 									<TableHead
 										key={header.id}
-										className="relative group/head select-none"
+										className="relative h-10 px-3 select-none"
 									>
 										{header.isPlaceholder
 											? null
@@ -356,7 +373,7 @@ export const DataTable = React.forwardRef<
 															defaultColumnSizing[header.column.id],
 													}));
 												}}
-												className="absolute top-0 right-0 h-full w-4 cursor-col-resize touch-none -mr-2 z-20 flex justify-center before:absolute before:w-px before:inset-y-0 before:bg-border before:translate-x-px hover:before:bg-foreground/60 transition-all"
+												className="absolute top-0 right-0 h-full w-4 cursor-col-resize touch-none -mr-2 z-20 flex justify-center before:absolute before:inset-y-2.5 before:w-px before:translate-x-px before:bg-transparent group-hover/header:before:bg-border hover:before:!bg-foreground/60 transition-all"
 											/>
 										)}
 									</TableHead>
@@ -365,7 +382,10 @@ export const DataTable = React.forwardRef<
 						</TableRow>
 					))}
 				</TableHeader>
-				<TableBody className="overflow-hidden">
+				<TableBody
+					className="overflow-hidden"
+					onMouseLeave={onRowHover && (() => onRowHover(null))}
+				>
 					{paddingTop > 0 && (
 						<tr>
 							<td
@@ -380,6 +400,9 @@ export const DataTable = React.forwardRef<
 								key={row.id}
 								row={row}
 								isHighlighted={highlightedRowIndex === row.index}
+								isActive={activeRowId !== undefined && row.id === activeRowId}
+								onHover={onRowHover}
+								onOpen={onRowOpen}
 							/>
 						))
 					) : (
