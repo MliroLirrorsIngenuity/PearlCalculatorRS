@@ -134,7 +134,8 @@
 			"standard_section": "Standard Bits",
 			"multiplier_label": "Multiplier",
 			"multiplier_result": "Multiplier Result",
-			"standard_result": "Standard Result"
+			"standard_result": "Standard Result",
+			"target_coordinates": "Target coordinates"
 		},
 		"simulator": {
 			"configuration_title": "Simulator Configuration",
@@ -336,6 +337,19 @@
 			},
 			"rows": "{{count}} rows",
 			"view_face": "Face"
+		},
+		"bit": {
+			"current_solution": "Current solution",
+			"flight_sub": "Flight {{ticks}} ticks · {{seconds}} s",
+			"result_title": "Bit result",
+			"result_hint": "Solid = 1",
+			"copy": "Copy bit result",
+			"copied": "Bit result copied",
+			"copy_failed": "Copy failed",
+			"template_title": "Bit template",
+			"template_summary": "{{count}} bits · {{values}} … {{last}}",
+			"template_empty": "Not filled in",
+			"template_edit": "Edit"
 		},
 		"onboarding": {
 			"title": "Load a configuration first",

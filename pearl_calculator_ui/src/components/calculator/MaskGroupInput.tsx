@@ -27,14 +27,14 @@ export function MaskGroupInput({
 }: MaskGroupInputProps) {
 	const { t } = useTranslation();
 	return (
-		<div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-2xl bg-slate-50 border border-slate-200">
+		<div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-2xl bg-muted/50 border border-border">
 			{mask.bits.map((bit, bIdx) => (
 				<Input
 					key={bIdx}
 					value={bit}
 					readOnly
 					disabled
-					className="w-7 h-7 text-center text-xs font-mono p-0 rounded-lg border-slate-300 bg-slate-100 text-muted-foreground cursor-not-allowed"
+					className="w-7 h-7 text-center text-xs font-mono p-0 rounded-lg border-border bg-muted text-muted-foreground cursor-not-allowed"
 					maxLength={1}
 				/>
 			))}

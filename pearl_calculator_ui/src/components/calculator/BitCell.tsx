@@ -15,16 +15,16 @@ export function BitCell({
 }: BitCellProps) {
 	const activeClass =
 		theme === "blue"
-			? "bg-blue-500 border-blue-600 shadow-md shadow-blue-200 text-white font-bold scale-110 z-10"
-			: "bg-red-500 border-red-600 shadow-md shadow-red-200 text-white font-bold scale-110 z-10";
+			? "bg-blue-600 border-blue-600 shadow-sm shadow-blue-600/30 text-white font-semibold scale-110 z-10 dark:bg-blue-500 dark:border-blue-500"
+			: "bg-red-600 border-red-600 shadow-sm shadow-red-600/30 text-white font-semibold scale-110 z-10 dark:bg-red-500 dark:border-red-500";
 
 	const inactiveClass =
-		"bg-slate-50 border-slate-200 border-dashed text-slate-300 opacity-50";
+		"bg-muted/40 border-border border-dashed text-muted-foreground/60";
 	const elevatedClass = elevated ? "-translate-y-0.5" : "";
 
 	return (
 		<div
-			className={`w-12 h-8 flex items-center justify-center text-xs font-mono rounded-lg border transition-all duration-300 ${
+			className={`w-12 h-8 flex items-center justify-center text-xs tabular-nums rounded-md border transition-all duration-300 ${
 				isActive ? `${activeClass} ${elevatedClass}` : inactiveClass
 			}`}
 		>

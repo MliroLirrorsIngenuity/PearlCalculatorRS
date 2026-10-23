@@ -223,13 +223,13 @@ export function MultiplierBitInputSection({
 	return (
 		<div className="space-y-4">
 			<div className="flex flex-wrap justify-between items-center gap-2">
-				<div className="flex items-center gap-2 px-3 py-1.5 rounded-2xl bg-slate-50 border border-slate-200">
+				<div className="flex items-center gap-2 px-3 py-1.5 rounded-2xl bg-muted/50 border border-border">
 					<Switch
 						checked={enabled}
 						onCheckedChange={onToggle}
 						className="scale-75 data-[state=checked]:bg-amber-500"
 					/>
-					<div className="w-[1px] h-4 bg-slate-200 mx-1" />
+					<div className="w-[1px] h-4 bg-border mx-1" />
 					<Label className="text-xs text-muted-foreground font-medium whitespace-nowrap">
 						{t("calculator.multiplier_label")}
 					</Label>
@@ -247,7 +247,7 @@ export function MultiplierBitInputSection({
 					/>
 				</div>
 
-				<div className="flex items-center gap-2 px-3 py-1.5 rounded-2xl bg-slate-50 border border-slate-200">
+				<div className="flex items-center gap-2 px-3 py-1.5 rounded-2xl bg-muted/50 border border-border">
 					<Label className="text-xs text-muted-foreground font-medium whitespace-nowrap">
 						{t("calculator.side_mode")}
 					</Label>
@@ -284,7 +284,7 @@ export function MultiplierBitInputSection({
 					<Button
 						variant="outline"
 						size="icon"
-						className="h-6 w-6 rounded-md bg-background border-slate-200 shadow-sm hover:bg-slate-100 transition-colors"
+						className="h-6 w-6 rounded-md bg-background border-border shadow-sm hover:bg-muted transition-colors"
 						onClick={handleSwap}
 					>
 						<ArrowUpDown className="w-3 h-3 text-muted-foreground" />

@@ -216,7 +216,7 @@ export function BitInputSection({
 	return (
 		<div className="space-y-4">
 			<div className="hidden min-[1176px]:flex flex-wrap justify-between items-center gap-2">
-				<div className="flex items-center gap-2 px-3 py-1.5 rounded-2xl bg-slate-50 border border-slate-200">
+				<div className="flex items-center gap-2 px-3 py-1.5 rounded-2xl bg-muted/50 border border-border">
 					<Label className="text-xs text-muted-foreground font-medium whitespace-nowrap">
 						{t("calculator.side_mode")}
 					</Label>
@@ -241,7 +241,7 @@ export function BitInputSection({
 			</div>
 
 			<div className="min-[1176px]:hidden space-y-2">
-				<div className="flex items-center gap-2 px-3 py-1.5 rounded-2xl bg-slate-50 border border-slate-200 w-fit">
+				<div className="flex items-center gap-2 px-3 py-1.5 rounded-2xl bg-muted/50 border border-border w-fit">
 					<Label className="text-xs text-muted-foreground font-medium whitespace-nowrap">
 						{t("calculator.side_mode")}
 					</Label>
@@ -284,7 +284,7 @@ export function BitInputSection({
 					<Button
 						variant="outline"
 						size="icon"
-						className="h-6 w-6 rounded-md bg-background border-slate-200 shadow-sm hover:bg-slate-100 transition-colors"
+						className="h-6 w-6 rounded-md bg-background border-border shadow-sm hover:bg-muted transition-colors"
 						onClick={handleSwap}
 					>
 						<ArrowUpDown className="w-3 h-3 text-muted-foreground" />
@@ -306,10 +306,7 @@ export function BitInputSection({
 
 			{showCalculateButton && (
 				<div className="flex justify-center pt-2 pb-4">
-					<Button
-						className="w-40 bg-slate-900 hover:bg-slate-800 text-white shadow-md transition-all active:scale-95"
-						onClick={onCalculate}
-					>
+					<Button className="w-40" onClick={onCalculate}>
 						{calculateButtonLabel}
 					</Button>
 				</div>

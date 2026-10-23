@@ -6,9 +6,9 @@ interface DirectionDisplayProps {
 export function DirectionDisplay({ direction, label }: DirectionDisplayProps) {
 	return (
 		<div className="flex justify-center">
-			<div className="inline-flex items-center gap-3 px-2 py-2 rounded-2xl border border-slate-200 border-dashed bg-slate-50/50">
+			<div className="inline-flex items-center gap-3 px-2 py-2 rounded-xl border border-border border-dashed bg-muted/30">
 				{label && (
-					<span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest ml-2 mr-1">
+					<span className="text-xs font-medium text-muted-foreground ml-2 mr-1">
 						{label}
 					</span>
 				)}
@@ -16,10 +16,10 @@ export function DirectionDisplay({ direction, label }: DirectionDisplayProps) {
 					{direction.map((isActive, idx) => (
 						<div
 							key={idx}
-							className={`w-8 h-8 flex items-center justify-center text-xs font-mono rounded-lg border transition-all duration-300 ${
+							className={`w-8 h-8 flex items-center justify-center text-xs tabular-nums rounded-md border transition-all duration-300 ${
 								isActive
-									? "bg-slate-900 border-slate-900 shadow-md text-white font-bold scale-110 z-10"
-									: "bg-white border-slate-200 text-slate-300"
+									? "bg-foreground border-foreground shadow-sm text-background font-semibold scale-110 z-10"
+									: "bg-background border-border text-muted-foreground/60"
 							}`}
 						>
 							{isActive ? "1" : "0"}

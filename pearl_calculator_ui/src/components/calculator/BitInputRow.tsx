@@ -113,7 +113,7 @@ export function BitInputRow({
 												}
 												onKeyDown={(e) => onKeyDown(originalIndex, e)}
 												onPaste={(e) => onPaste?.(originalIndex, e)}
-												className={`w-12 h-8 text-center text-xs p-0 font-mono rounded-lg bg-white shadow-sm transition-all duration-200 ${style.input}`}
+												className={`w-12 h-8 text-center text-xs p-0 font-mono rounded-lg bg-background shadow-sm transition-all duration-200 ${style.input}`}
 												placeholder={placeholders[originalIndex] || "0"}
 											/>
 										);

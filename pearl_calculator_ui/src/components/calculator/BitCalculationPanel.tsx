@@ -1,8 +1,19 @@
-import { ChevronDown, Settings2 } from "lucide-react";
+import { ChevronDown, Copy } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import {
+	hitBlock,
+	incomingDirection,
+	landingIndex,
+	landingPoint,
+} from "@/components/charts/trajectory";
+import {
+	Metric,
+	sectionLabelClass,
+	TntCounts,
+	Unit,
+} from "@/components/common/Metric";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import {
 	Collapsible,
 	CollapsibleContent,
@@ -12,6 +23,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useCalculatorState } from "@/context/CalculatorStateContext";
 import { useConfig } from "@/context/ConfigContext";
 import { useConfigurationState } from "@/context/ConfigurationStateContext";
+import { useMobileView } from "@/context/MobileViewContext";
+import { useDirectionLabel } from "@/hooks/use-direction-label";
 import { useElementSize } from "@/hooks/use-element-size";
 import { useToastNotifications } from "@/hooks/use-toast-notifications";
 import { calculateBits, decodeWithMultiplier } from "@/lib/bit-decoder";
@@ -21,6 +34,7 @@ import {
 	inputStateToConfig,
 	inputStateToMultiplierConfig,
 } from "@/lib/bit-template-utils";
+import { calculatorService } from "@/services";
 import type { BitCalculationResult, BitInputState } from "@/types/domain";
 import { BitInputSection } from "./BitInputSection";
 import { BitResultSection } from "./BitResultSection";
@@ -51,23 +65,25 @@ function BitSectionCollapsible({
 }: BitSectionCollapsibleProps) {
 	const triggerClass =
 		variant === "amber"
-			? "bg-amber-50 hover:bg-amber-100/80 border-amber-200"
-			: "bg-violet-50 hover:bg-violet-100/80 border-violet-200";
+			? "bg-amber-50 hover:bg-amber-100/80 border-amber-200 dark:bg-amber-400/10 dark:hover:bg-amber-400/15 dark:border-amber-400/30"
+			: "bg-violet-50 hover:bg-violet-100/80 border-violet-200 dark:bg-violet-400/10 dark:hover:bg-violet-400/15 dark:border-violet-400/30";
 
-	const textClass = variant === "amber" ? "text-amber-600" : "text-violet-500";
+	const textClass =
+		variant === "amber"
+			? "text-amber-600 dark:text-amber-400"
+			: "text-violet-600 dark:text-violet-400";
 
-	const iconClass = variant === "amber" ? "text-amber-500" : "text-violet-400";
+	const iconClass =
+		variant === "amber"
+			? "text-amber-500 dark:text-amber-400"
+			: "text-violet-400";
 
 	return (
 		<Collapsible open={open} onOpenChange={onOpenChange} className="space-y-2">
 			<CollapsibleTrigger
 				className={`group flex w-full items-center justify-center gap-2 py-1.5 px-3 rounded-lg border transition-colors ${triggerClass}`}
 			>
-				<span
-					className={`text-[11px] font-bold uppercase tracking-widest ${textClass}`}
-				>
-					{label}
-				</span>
+				<span className={`text-xs font-medium ${textClass}`}>{label}</span>
 				<ChevronDown
 					className={`h-3.5 w-3.5 transition-transform duration-200 group-data-[state=open]:rotate-180 ${iconClass}`}
 				/>
@@ -86,8 +102,10 @@ export default function BitCalculationPanel() {
 		setMultiplierConfig,
 	} = useConfig();
 	const { defaultCalculator } = useCalculatorState();
+	const { isMobile } = useMobileView();
+	const { getCardinalLabel } = useDirectionLabel();
 	const { calculationMode } = useConfigurationState();
-	const { showError } = useToastNotifications();
+	const { showError, showSuccess } = useToastNotifications();
 
 	const hasMultiplierSupport =
 		calculationMode === "Accumulation" || calculationMode === "Vector3D";
@@ -287,113 +305,225 @@ export default function BitCalculationPanel() {
 		}
 	}, [inputState, traceTNT, runCalculation]);
 
+	const trace = defaultCalculator.trace.data;
+	const deviation = trace?.closest_approach?.distance ?? trace?.distance;
+	const flightTicks = trace ? landingIndex(trace) : 0;
+	const landingBlock = trace
+		? hitBlock(landingPoint(trace), incomingDirection(trace)).block
+		: null;
+	const { destX, destZ } = defaultCalculator.inputs;
+	const templateValues = (inputState?.sideValues ?? []).filter(
+		(v) => v && v.trim() !== "",
+	);
+
+	const copyBitResult = async () => {
+		const bits = (count: number, active: number[], reversed: boolean) => {
+			const on = new Set(active);
+			return Array.from({ length: count }, (_, i) =>
+				on.has(reversed ? count - 1 - i : i) ? "1" : "0",
+			).join("");
+		};
+		const rows = (
+			count: number,
+			result: { blue: number[]; red: number[] },
+			swapped: boolean,
+			prefix = "",
+		) => {
+			const top = swapped ? "red" : "blue";
+			const bottom = swapped ? "blue" : "red";
+			return [
+				`${prefix}${t(`calculator.color_${top}`)}: ${bits(count, result[top], false)}`,
+				`${prefix}${t(`calculator.color_${bottom}`)}: ${bits(count, result[bottom], true)}`,
+			];
+		};
+		const lines = [
+			...rows(
+				inputState?.sideCount ?? 13,
+				calculationResult,
+				inputState?.isSwapped ?? false,
+			),
+			`${t("calculator.direction_label")}: ${calculationResult.direction.map(Number).join("")}`,
+		];
+		if (hasMultiplierSupport && isMultiplierEnabled) {
+			lines.push(
+				...rows(
+					multiplierState.sideCount,
+					multiplierResult,
+					multiplierState.isSwapped,
+					`${t("calculator.multiplier_section")} `,
+				),
+			);
+		}
+		try {
+			await calculatorService.copyToClipboard(lines.join("\n"));
+			showSuccess(t("bit.copied"));
+		} catch (error) {
+			showError(t("bit.copy_failed"), error);
+		}
+	};
+
 	return (
-		<div className="flex h-full w-full flex-col bg-background">
-			<Card className="h-full w-full shadow-sm">
-				<CardContent className="flex-1 min-h-0 p-0 overflow-hidden">
-					<ScrollArea className="h-full" viewportRef={scrollViewportRef}>
-						<div
-							className="flex flex-col px-5 pb-5"
-							style={{
-								minHeight: viewportHeight > 0 ? viewportHeight : "100%",
-							}}
+		<div className="flex h-full w-full bg-card">
+			{!isMobile && (
+				<aside className="flex w-[248px] shrink-0 flex-col gap-5 border-r border-border/60 p-5">
+					<span className={sectionLabelClass}>{t("bit.current_solution")}</span>
+					<Metric
+						label="TNT"
+						sub={t("trace.tnt_sub", {
+							total: traceTNT?.total ?? 0,
+							direction: getCardinalLabel(traceDirection),
+						})}
+					>
+						<TntCounts
+							blue={traceTNT?.blue}
+							red={traceTNT?.red}
+							vertical={
+								calculationMode === "Vector3D" ? traceTNT?.vertical : undefined
+							}
+						/>
+					</Metric>
+					<Metric
+						label={t("calculator.target_coordinates")}
+						sub={
+							landingBlock &&
+							t("trace.hit_block", {
+								x: landingBlock.X,
+								y: landingBlock.Y,
+								z: landingBlock.Z,
+							})
+						}
+					>
+						<Unit>X</Unit>
+						{destX || "0"}
+						<Unit>Z</Unit>
+						{destZ || "0"}
+					</Metric>
+					{deviation !== undefined && (
+						<Metric
+							label={t("trace.deviation")}
+							sub={t("bit.flight_sub", {
+								ticks: flightTicks,
+								seconds: (flightTicks / 20).toFixed(2),
+							})}
 						>
-							<Collapsible
-								open={isConfigOpen}
-								onOpenChange={setIsConfigOpen}
-								className="space-y-2 shrink-0 relative z-10"
-							>
-								<CollapsibleTrigger className="group flex w-full items-center justify-between py-2 hover:bg-slate-50 rounded-lg transition-colors px-1">
-									<h3 className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
-										<Settings2 className="h-4 w-4" />
-										{t("breadcrumb.bit_calculation")}
-									</h3>
-									<ChevronDown className="h-4 w-4 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180" />
-								</CollapsibleTrigger>
+							{deviation.toFixed(4)}
+							<Unit>{t("trace.blocks_unit")}</Unit>
+						</Metric>
+					)}
+				</aside>
+			)}
 
-								<CollapsibleContent>
-									<div className="pt-2 space-y-4">
-										{hasMultiplierSupport && (
-											<>
-												<BitSectionCollapsible
-													label={t("calculator.multiplier_section")}
-													variant="amber"
-													open={isMultiplierOpen}
-													onOpenChange={setIsMultiplierOpen}
-												>
-													<MultiplierBitInputSection
-														value={multiplierState}
-														onChange={handleMultiplierChange}
-														enabled={isMultiplierEnabled}
-														onToggle={setIsMultiplierEnabled}
-													/>
-												</BitSectionCollapsible>
+			<div className="flex min-w-0 flex-1 flex-col px-7 pt-5 pb-4">
+				<div className="flex items-center gap-3">
+					<span className={sectionLabelClass}>{t("bit.result_title")}</span>
+					<span className="text-xs text-muted-foreground/70">
+						{t("bit.result_hint")}
+					</span>
+					<div className="flex-1" />
+					<Button variant="outline" size="sm" onClick={copyBitResult}>
+						<Copy />
+						{t("bit.copy")}
+					</Button>
+				</div>
 
-												<BitSectionCollapsible
-													label={t("calculator.standard_section")}
-													variant="violet"
-													open={isStandardOpen}
-													onOpenChange={setIsStandardOpen}
-												>
-													<BitInputSection
-														value={inputState}
-														onChange={handleInputChange}
-													/>
-												</BitSectionCollapsible>
-											</>
-										)}
+				<ScrollArea className="min-h-0 flex-1" viewportRef={scrollViewportRef}>
+					<div
+						className="flex flex-col justify-center gap-2 py-4"
+						style={{ minHeight: viewportHeight > 0 ? viewportHeight : "100%" }}
+					>
+						{hasMultiplierSupport && (
+							<BitResultSection
+								sideCount={multiplierState.sideCount}
+								sideValues={multiplierState.sideValues}
+								activeIndices={multiplierResult}
+								isSwapped={multiplierState.isSwapped}
+								label={t("calculator.multiplier_result")}
+								variant="multiplier"
+								disabled={!isMultiplierEnabled}
+							/>
+						)}
+						<BitResultSection
+							sideCount={inputState?.sideCount ?? 13}
+							sideValues={inputState?.sideValues ?? []}
+							activeIndices={calculationResult}
+							direction={calculationResult.direction}
+							isSwapped={inputState?.isSwapped ?? false}
+							label={
+								hasMultiplierSupport
+									? t("calculator.standard_result")
+									: undefined
+							}
+						/>
+					</div>
+				</ScrollArea>
 
-										{!hasMultiplierSupport && (
-											<BitInputSection
-												value={inputState}
-												onChange={handleInputChange}
-											/>
-										)}
-
-										<div className="flex justify-center pt-2 pb-4">
-											<Button
-												className="w-40 bg-slate-900 hover:bg-slate-800 text-white shadow-md transition-all active:scale-95"
-												onClick={runCalculation}
-											>
-												{t("calculator.bit_calculate_btn")}
-											</Button>
-										</div>
-									</div>
-								</CollapsibleContent>
-							</Collapsible>
-
-							<div
-								className={`flex-1 flex flex-col justify-center ${hasMultiplierSupport && !isConfigOpen ? "-mt-8" : ""}`}
-							>
-								{hasMultiplierSupport && (
-									<BitResultSection
-										sideCount={multiplierState.sideCount}
-										sideValues={multiplierState.sideValues}
-										activeIndices={multiplierResult}
-										isSwapped={multiplierState.isSwapped}
-										label={t("calculator.multiplier_result")}
-										variant="multiplier"
-										disabled={!isMultiplierEnabled}
-									/>
-								)}
-
-								<BitResultSection
-									sideCount={inputState?.sideCount ?? 13}
-									sideValues={inputState?.sideValues ?? []}
-									activeIndices={calculationResult}
-									direction={calculationResult.direction}
-									isSwapped={inputState?.isSwapped ?? false}
-									label={
-										hasMultiplierSupport
-											? t("calculator.standard_result")
-											: undefined
-									}
+				<Collapsible
+					open={isConfigOpen}
+					onOpenChange={setIsConfigOpen}
+					className="shrink-0 border-t border-border/60 pt-3"
+				>
+					<CollapsibleTrigger className="group flex w-full items-center gap-3 text-left">
+						<span className={sectionLabelClass}>{t("bit.template_title")}</span>
+						<span className="truncate text-[13px] tabular-nums">
+							{templateValues.length > 0
+								? t("bit.template_summary", {
+										count: templateValues.length,
+										values: templateValues.slice(0, 3).join(", "),
+										last: templateValues[templateValues.length - 1],
+									})
+								: t("bit.template_empty")}
+						</span>
+						<div className="flex-1" />
+						<span className="flex items-center gap-1 text-[13px] text-muted-foreground">
+							{t("bit.template_edit")}
+							<ChevronDown className="size-3.5 transition-transform group-data-[state=open]:rotate-180" />
+						</span>
+					</CollapsibleTrigger>
+					<CollapsibleContent>
+						<div className="max-h-[45vh] space-y-4 overflow-auto pt-3">
+							{hasMultiplierSupport && (
+								<>
+									<BitSectionCollapsible
+										label={t("calculator.multiplier_section")}
+										variant="amber"
+										open={isMultiplierOpen}
+										onOpenChange={setIsMultiplierOpen}
+									>
+										<MultiplierBitInputSection
+											value={multiplierState}
+											onChange={handleMultiplierChange}
+											enabled={isMultiplierEnabled}
+											onToggle={setIsMultiplierEnabled}
+										/>
+									</BitSectionCollapsible>
+									<BitSectionCollapsible
+										label={t("calculator.standard_section")}
+										variant="violet"
+										open={isStandardOpen}
+										onOpenChange={setIsStandardOpen}
+									>
+										<BitInputSection
+											value={inputState}
+											onChange={handleInputChange}
+										/>
+									</BitSectionCollapsible>
+								</>
+							)}
+							{!hasMultiplierSupport && (
+								<BitInputSection
+									value={inputState}
+									onChange={handleInputChange}
 								/>
+							)}
+							<div className="flex justify-center pb-2">
+								<Button className="w-40" onClick={runCalculation}>
+									{t("calculator.bit_calculate_btn")}
+								</Button>
 							</div>
 						</div>
-					</ScrollArea>
-				</CardContent>
-			</Card>
+					</CollapsibleContent>
+				</Collapsible>
+			</div>
 		</div>
 	);
 }

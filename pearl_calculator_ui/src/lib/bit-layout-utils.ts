@@ -9,18 +9,20 @@ export interface ThemeClasses {
 
 export const THEME_CLASSES: Record<ThemeColor, ThemeClasses> = {
 	blue: {
-		text: "text-blue-600",
-		arrow: "text-blue-400",
-		container: "bg-blue-50/50 border-blue-100",
+		text: "text-blue-600 dark:text-blue-400",
+		arrow: "text-blue-400 dark:text-blue-500",
+		container:
+			"bg-blue-50/50 border-blue-100 dark:bg-blue-400/5 dark:border-blue-400/20",
 		input:
-			"border-blue-200 hover:border-blue-300 focus-visible:border-blue-400 focus-visible:ring-2 focus-visible:ring-blue-500/20 placeholder:text-blue-200/50 text-blue-700 font-bold",
+			"border-blue-200 hover:border-blue-300 focus-visible:border-blue-400 focus-visible:ring-2 focus-visible:ring-blue-500/20 placeholder:text-blue-200/50 text-blue-700 font-bold dark:border-blue-400/30 dark:text-blue-300 dark:placeholder:text-blue-300/30",
 	},
 	red: {
-		text: "text-red-600",
-		arrow: "text-red-400",
-		container: "bg-red-50/50 border-red-100",
+		text: "text-red-600 dark:text-red-400",
+		arrow: "text-red-400 dark:text-red-500",
+		container:
+			"bg-red-50/50 border-red-100 dark:bg-red-400/5 dark:border-red-400/20",
 		input:
-			"border-red-200 hover:border-red-300 focus-visible:border-red-400 focus-visible:ring-2 focus-visible:ring-red-500/20 placeholder:text-red-200/50 text-red-700 font-bold",
+			"border-red-200 hover:border-red-300 focus-visible:border-red-400 focus-visible:ring-2 focus-visible:ring-red-500/20 placeholder:text-red-200/50 text-red-700 font-bold dark:border-red-400/30 dark:text-red-300 dark:placeholder:text-red-300/30",
 	},
 };
 

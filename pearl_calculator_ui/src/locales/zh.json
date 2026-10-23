@@ -134,7 +134,8 @@
 			"standard_section": "标准位",
 			"multiplier_label": "倍率",
 			"multiplier_result": "倍率位结果",
-			"standard_result": "标准位结果"
+			"standard_result": "标准位结果",
+			"target_coordinates": "目标坐标"
 		},
 		"simulator": {
 			"configuration_title": "模拟器配置",
@@ -336,6 +337,19 @@
 			},
 			"rows": "{{count}} 行",
 			"view_face": "命中面"
+		},
+		"bit": {
+			"current_solution": "当前方案",
+			"flight_sub": "飞行 {{ticks}} tick · {{seconds}} 秒",
+			"result_title": "Bit 结果",
+			"result_hint": "实心 = 1",
+			"copy": "复制 Bit 结果",
+			"copied": "已复制 Bit 结果",
+			"copy_failed": "复制失败",
+			"template_title": "Bit 模板",
+			"template_summary": "{{count}} 位 · {{values}} … {{last}}",
+			"template_empty": "尚未填写",
+			"template_edit": "编辑"
 		},
 		"onboarding": {
 			"title": "先载入一份配置",

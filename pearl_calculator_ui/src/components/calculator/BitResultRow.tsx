@@ -18,11 +18,11 @@ export function BitResultRow({
 
 	const getActiveClass = (isActive: boolean) => {
 		if (!isActive) {
-			return "bg-slate-50 border-slate-200 border-dashed text-slate-300 opacity-50";
+			return "bg-muted/40 border-border border-dashed text-muted-foreground/60";
 		}
 		return theme === "blue"
-			? "bg-blue-500 border-blue-600 shadow-md shadow-blue-200 text-white font-bold scale-110 -translate-y-0.5 z-10"
-			: "bg-red-500 border-red-600 shadow-md shadow-red-200 text-white font-bold scale-110 -translate-y-0.5 z-10";
+			? "bg-blue-600 border-blue-600 shadow-sm shadow-blue-600/30 text-white font-semibold dark:bg-blue-500 scale-110 -translate-y-0.5 z-10"
+			: "bg-red-600 border-red-600 shadow-sm shadow-red-600/30 text-white font-semibold dark:bg-red-500 scale-110 -translate-y-0.5 z-10";
 	};
 
 	return (

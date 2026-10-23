@@ -77,11 +77,11 @@ export function BitResultSection({
 
 	const isMultiplier = variant === "multiplier";
 	const labelDividerClass = isMultiplier
-		? "h-px flex-1 bg-amber-200"
-		: "h-px flex-1 bg-violet-200";
+		? "h-px flex-1 bg-amber-300/60 dark:bg-amber-400/30"
+		: "h-px flex-1 bg-violet-300/60 dark:bg-violet-400/30";
 	const labelTextClass = isMultiplier
-		? "text-xs font-bold text-amber-600 uppercase tracking-widest"
-		: "text-xs font-bold text-violet-500 uppercase tracking-widest";
+		? "text-xs font-medium text-amber-600 dark:text-amber-400"
+		: "text-xs font-medium text-violet-600 dark:text-violet-400";
 
 	return (
 		<div ref={containerRef} className="w-full">
