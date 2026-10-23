@@ -215,29 +215,16 @@ jobs:
           git diff --staged --quiet || git commit -m "chore: Bump version to $VERSION"
           git push origin HEAD:main
 
-      # ===== Android-specific init (before icon restore) =====
+      # ===== Android-specific init (before icon generation) =====
       - name: Initialize Android Project
         if: matrix.target == 'android'
         working-directory: pearl_calculator_ui
         run: pnpm tauri android init
 
-      - name: Restore Icon
+      - name: Generate Android Icons
+        if: matrix.target == 'android'
         working-directory: pearl_calculator_ui
-        shell: bash
-        env:
-          ICON_URL: ${{ secrets.ICON_URL }}
-        run: |
-          if [ -n "$ICON_URL" ]; then
-            curl -L "$ICON_URL" -o temp-icon.png --create-dirs --fail
-            if [ -s temp-icon.png ]; then
-              echo "✅ Icon downloaded. Generating platform specific icons..."
-              pnpm tauri icon temp-icon.png
-            else
-              echo "⚠️ Icon download failed or file is empty. Skipping icon restoration."
-            fi
-          else
-            echo "⚠️ ICON_URL secret not set. Skipping icon restoration."
-          fi
+        run: pnpm tauri icon public/icon.png
 
       # ===== Android-specific build =====
 
