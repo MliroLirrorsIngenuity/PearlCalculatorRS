@@ -19,3 +19,17 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+---
+
+LOGO AND ICON ARTWORK
+
+The MIT License above covers every file in this repository except the
+PearlCalculatorRS logo and icon artwork, which is not part of the "Software"
+it licenses:
+
+  - every file in the pearl_calculator_ui/src-tauri/icons directory
+  - pearl_calculator_ui/public/icon.png
+
+This artwork is All Rights Reserved. It may not be used, modified or
+redistributed without explicit written permission from the copyright holder.

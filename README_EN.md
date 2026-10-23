@@ -63,7 +63,7 @@ Before asking a question, please ensure:
 
 ## License
 
-This project is licensed under the [MIT License](LICENSE).
+Except for the icon artwork listed below, this project is licensed under the [MIT License](LICENSE).
 
 ### License Notes
 
@@ -72,6 +72,11 @@ The MIT License is a permissive license, but please note the following when usin
 1. **Retain Copyright Notice**: You must include the original author's copyright notice and permission notice (content in the `LICENSE` file) in any copies or substantial portions of the software.
 2. **Disclaimer**: The software is provided "as is", without warranty of any kind, express or implied.
 3. **Commercial Use**: You are free to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software.
+4. **Icon Resource Ownership (Important)**:
+
+   * The PearlCalculatorRS logo and icon artwork (every file in the `pearl_calculator_ui/src-tauri/icons` directory and `pearl_calculator_ui/public/icon.png`) **is not distributed under the MIT License**.
+
+   * **The aforementioned icon resources are "All Rights Reserved"**. Unauthorized use, modification, or redistribution of these assets in other projects is strictly prohibited.
 
 **In short, you can freely use and modify the code, but you must keep the original author's attribution.**
 
