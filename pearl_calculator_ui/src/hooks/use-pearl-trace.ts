@@ -6,7 +6,13 @@ import { useConfigurationState } from "@/context/ConfigurationStateContext";
 import { useToastNotifications } from "@/hooks/use-toast-notifications";
 import { toBackendMode } from "@/lib/config-utils";
 import { calculatorService } from "@/services";
-import type { PearlTraceResult } from "@/types/domain";
+import type { PearlTraceInput } from "@/services/interface";
+import type {
+	CannonMode,
+	GeneralConfig,
+	PearlTraceResult,
+	PearlVersion,
+} from "@/types/domain";
 
 export interface PearlTraceInputs {
 	pearlX: string;
@@ -18,6 +24,59 @@ export interface PearlTraceInputs {
 	planeInterceptY?: boolean;
 }
 
+export interface TraceTntSelection {
+	red: number;
+	blue: number;
+	vertical?: number;
+	direction: string;
+	tick?: number;
+}
+
+function parseOr(value: string, fallback: number) {
+	if (!value) return fallback;
+	const parsed = z.coerce.number().safeParse(value);
+	return parsed.success ? parsed.data : fallback;
+}
+
+export function buildPearlTraceInput(
+	inputs: PearlTraceInputs,
+	tnt: TraceTntSelection,
+	config: GeneralConfig,
+	version: PearlVersion,
+	mode: CannonMode,
+): PearlTraceInput {
+	const isVector = mode === "Vector3D";
+	return {
+		pearlX: parseOr(inputs.pearlX, config.pearl_x_position),
+		pearlY: config.pearl_y_position,
+		pearlZ: parseOr(inputs.pearlZ, config.pearl_z_position),
+		pearlMotionX: config.pearl_x_motion,
+		pearlMotionY: config.pearl_y_motion,
+		pearlMotionZ: config.pearl_z_motion,
+		cannonY: parseOr(inputs.cannonY, Math.floor(config.pearl_y_position)),
+		mode: toBackendMode(mode),
+		northWestTnt: config.north_west_tnt,
+		northEastTnt: config.north_east_tnt,
+		southWestTnt: config.south_west_tnt,
+		southEastTnt: config.south_east_tnt,
+		verticalTntAmount: isVector ? tnt.vertical : undefined,
+		verticalTnt:
+			isVector && config.vertical_tnt ? config.vertical_tnt : undefined,
+		defaultRedDirection: config.default_red_tnt_position,
+		defaultBlueDirection: config.default_blue_tnt_position,
+		destinationX: parseFloat(inputs.destX) || 0,
+		destinationY:
+			inputs.planeInterceptY && inputs.destY
+				? parseFloat(inputs.destY) || 0
+				: undefined,
+		destinationZ: parseFloat(inputs.destZ) || 0,
+		redTnt: tnt.red,
+		blueTnt: tnt.blue,
+		direction: tnt.direction,
+		version,
+	};
+}
+
 export function usePearlTrace() {
 	const { t } = useTranslation();
 	const { showError } = useToastNotifications();
@@ -27,65 +86,19 @@ export function usePearlTrace() {
 
 	const calculatePearlTrace = async (
 		inputs: PearlTraceInputs,
-		tntResult: {
-			red: number;
-			blue: number;
-			vertical?: number;
-			direction: string;
-		},
+		tntResult: TraceTntSelection,
 	): Promise<PearlTraceResult | null> => {
-		const parseOrConfig = (val: string, defaultVal: number) => {
-			if (!val) return defaultVal;
-			const res = z.coerce.number().safeParse(val);
-			return res.success ? res.data : defaultVal;
-		};
 		setLoading(true);
 		try {
-			const traceInput = {
-				pearlX: parseOrConfig(inputs.pearlX, configData.pearl_x_position),
-				pearlY: configData.pearl_y_position,
-				pearlZ: parseOrConfig(inputs.pearlZ, configData.pearl_z_position),
-				pearlMotionX: configData.pearl_x_motion,
-				pearlMotionY: configData.pearl_y_motion,
-				pearlMotionZ: configData.pearl_z_motion,
-				cannonY: parseOrConfig(
-					inputs.cannonY,
-					Math.floor(configData.pearl_y_position),
+			return await calculatorService.calculatePearlTrace(
+				buildPearlTraceInput(
+					inputs,
+					tntResult,
+					configData,
+					version,
+					calculationMode,
 				),
-
-				mode: toBackendMode(calculationMode),
-
-				northWestTnt: configData.north_west_tnt,
-				northEastTnt: configData.north_east_tnt,
-				southWestTnt: configData.south_west_tnt,
-				southEastTnt: configData.south_east_tnt,
-
-				verticalTntAmount:
-					calculationMode === "Vector3D" ? tntResult.vertical : undefined,
-				verticalTnt:
-					calculationMode === "Vector3D" && configData.vertical_tnt
-						? configData.vertical_tnt
-						: undefined,
-
-				defaultRedDirection: configData.default_red_tnt_position,
-				defaultBlueDirection: configData.default_blue_tnt_position,
-				destinationX: parseFloat(inputs.destX) || 0,
-				destinationY:
-					inputs.planeInterceptY && inputs.destY
-						? parseFloat(inputs.destY) || 0
-						: undefined,
-				destinationZ: parseFloat(inputs.destZ) || 0,
-				redTnt: tntResult.red,
-				blueTnt: tntResult.blue,
-				direction: tntResult.direction,
-				version: version,
-			};
-
-			console.log("Sending trace input:", traceInput);
-
-			const traceResult =
-				await calculatorService.calculatePearlTrace(traceInput);
-			return traceResult;
+			);
 		} catch (error) {
 			console.error("Pearl trace calculation failed:", error);
 			showError(t("error.calculator.pearl_trace"), error);

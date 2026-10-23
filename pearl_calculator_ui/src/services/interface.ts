@@ -56,6 +56,7 @@ export interface PearlTraceInput {
 	version: string;
 	verticalTnt?: Space3DInput;
 	mode?: string;
+	maxTicks?: number;
 }
 
 export interface TntGroupInput {

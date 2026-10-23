@@ -1,109 +1,144 @@
-import { forwardRef, useMemo } from "react";
+import {
+	forwardRef,
+	useImperativeHandle,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
 import { useTranslation } from "react-i18next";
-import {
-	DataTable,
-	type DataTableRef,
-} from "@/components/calculator/results/data-table";
-import {
-	type PearlMomentumPoint,
-	pearlMomentumColumns,
-} from "@/components/calculator/results/pearl-momentum-columns";
-import {
-	type PearlTracePoint,
-	pearlTraceColumns,
-} from "@/components/calculator/results/pearl-trace-columns";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { landingIndex } from "@/components/charts/trajectory";
+import { Segmented } from "@/components/common/Metric";
+import { useElementSize } from "@/hooks/use-element-size";
+import { cn } from "@/lib/utils";
 import type { PearlTraceResult } from "@/types/domain";
+
+export interface TraceDataPanelRef {
+	scrollToRow: (rowIndex: number) => void;
+}
 
 interface TraceDataPanelProps {
 	data: PearlTraceResult | null;
 }
 
-const TraceDataPanel = forwardRef<DataTableRef, TraceDataPanelProps>(
+type View = "trajectory" | "momentum";
+
+const ROW_HEIGHT = 29;
+const OVERSCAN = 8;
+const gridClass =
+	"grid grid-cols-[40px_repeat(3,minmax(0,1fr))] gap-x-2 px-3.5 [&>span]:truncate";
+
+const TraceDataPanel = forwardRef<TraceDataPanelRef, TraceDataPanelProps>(
 	function TraceDataPanel({ data }, ref) {
 		const { t } = useTranslation();
-		const tableData: PearlTracePoint[] = useMemo(() => {
+		const [view, setView] = useState<View>("trajectory");
+		const [scrollTop, setScrollTop] = useState(0);
+		const [flashRow, setFlashRow] = useState<number | null>(null);
+		const flashTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+		const { ref: viewportRef, height } = useElementSize<HTMLDivElement>();
+
+		const points = useMemo(() => {
 			if (!data) return [];
+			return view === "trajectory"
+				? data.pearl_trace
+				: (data.pearl_motion_trace ?? []);
+		}, [data, view]);
+		const landing = data ? landingIndex(data) : -1;
 
-			return data.pearl_trace.map((point, index) => ({
-				id: index.toString(),
-				tick: index,
-				x: point.X,
-				y: point.Y,
-				z: point.Z,
-			}));
-		}, [data]);
+		useImperativeHandle(ref, () => ({
+			scrollToRow: (rowIndex: number) => {
+				const viewport = viewportRef.current;
+				if (!viewport) return;
+				const top = Math.max(
+					0,
+					rowIndex * ROW_HEIGHT - viewport.clientHeight / 3,
+				);
+				viewport.scrollTop = top;
+				setScrollTop(top);
+				setFlashRow(rowIndex);
+				clearTimeout(flashTimer.current);
+				flashTimer.current = setTimeout(() => setFlashRow(null), 1500);
+			},
+		}));
 
-		const momentumData: PearlMomentumPoint[] = useMemo(() => {
-			if (!data || !data.pearl_motion_trace) return [];
-
-			return data.pearl_motion_trace.map((point, index) => ({
-				id: index.toString(),
-				tick: index,
-				vx: point.X,
-				vy: point.Y,
-				vz: point.Z,
-			}));
-		}, [data]);
+		const first = Math.max(0, Math.floor(scrollTop / ROW_HEIGHT) - OVERSCAN);
+		const last = Math.min(
+			points.length,
+			Math.ceil((scrollTop + height) / ROW_HEIGHT) + OVERSCAN,
+		);
+		const headers =
+			view === "trajectory"
+				? [
+						t("calculator.header_x"),
+						t("calculator.header_y"),
+						t("calculator.header_z"),
+					]
+				: [
+						t("calculator.header_vx"),
+						t("calculator.header_vy"),
+						t("calculator.header_vz"),
+					];
 
 		return (
-			<Tabs defaultValue="trajectory" className="flex-1 flex flex-col min-h-0">
-				<div className="flex items-center justify-between">
-					<TabsList className="grid w-full grid-cols-2 h-9">
-						<TabsTrigger value="trajectory">
-							{t("calculator.tab_trajectory")}
-						</TabsTrigger>
-						<TabsTrigger value="momentum">
-							{t("calculator.tab_momentum")}
-						</TabsTrigger>
-					</TabsList>
+			<div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border">
+				<div className="flex items-center gap-2.5 p-2">
+					<Segmented
+						className="grid flex-1 grid-cols-2"
+						value={view}
+						onChange={setView}
+						options={[
+							{ value: "trajectory", label: t("calculator.tab_trajectory") },
+							{ value: "momentum", label: t("calculator.tab_momentum") },
+						]}
+					/>
+					<span className="shrink-0 text-xs text-muted-foreground tabular-nums">
+						{t("trace.rows", { count: points.length })}
+					</span>
 				</div>
-
-				<TabsContent
-					value="trajectory"
-					className="flex-1 overflow-hidden min-h-0 mt-2"
+				<div
+					ref={viewportRef}
+					onScroll={(event) => setScrollTop(event.currentTarget.scrollTop)}
+					className="relative min-h-0 flex-1 overflow-x-hidden overflow-y-auto"
 				>
-					<DataTable
-						ref={ref}
-						columns={pearlTraceColumns}
-						data={tableData}
-						defaultColumnSizing={{
-							tick: 10,
-							x: 30,
-							y: 30,
-							z: 30,
-						}}
-						minColumnSizes={{
-							tick: 10,
-							x: 10,
-							y: 10,
-							z: 10,
-						}}
-					/>
-				</TabsContent>
-
-				<TabsContent
-					value="momentum"
-					className="flex-1 overflow-hidden min-h-0 mt-2"
-				>
-					<DataTable
-						columns={pearlMomentumColumns}
-						data={momentumData}
-						defaultColumnSizing={{
-							tick: 10,
-							vx: 30,
-							vy: 30,
-							vz: 30,
-						}}
-						minColumnSizes={{
-							tick: 10,
-							vx: 10,
-							vy: 10,
-							vz: 10,
-						}}
-					/>
-				</TabsContent>
-			</Tabs>
+					<div
+						className={cn(
+							gridClass,
+							"sticky top-0 z-10 border-y bg-muted/60 py-2 text-right text-xs font-medium text-muted-foreground backdrop-blur",
+						)}
+					>
+						<span className="text-left">{t("calculator.header_tick")}</span>
+						{headers.map((header) => (
+							<span key={header}>{header}</span>
+						))}
+					</div>
+					<div
+						className="relative"
+						style={{ height: points.length * ROW_HEIGHT }}
+					>
+						{points.slice(first, last).map((point, offset) => {
+							const tick = first + offset;
+							return (
+								<div
+									key={tick}
+									className={cn(
+										gridClass,
+										"absolute inset-x-0 items-center border-b border-border/50 text-right text-xs tabular-nums transition-colors",
+										tick === landing && "bg-primary/[0.06] font-medium",
+										tick === flashRow && "bg-primary/15",
+									)}
+									style={{ top: tick * ROW_HEIGHT, height: ROW_HEIGHT }}
+								>
+									<span className="text-left text-muted-foreground">
+										{tick}
+									</span>
+									<span>{point.X.toFixed(10)}</span>
+									<span>{point.Y.toFixed(10)}</span>
+									<span>{point.Z.toFixed(10)}</span>
+								</div>
+							);
+						})}
+					</div>
+				</div>
+			</div>
 		);
 	},
 );

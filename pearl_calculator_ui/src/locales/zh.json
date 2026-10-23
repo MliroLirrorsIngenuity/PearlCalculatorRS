@@ -288,6 +288,55 @@
 			"change": "更换配置",
 			"new": "新建配置"
 		},
+		"chart": {
+			"blocks": "{{value}} 格",
+			"peak": "最高 Y {{y}} · Tick {{tick}}",
+			"target_y": "目标 Y {{value}}",
+			"profile_aria": "高度剖面图",
+			"top_aria": "俯视轨迹图",
+			"zoom_aria": "落点放大图，偏差 {{value}} 格",
+			"face_aria": "{{face}}命中位置",
+			"edge": {
+				"north": "北",
+				"south": "南",
+				"east": "东",
+				"west": "西",
+				"up": "上",
+				"down": "下"
+			},
+			"block_aria": "落点方块 3D 视图，命中{{face}}，可拖动旋转",
+			"ticks": "{{value}} tick"
+		},
+		"trace": {
+			"flight_title": "飞行轨迹",
+			"view_side": "侧视",
+			"view_top": "俯视",
+			"summary_title": "方案",
+			"deviation": "偏差",
+			"blocks_unit": "格",
+			"offset": "偏{{ewDir}} {{ewValue}} · 偏{{nsDir}} {{nsValue}}",
+			"tnt_sub": "共 {{total}} · {{direction}}",
+			"flight": "飞行",
+			"seconds": "{{value}} 秒",
+			"locate": "定位",
+			"peak": "最高点",
+			"peak_tick": "第 {{tick}} tick",
+			"landing_title": "落点",
+			"view_block": "3D",
+			"view_zoom": "俯视",
+			"hit_face": "命中{{face}} · 入射 {{angle}}°",
+			"hit_block": "方块 {{x}}, {{y}}, {{z}}",
+			"face": {
+				"top": "顶面",
+				"bottom": "底面",
+				"north": "北面",
+				"south": "南面",
+				"east": "东面",
+				"west": "西面"
+			},
+			"rows": "{{count}} 行",
+			"view_face": "命中面"
+		},
 		"onboarding": {
 			"title": "先载入一份配置",
 			"description": "配置记录了炮的 TNT 位置、珍珠位置和 Bit 模板。",

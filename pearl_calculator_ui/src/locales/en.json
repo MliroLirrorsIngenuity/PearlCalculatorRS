@@ -288,6 +288,55 @@
 			"change": "Change config",
 			"new": "New config"
 		},
+		"chart": {
+			"blocks": "{{value}} blocks",
+			"peak": "Peak Y {{y}} · Tick {{tick}}",
+			"target_y": "Target Y {{value}}",
+			"profile_aria": "Height profile",
+			"top_aria": "Top-down trajectory",
+			"zoom_aria": "Landing close-up, deviation {{value}} blocks",
+			"face_aria": "Hit position on {{face}}",
+			"edge": {
+				"north": "N",
+				"south": "S",
+				"east": "E",
+				"west": "W",
+				"up": "Up",
+				"down": "Down"
+			},
+			"block_aria": "3D view of landing block, hits {{face}}, drag to rotate",
+			"ticks": "{{value}} ticks"
+		},
+		"trace": {
+			"flight_title": "Flight path",
+			"view_side": "Side",
+			"view_top": "Top",
+			"summary_title": "Solution",
+			"deviation": "Deviation",
+			"blocks_unit": "blocks",
+			"offset": "{{ewDir}} {{ewValue}} · {{nsDir}} {{nsValue}}",
+			"tnt_sub": "Total {{total}} · {{direction}}",
+			"flight": "Flight",
+			"seconds": "{{value}} s",
+			"locate": "Locate",
+			"peak": "Peak",
+			"peak_tick": "Tick {{tick}}",
+			"landing_title": "Landing",
+			"view_block": "3D",
+			"view_zoom": "Close-up",
+			"hit_face": "Hits {{face}} · descent {{angle}}°",
+			"hit_block": "Block {{x}}, {{y}}, {{z}}",
+			"face": {
+				"top": "top face",
+				"bottom": "bottom face",
+				"north": "north face",
+				"south": "south face",
+				"east": "east face",
+				"west": "west face"
+			},
+			"rows": "{{count}} rows",
+			"view_face": "Face"
+		},
 		"onboarding": {
 			"title": "Load a configuration first",
 			"description": "A configuration holds the cannon's TNT positions, pearl position and bit template.",
