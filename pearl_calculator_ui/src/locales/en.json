@@ -144,19 +144,22 @@
 			"filtered_hint": "{{count}} results are hidden by the filters. Widen the tick or distance range at the top right."
 		},
 		"simulator": {
-			"configuration_title": "Simulator Configuration",
 			"reset": "Reset",
-			"pearl_position": "Pearl Position",
-			"momentum": "Momentum",
-			"tnt_group_a": "TNT Group A",
-			"tnt_group_b": "TNT Group B",
-			"tnt_group_c": "TNT Group C",
-			"tnt_group_d": "TNT Group D",
 			"trace_btn": "Trace Pearl",
 			"label_x": "X",
 			"label_y": "Y",
 			"label_z": "Z",
-			"label_amount": "Amount"
+			"label_amount": "Amount",
+			"empty_title": "No trajectory yet",
+			"empty_hint": "Fill in the pearl and TNT, then press Trace Pearl.",
+			"range_ticks": "{{count}} ticks",
+			"horizontal_speed": "Initial horizontal speed",
+			"vertical_speed": "Initial vertical speed",
+			"speed_unit": "blocks / tick",
+			"import": "Import",
+			"import_hint": "Fills pearl and TNT positions; TNT amounts stay as they are",
+			"imported": "Pearl and TNT positions filled in",
+			"view_height": "Height"
 		},
 		"configuration_page": {
 			"title": "Create Configuration",

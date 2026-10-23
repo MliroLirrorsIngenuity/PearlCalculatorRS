@@ -144,19 +144,22 @@
 			"filtered_hint": "有 {{count}} 个结果被筛掉了，可以在右上角放宽 Tick 或距离范围。"
 		},
 		"simulator": {
-			"configuration_title": "模拟器配置",
 			"reset": "重置",
-			"pearl_position": "珍珠位置",
-			"momentum": "珍珠动量",
-			"tnt_group_a": "TNT A 组",
-			"tnt_group_b": "TNT B 组",
-			"tnt_group_c": "TNT C 组",
-			"tnt_group_d": "TNT D 组",
 			"trace_btn": "计算轨迹",
 			"label_x": "X",
 			"label_y": "Y",
 			"label_z": "Z",
-			"label_amount": "数量"
+			"label_amount": "数量",
+			"empty_title": "还没有轨迹",
+			"empty_hint": "填好珍珠和 TNT 后，点「计算轨迹」。",
+			"range_ticks": "{{count}} tick",
+			"horizontal_speed": "初始水平速度",
+			"vertical_speed": "初始竖直速度",
+			"speed_unit": "格 / tick",
+			"import": "导入",
+			"import_hint": "填入珍珠和 TNT 位置，TNT 数量不变",
+			"imported": "已填入珍珠和 TNT 位置",
+			"view_height": "高度"
 		},
 		"configuration_page": {
 			"title": "创建配置",

@@ -1,153 +1,54 @@
-import { useEffect, useState } from "react";
+import { RotateCcw } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { AxisInput } from "@/components/common/AxisInput";
 import { Button } from "@/components/ui/button";
-import { FieldLegend, FieldSet } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { CoercedNumberSchema } from "@/lib/schemas";
-import { cn } from "@/lib/utils";
 import type { SimulatorConfig } from "@/types/domain";
+import { SimulatorImportMenu } from "./SimulatorImportMenu";
 
-function CompactInput({
+type Vec = { x: number; y: number; z: number };
+
+const parse = (value: string) => CoercedNumberSchema.parse(value);
+
+const TNT_GROUPS = [
+	{ key: "tntA", label: "TNT A" },
+	{ key: "tntB", label: "TNT B" },
+	{ key: "tntC", label: "TNT C" },
+	{ key: "tntD", label: "TNT D" },
+] as const;
+
+function VectorBlock({
+	id,
 	label,
 	value,
 	onChange,
-	className,
-	labelClassName,
+	headerExtra,
 }: {
+	id: string;
 	label: string;
-	value: number;
-	onChange: (val: string) => void;
-	className?: string;
-	labelClassName?: string;
+	value: Vec;
+	onChange: (value: Vec) => void;
+	headerExtra?: React.ReactNode;
 }) {
-	const [localValue, setLocalValue] = useState(value.toString());
-	const [isFocused, setIsFocused] = useState(false);
-
-	useEffect(() => {
-		if (!isFocused && parseFloat(localValue) !== value) {
-			setLocalValue(value.toString());
-		}
-	}, [value, isFocused, localValue]);
-
-	const handleChange = (newValue: string) => {
-		setLocalValue(newValue);
-		onChange(newValue);
-	};
-
 	return (
-		<div className={cn("flex items-center gap-1.5", className)}>
-			<Label
-				className={cn(
-					"w-9 text-xs font-mono text-muted-foreground shrink-0 pt-0.5",
-					labelClassName,
-				)}
-			>
-				{label}
-			</Label>
-			<Input
-				type="number"
-				step="any"
-				className="h-7 text-xs font-mono px-2 py-0 shadow-none focus-visible:ring-1 flex-1 min-w-0"
-				value={localValue}
-				onChange={(e) => handleChange(e.target.value)}
-				onFocus={() => setIsFocused(true)}
-				onBlur={() => setIsFocused(false)}
-			/>
-		</div>
-	);
-}
-
-function Vector3Block({
-	title,
-	data,
-	onUpdate,
-}: {
-	title: string;
-	data: { x: number; y: number; z: number };
-	onUpdate: (key: "x" | "y" | "z", val: number) => void;
-}) {
-	const { t } = useTranslation();
-	const parse = (v: string) => CoercedNumberSchema.parse(v);
-
-	return (
-		<div className="space-y-1.5">
-			<div className="text-xs font-bold text-foreground/80">{title}</div>
-			<div className="grid gap-1.5">
-				<CompactInput
-					label={t("simulator.label_x")}
-					labelClassName="w-3 text-left pr-0"
-					value={data.x}
-					onChange={(v) => onUpdate("x", parse(v))}
-				/>
-				<CompactInput
-					label={t("simulator.label_y")}
-					labelClassName="w-3 text-left pr-0"
-					value={data.y}
-					onChange={(v) => onUpdate("y", parse(v))}
-				/>
-				<CompactInput
-					label={t("simulator.label_z")}
-					labelClassName="w-3 text-left pr-0"
-					value={data.z}
-					onChange={(v) => onUpdate("z", parse(v))}
-				/>
+		<div className="flex min-w-0 flex-col gap-1.5">
+			<div className="flex h-8 items-center justify-between gap-2">
+				<span className="text-[13px] font-medium whitespace-nowrap">
+					{label}
+				</span>
+				{headerExtra}
 			</div>
-		</div>
-	);
-}
-
-function TNTGroupBlock({
-	title,
-	data,
-	onUpdate,
-}: {
-	title: string;
-	data: { pos: { x: number; y: number; z: number }; amount: number };
-	onUpdate: (data: {
-		pos: { x: number; y: number; z: number };
-		amount: number;
-	}) => void;
-}) {
-	const { t } = useTranslation();
-	const parse = (v: string) => CoercedNumberSchema.parse(v);
-
-	return (
-		<div className="space-y-1.5">
-			<div className="text-xs font-bold text-foreground/80">{title}</div>
-			<div className="grid gap-1.5">
-				<CompactInput
-					label={t("simulator.label_x")}
-					labelClassName="w-3 text-left pr-0"
-					value={data.pos.x}
-					onChange={(v) =>
-						onUpdate({ ...data, pos: { ...data.pos, x: parse(v) } })
-					}
+			{(["x", "y", "z"] as const).map((axis) => (
+				<AxisInput
+					key={axis}
+					compact
+					axis={axis.toUpperCase()}
+					id={`${id}-${axis}`}
+					value={value[axis]}
+					onValueChange={(v) => onChange({ ...value, [axis]: parse(v) })}
 				/>
-				<CompactInput
-					label={t("simulator.label_y")}
-					labelClassName="w-3 text-left pr-0"
-					value={data.pos.y}
-					onChange={(v) =>
-						onUpdate({ ...data, pos: { ...data.pos, y: parse(v) } })
-					}
-				/>
-				<CompactInput
-					label={t("simulator.label_z")}
-					labelClassName="w-3 text-left pr-0"
-					value={data.pos.z}
-					onChange={(v) =>
-						onUpdate({ ...data, pos: { ...data.pos, z: parse(v) } })
-					}
-				/>
-				<CompactInput
-					label={t("simulator.label_amount")}
-					labelClassName="w-10 text-left pr-0"
-					value={data.amount}
-					onChange={(v) => onUpdate({ ...data, amount: parse(v) })}
-				/>
-			</div>
+			))}
 		</div>
 	);
 }
@@ -166,73 +67,75 @@ export default function SimulatorInputForm({
 	onReset,
 }: SimulatorInputFormProps) {
 	const { t } = useTranslation();
-	return (
-		<div className="flex flex-col h-full min-h-0">
-			<ScrollArea className="flex-1 min-h-0">
-				<div className="pl-1 pr-3">
-					<FieldSet className="w-full pb-4">
-						<div className="flex items-center justify-between">
-							<FieldLegend className="text-lg font-semibold flex items-center gap-2">
-								{t("simulator.configuration_title")}
-							</FieldLegend>
-							<Button
-								variant="outline"
-								size="sm"
-								className="h-6 px-2 text-xs"
-								onClick={onReset}
-							>
-								{t("simulator.reset")}
-							</Button>
-						</div>
 
-						<div className="grid grid-cols-2 gap-x-4 gap-y-4">
-							<Vector3Block
-								title={t("simulator.pearl_position")}
-								data={config.pearl.pos}
-								onUpdate={(k, v) =>
-									onConfigChange({
-										...config,
-										pearl: {
-											...config.pearl,
-											pos: { ...config.pearl.pos, [k]: v },
-										},
-									})
-								}
-							/>
-							<Vector3Block
-								title={t("simulator.momentum")}
-								data={config.pearl.momentum}
-								onUpdate={(k, v) =>
-									onConfigChange({
-										...config,
-										pearl: {
-											...config.pearl,
-											momentum: { ...config.pearl.momentum, [k]: v },
-										},
-									})
-								}
-							/>
-							{(
-								[
-									{ key: "tntA", i18nKey: "simulator.tnt_group_a" },
-									{ key: "tntB", i18nKey: "simulator.tnt_group_b" },
-									{ key: "tntC", i18nKey: "simulator.tnt_group_c" },
-									{ key: "tntD", i18nKey: "simulator.tnt_group_d" },
-								] as const
-							).map(({ key, i18nKey }) => (
-								<TNTGroupBlock
+	return (
+		<div className="flex h-full min-h-0 flex-col">
+			<ScrollArea className="min-h-0 flex-1">
+				<div className="flex flex-col gap-4 pt-1 pr-3 pb-1 pl-1">
+					<section className="grid grid-cols-2 gap-3">
+						<VectorBlock
+							id="sim-pearl-pos"
+							label={t("configuration_page.pearl_coord_label")}
+							value={config.pearl.pos}
+							onChange={(pos) =>
+								onConfigChange({ ...config, pearl: { ...config.pearl, pos } })
+							}
+						/>
+						<VectorBlock
+							id="sim-pearl-momentum"
+							label={t("configuration_page.pearl_momentum_label")}
+							value={config.pearl.momentum}
+							onChange={(momentum) =>
+								onConfigChange({
+									...config,
+									pearl: { ...config.pearl, momentum },
+								})
+							}
+						/>
+					</section>
+
+					<section className="grid grid-cols-2 gap-3">
+						{TNT_GROUPS.map(({ key, label }) => {
+							const group = config[key];
+							return (
+								<VectorBlock
 									key={key}
-									title={t(i18nKey)}
-									data={config[key]}
-									onUpdate={(d) => onConfigChange({ ...config, [key]: d })}
+									id={`sim-${key}`}
+									label={label}
+									value={group.pos}
+									onChange={(pos) =>
+										onConfigChange({ ...config, [key]: { ...group, pos } })
+									}
+									headerExtra={
+										<div className="w-20 shrink-0">
+											<AxisInput
+												compact
+												axis="×"
+												id={`sim-${key}-amount`}
+												placeholder="0"
+												value={group.amount}
+												onValueChange={(v) =>
+													onConfigChange({
+														...config,
+														[key]: { ...group, amount: parse(v) },
+													})
+												}
+											/>
+										</div>
+									}
 								/>
-							))}
-						</div>
-					</FieldSet>
+							);
+						})}
+					</section>
 				</div>
 			</ScrollArea>
-			<div className="pt-2">
-				<Button className="w-full" onClick={onTrace}>
+			<div className="mt-2 flex gap-2">
+				<Button variant="outline" onClick={onReset}>
+					<RotateCcw />
+					{t("simulator.reset")}
+				</Button>
+				<SimulatorImportMenu config={config} onImport={onConfigChange} />
+				<Button className="flex-1" onClick={onTrace}>
 					{t("simulator.trace_btn")}
 				</Button>
 			</div>

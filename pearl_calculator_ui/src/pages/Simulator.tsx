@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from "motion/react";
-import TraceDataPanel from "@/components/calculator/results/TraceDataPanel";
 import SimulatorInputForm from "@/components/calculator/SimulatorInputForm";
+import { SimulatorResults } from "@/components/calculator/SimulatorResults";
 import { Card, CardContent } from "@/components/ui/card";
 import { useCalculatorState } from "@/context/CalculatorStateContext";
 import { useConfig } from "@/context/ConfigContext";
@@ -40,7 +40,7 @@ export default function Simulator() {
 				<CardContent className="flex h-full w-full p-0 relative">
 					{!isMobile && (
 						<>
-							<div className="h-full w-[46.7%] pt-2 px-6 pb-2 flex flex-col overflow-hidden">
+							<div className="flex h-full w-[min(440px,46.7%)] shrink-0 flex-col overflow-hidden px-6 pt-2 pb-2">
 								<SimulatorInputForm
 									config={simulator.config}
 									onConfigChange={updateSimulatorConfig}
@@ -48,8 +48,11 @@ export default function Simulator() {
 									onReset={resetSimulatorConfig}
 								/>
 							</div>
-							<div className="h-full w-[53.2%] flex flex-col pt-2 pl-1 pr-4 pb-2 gap-2">
-								<TraceDataPanel data={pearlTraceData} />
+							<div className="flex h-full min-w-0 flex-1 flex-col gap-2 pt-2 pr-4 pb-2 pl-1">
+								<SimulatorResults
+									trace={pearlTraceData}
+									className="min-h-0 flex-1"
+								/>
 							</div>
 						</>
 					)}
@@ -82,7 +85,10 @@ export default function Simulator() {
 									transition={{ duration: 0.15, ease: "easeOut" }}
 									className="h-full w-full flex flex-col pt-2 px-4 pb-2 gap-2 absolute inset-0"
 								>
-									<TraceDataPanel data={pearlTraceData} />
+									<SimulatorResults
+										trace={pearlTraceData}
+										className="min-h-0 flex-1"
+									/>
 								</motion.div>
 							)}
 						</AnimatePresence>
