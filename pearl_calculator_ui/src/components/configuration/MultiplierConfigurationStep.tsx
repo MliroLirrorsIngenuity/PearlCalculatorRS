@@ -26,26 +26,16 @@ export function MultiplierConfigurationStep({
 		errors.multiplier_values_incomplete || errors.multiplier_template_empty;
 
 	return (
-		<div className="flex-1 flex flex-col items-center justify-center px-4 pb-4 gap-6">
-			<div className="text-center space-y-1.5">
-				<h3 className="font-semibold leading-none tracking-tight">
-					{t("configuration_page.multiplier_config_title")}
-				</h3>
-				<p className="text-sm text-muted-foreground">
-					{t("configuration_page.multiplier_config_desc")}
+		<div className="flex flex-col gap-3">
+			{hasValuesError && (
+				<p className="text-sm font-medium text-destructive">
+					{t("error.configuration_page.multiplier_values_error")}
 				</p>
-				{hasValuesError && (
-					<p className="text-sm text-destructive font-medium animate-in fade-in slide-in-from-top-1">
-						{t("error.configuration_page.multiplier_values_error")}
-					</p>
-				)}
-			</div>
-			<div className="w-full">
-				<MultiplierBitInputSection
-					value={multiplierBitState}
-					onChange={handleChange}
-				/>
-			</div>
+			)}
+			<MultiplierBitInputSection
+				value={multiplierBitState}
+				onChange={handleChange}
+			/>
 		</div>
 	);
 }

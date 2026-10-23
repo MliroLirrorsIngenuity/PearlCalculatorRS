@@ -159,7 +159,7 @@
 			"import_file_btn": "Edit from File",
 			"toast_imported": "Configuration imported successfully",
 			"completed_title": "Completed",
-			"completed_desc": "Configuration created. Select export location.",
+			"completed_desc": "Configuration created. Choose what to do with it next.",
 			"export_btn": "Export Configuration",
 			"open_folder_btn": "Open Folder",
 			"apply_btn": "Apply to Calculator",
@@ -220,7 +220,14 @@
 			"vertical_tnt_config_desc": "Configure the position of vertical TNT for 3D vector cannon.",
 			"vertical_tnt": "Vertical TNT",
 			"max_vertical_tnt_label": "Max Vertical TNT",
-			"max_vertical_tnt_desc": "Maximum vertical TNT amount for 3D calculations."
+			"max_vertical_tnt_desc": "Maximum vertical TNT amount for 3D calculations.",
+			"step_counter": "Step {{current}} of {{count}}",
+			"start_hint": "Fill in the cannon type, TNT positions and bit template step by step.",
+			"import_clipboard_hint": "Read a config code from the clipboard and edit it in the wizard.",
+			"import_file_hint": "Open a JSON configuration and edit it in the wizard.",
+			"apply_hint": "Go back to the calculator and use this configuration.",
+			"export_hint": "Save as a JSON file you can import later.",
+			"copy_code_hint": "Copy as text that others can paste in."
 		},
 		"error": {
 			"config": {
@@ -280,6 +287,19 @@
 			"paste_code": "Paste config code",
 			"change": "Change config",
 			"new": "New config"
+		},
+		"onboarding": {
+			"title": "Load a configuration first",
+			"description": "A configuration holds the cannon's TNT positions, pearl position and bit template.",
+			"drop_title": "Drop JSON here",
+			"drop_hint": "or click to choose a file",
+			"code_title": "Paste config code",
+			"code_placeholder": "Leave empty to read the clipboard",
+			"code_import": "Import",
+			"new_title": "New configuration",
+			"new_hint": "Fill in the cannon step by step to create a new configuration.",
+			"new_action": "Start →",
+			"skip": "Skip and use the default config"
 		}
 	}
 }

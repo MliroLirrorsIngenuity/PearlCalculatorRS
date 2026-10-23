@@ -1,18 +1,22 @@
 import {
 	Calculator,
+	Check,
 	ChevronLeft,
 	ChevronRight,
 	ClipboardCopy,
-	FilePlus,
+	ClipboardPaste,
+	FileUp,
 	FolderOpen,
 	OctagonAlert,
+	Plus,
+	RotateCcw,
 	Save,
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import * as React from "react";
 import { useTranslation } from "react-i18next";
-import { CenteredScrollArea } from "@/components/common/CenteredScrollArea";
-import { OnboardingPanel } from "@/components/common/OnboardingPanel";
+import { ActionCard } from "@/components/common/ActionCard";
+import { sectionLabelClass } from "@/components/common/Metric";
 import { BasicInfoStep } from "@/components/configuration/BasicInfoStep";
 import { BitConfigurationStep } from "@/components/configuration/BitConfigurationStep";
 import { CannonTypeStep } from "@/components/configuration/CannonTypeStep";
@@ -32,29 +36,160 @@ import {
 	AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button, buttonVariants } from "@/components/ui/button";
-import {
-	Carousel,
-	type CarouselApi,
-	CarouselContent,
-	CarouselItem,
-} from "@/components/ui/carousel";
-import { Progress } from "@/components/ui/progress";
+import { Card } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { useConfigurationState } from "@/context/ConfigurationStateContext";
+import { useMobileView } from "@/context/MobileViewContext";
 import { useConfigurationController } from "@/hooks/use-configuration-controller";
+import { cn } from "@/lib/utils";
 import { isTauri } from "@/services";
 
-export default function Configuration() {
-	const [api, setApi] = React.useState<CarouselApi>();
-	const [current, setCurrent] = React.useState(0);
-	const [count, setCount] = React.useState(0);
+interface WizardStep {
+	id: string;
+	title: string;
+	description: string;
+	body: React.ReactNode;
+}
+
+function CenteredPanel({
+	title,
+	description,
+	icon,
+	children,
+}: {
+	title: string;
+	description: string;
+	icon?: React.ReactNode;
+	children: React.ReactNode;
+}) {
+	return (
+		<Card className="h-full w-full items-center justify-center gap-0 overflow-auto p-6">
+			<div className="flex w-full max-w-[820px] flex-col gap-6">
+				<div className="flex flex-col gap-1.5">
+					{icon && (
+						<span className="mb-2 flex size-10 items-center justify-center rounded-xl bg-foreground text-background [&_svg]:size-5">
+							{icon}
+						</span>
+					)}
+					<h1 className="text-2xl font-bold tracking-tight">{title}</h1>
+					<p className="text-muted-foreground">{description}</p>
+				</div>
+				{children}
+			</div>
+		</Card>
+	);
+}
+
+function StepList({
+	steps,
+	current,
+	reached,
+	onSelect,
+}: {
+	steps: WizardStep[];
+	current: number;
+	reached: number;
+	onSelect: (step: number) => void;
+}) {
+	return (
+		<ol className="flex flex-col gap-0.5">
+			{steps.map((step, index) => {
+				const number = index + 1;
+				const done = number < current;
+				const active = number === current;
+				const reachable = number <= reached;
+				return (
+					<li key={step.id}>
+						<button
+							type="button"
+							disabled={active || !reachable}
+							aria-current={active ? "step" : undefined}
+							onClick={() => onSelect(number)}
+							className={cn(
+								"flex w-full items-center gap-2.5 rounded-md px-2 py-1.5 text-left text-[13px] transition-colors",
+								active && "bg-muted font-medium text-foreground",
+								!active && reachable && "text-foreground hover:bg-muted/60",
+								!reachable && "text-muted-foreground",
+							)}
+						>
+							<span
+								className={cn(
+									"flex size-5 shrink-0 items-center justify-center rounded-[5px] border text-[11px] font-semibold tabular-nums",
+									done && "border-foreground bg-foreground text-background",
+									active && "border-foreground",
+								)}
+							>
+								{done ? <Check className="size-3" /> : number}
+							</span>
+							<span className="truncate">{step.title}</span>
+						</button>
+					</li>
+				);
+			})}
+		</ol>
+	);
+}
+
+function ConfirmDialog({
+	trigger,
+	title,
+	description,
+	destructive = false,
+	onConfirm,
+}: {
+	trigger: React.ReactNode;
+	title: string;
+	description: string;
+	destructive?: boolean;
+	onConfirm: () => void;
+}) {
 	const { t } = useTranslation();
-	const { wizardMode } = useConfigurationState();
+	return (
+		<AlertDialog>
+			<AlertDialogTrigger asChild>{trigger}</AlertDialogTrigger>
+			<AlertDialogContent>
+				<AlertDialogHeader>
+					<AlertDialogTitle className="flex items-center gap-2">
+						{destructive && (
+							<OctagonAlert className="size-5 text-destructive" />
+						)}
+						{title}
+					</AlertDialogTitle>
+					<AlertDialogDescription>{description}</AlertDialogDescription>
+				</AlertDialogHeader>
+				<AlertDialogFooter>
+					<AlertDialogCancel>
+						{t("configuration_page.cancel_btn")}
+					</AlertDialogCancel>
+					<AlertDialogAction
+						className={
+							destructive
+								? buttonVariants({ variant: "destructive" })
+								: undefined
+						}
+						onClick={onConfirm}
+					>
+						{t("configuration_page.continue_btn")}
+					</AlertDialogAction>
+				</AlertDialogFooter>
+			</AlertDialogContent>
+		</AlertDialog>
+	);
+}
+
+export default function Configuration() {
+	const { t } = useTranslation();
+	const { isMobile } = useMobileView();
+	const { wizardMode, isFinished } = useConfigurationState();
 	const isVector3D = wizardMode === "Vector3D";
 	const isAccumulation = wizardMode === "Accumulation";
+	const count = isVector3D || isAccumulation ? 6 : 5;
+	const [current, setCurrent] = React.useState(() => (isFinished ? count : 1));
+	const [reached, setReached] = React.useState(current);
+	if (current > reached) setReached(current);
 
 	const {
 		isConfiguring,
-		isFinished,
 		savedPath,
 		shouldRestoreLastPage,
 		setShouldRestoreLastPage,
@@ -74,301 +209,293 @@ export default function Configuration() {
 		setIsMultiplierConfigSkipped,
 	} = useConfigurationController();
 
+	const goNext = () => setCurrent((step) => step + 1);
+
+	const restart = () => {
+		setCurrent(1);
+		setReached(1);
+	};
+
+	const jumpTo = (target: number) => {
+		for (let step = current; step < target; step++) {
+			if (!validateStep(step)) {
+				setCurrent(step);
+				return;
+			}
+		}
+		setCurrent(target);
+	};
+
+	const handleForceNext = () => {
+		if (!validateStep(current)) return;
+		goNext();
+		setTimeout(() => {
+			document.getElementById("tnt-config-start-input")?.focus();
+		}, 300);
+	};
+
+	const steps: WizardStep[] = [
+		{
+			id: "type",
+			title: t("configuration_page.cannon_type_title"),
+			description: t("configuration_page.cannon_type_desc"),
+			body: <CannonTypeStep />,
+		},
+		{
+			id: "basic",
+			title: t("configuration_page.basic_info_title"),
+			description: t("configuration_page.basic_info_desc"),
+			body: <BasicInfoStep errors={errors} onForceNext={handleForceNext} />,
+		},
+		{
+			id: "tnt",
+			title: t("configuration_page.tnt_config_title"),
+			description: t("configuration_page.tnt_config_desc"),
+			body: <TNTConfigurationStep errors={errors} />,
+		},
+		...(isVector3D
+			? [
+					{
+						id: "vertical",
+						title: t("configuration_page.vertical_tnt_config_title"),
+						description: t("configuration_page.vertical_tnt_config_desc"),
+						body: <VerticalTNTStep errors={errors} />,
+					},
+				]
+			: []),
+		{
+			id: "bit",
+			title: t("configuration_page.bit_config_title"),
+			description: t("configuration_page.bit_config_desc"),
+			body: <BitConfigurationStep errors={errors} />,
+		},
+		...(isAccumulation
+			? [
+					{
+						id: "multiplier",
+						title: t("configuration_page.multiplier_config_title"),
+						description: t("configuration_page.multiplier_config_desc"),
+						body: <MultiplierConfigurationStep errors={errors} />,
+					},
+				]
+			: []),
+		{
+			id: "preview",
+			title: t("configuration_page.preview_title"),
+			description: t("configuration_page.preview_desc"),
+			body: <PreviewStep />,
+		},
+	];
+	const bitStep = isVector3D ? 5 : 4;
+	const step = steps[Math.min(current, count) - 1];
+
 	React.useEffect(() => {
-		if (!api) {
-			return;
-		}
-
-		const updateCount = () => {
-			setCount(api.scrollSnapList().length);
-		};
-
-		updateCount();
-
-		if (shouldRestoreLastPage) {
-			const total = api.scrollSnapList().length;
-			api.scrollTo(total - 1, true);
-			setCurrent(total);
-			setShouldRestoreLastPage(false);
-		} else {
-			setCurrent(api.selectedScrollSnap() + 1);
-		}
-
-		api.on("select", () => {
-			setCurrent(api.selectedScrollSnap() + 1);
-		});
-
-		api.on("reInit", () => {
-			updateCount();
-			setCurrent(api.selectedScrollSnap() + 1);
-		});
-	}, [api, shouldRestoreLastPage, setShouldRestoreLastPage]);
+		if (!shouldRestoreLastPage) return;
+		setCurrent(count);
+		setShouldRestoreLastPage(false);
+	}, [shouldRestoreLastPage, setShouldRestoreLastPage, count]);
 
 	React.useEffect(() => {
-		const bitStepIndex = isVector3D ? 5 : 4;
-		if (current === bitStepIndex) {
-			setIsBitConfigSkipped(false);
-		}
-
-		if (isAccumulation && current === 5) {
-			setIsMultiplierConfigSkipped(false);
-		}
+		if (current === bitStep) setIsBitConfigSkipped(false);
+		if (isAccumulation && current === 5) setIsMultiplierConfigSkipped(false);
 	}, [
 		current,
-		isVector3D,
+		bitStep,
 		isAccumulation,
 		setIsBitConfigSkipped,
 		setIsMultiplierConfigSkipped,
 	]);
 
-	const progress = count > 0 ? (current / count) * 100 : 0;
-
-	const handleForceNext = () => {
-		if (validateStep(current)) {
-			api?.scrollNext();
-			setTimeout(() => {
-				const nextInput = document.getElementById("tnt-config-start-input");
-				nextInput?.focus();
-			}, 300);
-		}
-	};
-
 	if (!isConfiguring) {
 		return (
-			<OnboardingPanel
-				icon={<FilePlus />}
+			<CenteredPanel
 				title={t("configuration_page.title")}
 				description={t("configuration_page.description")}
 			>
-				<div className="flex flex-col gap-2 w-48">
-					<Button className="w-full" onClick={handleStart}>
-						{t("configuration_page.start_btn")}
-					</Button>
-					<Button
-						variant="outline"
-						className="w-full"
-						onClick={handleImportFromClipboard}
-					>
-						{t("configuration_page.import_clipboard_btn")}
-					</Button>
-					<Button
-						variant="outline"
-						className="w-full"
-						onClick={handleImportFromFile}
-					>
-						{t("configuration_page.import_file_btn")}
-					</Button>
+				<div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+					<ActionCard
+						primary
+						icon={<Plus />}
+						title={t("configuration_page.start_btn")}
+						hint={t("configuration_page.start_hint")}
+						action={t("onboarding.new_action")}
+						onClick={() => {
+							restart();
+							handleStart();
+						}}
+					/>
+					<ActionCard
+						icon={<ClipboardPaste />}
+						title={t("configuration_page.import_clipboard_btn")}
+						hint={t("configuration_page.import_clipboard_hint")}
+						onClick={() => {
+							restart();
+							handleImportFromClipboard();
+						}}
+					/>
+					<ActionCard
+						icon={<FileUp />}
+						title={t("configuration_page.import_file_btn")}
+						hint={t("configuration_page.import_file_hint")}
+						onClick={() => {
+							restart();
+							handleImportFromFile();
+						}}
+					/>
 				</div>
-			</OnboardingPanel>
+			</CenteredPanel>
 		);
 	}
 
 	if (isFinished) {
 		return (
-			<OnboardingPanel
-				icon={<Save />}
+			<CenteredPanel
+				icon={<Check />}
 				title={t("configuration_page.completed_title")}
 				description={t("configuration_page.completed_desc")}
 			>
-				<div className="flex flex-col gap-2 w-48">
-					<Button className="w-full gap-2" onClick={handleExport}>
-						<Save className="h-4 w-4" />
-						{t("configuration_page.export_btn")}
-					</Button>
-					{savedPath && isTauri && (
-						<Button
-							variant="outline"
-							className="w-full gap-2"
-							onClick={handleOpenFolder}
-						>
-							<FolderOpen className="h-4 w-4" />
-							{t("configuration_page.open_folder_btn")}
-						</Button>
-					)}
-					<Button
-						variant="outline"
-						className="w-full gap-2"
-						onClick={handleCopyEncodedConfig}
-					>
-						<ClipboardCopy className="h-4 w-4" />
-						{t("configuration_page.copy_code_btn")}
-					</Button>
-					<Button
-						variant="outline"
-						className="w-full gap-2"
+				<div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+					<ActionCard
+						primary
+						icon={<Calculator />}
+						title={t("configuration_page.apply_btn")}
+						hint={t("configuration_page.apply_hint")}
 						onClick={handleApplyToCalculator}
-					>
-						<Calculator className="h-4 w-4" />
-						{t("configuration_page.apply_btn")}
-					</Button>
+						className="min-h-[150px]"
+					/>
+					<ActionCard
+						icon={<Save />}
+						title={t("configuration_page.export_btn")}
+						hint={t("configuration_page.export_hint")}
+						onClick={handleExport}
+						className="min-h-[150px]"
+					/>
+					<ActionCard
+						icon={<ClipboardCopy />}
+						title={t("configuration_page.copy_code_btn")}
+						hint={t("configuration_page.copy_code_hint")}
+						onClick={handleCopyEncodedConfig}
+						className="min-h-[150px]"
+					/>
 				</div>
-			</OnboardingPanel>
+				{savedPath && isTauri && (
+					<Button
+						variant="outline"
+						size="sm"
+						className="self-start"
+						onClick={handleOpenFolder}
+					>
+						<FolderOpen />
+						{t("configuration_page.open_folder_btn")}
+					</Button>
+				)}
+			</CenteredPanel>
 		);
 	}
 
 	return (
-		<div className="h-full w-full overflow-hidden">
-			<AnimatePresence mode="wait">
-				<motion.div
-					key="carousel"
-					initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
-					animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-					transition={{ duration: 0.25, ease: "easeOut" }}
-					className="h-full w-full flex flex-col gap-4 p-4"
-				>
-					<Carousel
-						setApi={setApi}
-						className="w-full h-full flex flex-col"
-						opts={{ watchDrag: false }}
+		<Card className="h-full w-full flex-row gap-0 overflow-hidden py-0">
+			{!isMobile && (
+				<aside className="flex w-[232px] shrink-0 flex-col gap-3 border-r p-5">
+					<span className={sectionLabelClass}>
+						{t("breadcrumb.new_config")}
+					</span>
+					<StepList
+						steps={steps}
+						current={current}
+						reached={reached}
+						onSelect={jumpTo}
+					/>
+					<div className="flex-1" />
+					<ConfirmDialog
+						destructive
+						title={t("configuration_page.reset_dialog_title")}
+						description={t("configuration_page.reset_dialog_desc")}
+						onConfirm={() => {
+							handleReset();
+							restart();
+						}}
+						trigger={
+							<button
+								type="button"
+								className="flex items-center gap-1.5 self-start text-[13px] text-muted-foreground hover:text-destructive"
+							>
+								<RotateCcw className="size-3.5" />
+								{t("configuration_page.reset_btn")}
+							</button>
+						}
+					/>
+				</aside>
+			)}
+
+			<div className="flex min-w-0 flex-1 flex-col">
+				<header className="flex flex-col gap-1 px-8 pt-6 pb-5">
+					<span className={sectionLabelClass}>
+						{t("configuration_page.step_counter", {
+							current: Math.min(current, count),
+							count,
+						})}
+					</span>
+					<h1 className="text-xl font-semibold tracking-tight">{step.title}</h1>
+					<p className="text-sm text-muted-foreground">{step.description}</p>
+				</header>
+
+				<ScrollArea className="min-h-0 flex-1">
+					<AnimatePresence mode="wait" initial={false}>
+						<motion.div
+							key={step.id}
+							initial={{ opacity: 0, x: 12 }}
+							animate={{ opacity: 1, x: 0 }}
+							exit={{ opacity: 0, x: -12 }}
+							transition={{ duration: 0.15, ease: "easeOut" }}
+							className="px-8 pb-6"
+						>
+							{step.body}
+						</motion.div>
+					</AnimatePresence>
+				</ScrollArea>
+
+				<footer className="flex items-center gap-2 border-t px-8 py-3">
+					<Button
+						variant="outline"
+						onClick={() => setCurrent((value) => Math.max(1, value - 1))}
+						disabled={current === 1}
 					>
-						<CarouselContent className="h-full">
-							<CarouselItem className="h-full">
-								<CenteredScrollArea className="h-full">
-									<CannonTypeStep />
-								</CenteredScrollArea>
-							</CarouselItem>
-							<CarouselItem className="h-full">
-								<CenteredScrollArea className="h-full">
-									<BasicInfoStep
-										errors={errors}
-										onForceNext={handleForceNext}
-									/>
-								</CenteredScrollArea>
-							</CarouselItem>
-							<CarouselItem className="h-full">
-								<CenteredScrollArea className="h-full">
-									<TNTConfigurationStep errors={errors} />
-								</CenteredScrollArea>
-							</CarouselItem>
-							{isVector3D && (
-								<CarouselItem className="h-full">
-									<CenteredScrollArea className="h-full">
-										<VerticalTNTStep errors={errors} />
-									</CenteredScrollArea>
-								</CarouselItem>
-							)}
-							<CarouselItem className="h-full">
-								<CenteredScrollArea className="h-full">
-									<BitConfigurationStep errors={errors} />
-								</CenteredScrollArea>
-							</CarouselItem>
-							{isAccumulation && (
-								<CarouselItem className="h-full">
-									<CenteredScrollArea className="h-full">
-										<MultiplierConfigurationStep errors={errors} />
-									</CenteredScrollArea>
-								</CarouselItem>
-							)}
-							<CarouselItem className="h-full">
-								<CenteredScrollArea className="h-full">
-									<PreviewStep />
-								</CenteredScrollArea>
-							</CarouselItem>
-						</CarouselContent>
-						<div className="relative flex items-center justify-between gap-2 mt-4 px-1">
-							<div className="flex items-center gap-2 shrink-0">
-								<Button
-									variant="outline"
-									onClick={() => api?.scrollPrev()}
-									disabled={!api?.canScrollPrev()}
-								>
-									<ChevronLeft className="h-4 w-4" />
-									{t("configuration_page.previous_btn")}
+						<ChevronLeft />
+						{t("configuration_page.previous_btn")}
+					</Button>
+					<div className="flex-1" />
+					{current === bitStep && (
+						<ConfirmDialog
+							title={t("configuration_page.skip_warning_title")}
+							description={t("configuration_page.skip_warning_desc")}
+							onConfirm={() => {
+								handleSkipBitConfiguration();
+								goNext();
+							}}
+							trigger={
+								<Button variant="ghost">
+									{t("configuration_page.skip_btn")}
 								</Button>
-								{current === 1 && (
-									<AlertDialog>
-										<AlertDialogTrigger asChild>
-											<Button variant="destructive">
-												{t("configuration_page.reset_btn")}
-											</Button>
-										</AlertDialogTrigger>
-										<AlertDialogContent>
-											<AlertDialogHeader className="items-center">
-												<AlertDialogTitle>
-													<div className="mb-2 mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-destructive/10">
-														<OctagonAlert className="h-7 w-7 text-destructive" />
-													</div>
-													{t("configuration_page.reset_dialog_title")}
-												</AlertDialogTitle>
-												<AlertDialogDescription className="text-[15px] text-center">
-													{t("configuration_page.reset_dialog_desc")}
-												</AlertDialogDescription>
-											</AlertDialogHeader>
-											<AlertDialogFooter className="mt-2 sm:justify-center">
-												<AlertDialogCancel>
-													{t("configuration_page.cancel_btn")}
-												</AlertDialogCancel>
-												<AlertDialogAction
-													className={buttonVariants({ variant: "destructive" })}
-													onClick={handleReset}
-												>
-													{t("configuration_page.continue_btn")}
-												</AlertDialogAction>
-											</AlertDialogFooter>
-										</AlertDialogContent>
-									</AlertDialog>
-								)}
-							</div>
-							<div className="absolute left-1/2 -translate-x-1/2 -top-1 -translate-y-full sm:top-auto sm:translate-y-0 w-24 sm:w-40 pointer-events-none">
-								<Progress value={progress} className="w-full" />
-							</div>
-							<div className="flex items-center gap-2 shrink-0">
-								{current === count ? (
-									<Button onClick={handleFinish}>
-										{t("configuration_page.finish_btn")}
-									</Button>
-								) : (
-									<div className="flex items-center gap-2">
-										{current === (isVector3D ? 5 : 4) && (
-											<AlertDialog>
-												<AlertDialogTrigger asChild>
-													<Button variant="outline">
-														{t("configuration_page.skip_btn")}
-													</Button>
-												</AlertDialogTrigger>
-												<AlertDialogContent>
-													<AlertDialogHeader>
-														<AlertDialogTitle>
-															{t("configuration_page.skip_warning_title")}
-														</AlertDialogTitle>
-														<AlertDialogDescription>
-															{t("configuration_page.skip_warning_desc")}
-														</AlertDialogDescription>
-													</AlertDialogHeader>
-													<AlertDialogFooter>
-														<AlertDialogCancel>
-															{t("configuration_page.cancel_btn")}
-														</AlertDialogCancel>
-														<AlertDialogAction
-															onClick={() => {
-																handleSkipBitConfiguration();
-																api?.scrollNext();
-															}}
-														>
-															{t("configuration_page.continue_btn")}
-														</AlertDialogAction>
-													</AlertDialogFooter>
-												</AlertDialogContent>
-											</AlertDialog>
-										)}
-										<Button
-											onClick={() => {
-												if (validateStep(current)) {
-													api?.scrollNext();
-												}
-											}}
-											disabled={!api?.canScrollNext()}
-										>
-											{t("configuration_page.next_btn")}
-											<ChevronRight className="h-4 w-4" />
-										</Button>
-									</div>
-								)}
-							</div>
-						</div>
-					</Carousel>
-				</motion.div>
-			</AnimatePresence>
-		</div>
+							}
+						/>
+					)}
+					{current >= count ? (
+						<Button onClick={handleFinish}>
+							{t("configuration_page.finish_btn")}
+						</Button>
+					) : (
+						<Button
+							onClick={() => {
+								if (validateStep(current)) goNext();
+							}}
+						>
+							{t("configuration_page.next_btn")}
+							<ChevronRight />
+						</Button>
+					)}
+				</footer>
+			</div>
+		</Card>
 	);
 }

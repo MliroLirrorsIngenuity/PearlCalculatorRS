@@ -159,7 +159,7 @@
 			"import_file_btn": "从文件编辑",
 			"toast_imported": "配置导入成功",
 			"completed_title": "已完成",
-			"completed_desc": "配置已创建，请选择导出位置",
+			"completed_desc": "配置已创建，选择接下来怎么用它。",
 			"export_btn": "导出配置",
 			"open_folder_btn": "打开文件夹",
 			"apply_btn": "应用到计算器",
@@ -220,7 +220,14 @@
 			"vertical_tnt_config_desc": "配置 3D 矢量炮的垂直 TNT 位置。",
 			"vertical_tnt": "垂直 TNT",
 			"max_vertical_tnt_label": "垂直 TNT 上限",
-			"max_vertical_tnt_desc": "3D 计算中垂直 TNT 的最大数量。"
+			"max_vertical_tnt_desc": "3D 计算中垂直 TNT 的最大数量。",
+			"step_counter": "步骤 {{current}} / {{count}}",
+			"start_hint": "按步骤填写炮的类型、TNT 位置和 Bit 模板。",
+			"import_clipboard_hint": "读取剪贴板里的神秘代码，在向导里修改。",
+			"import_file_hint": "打开一份 JSON 配置，在向导里修改。",
+			"apply_hint": "回到计算页，直接用这份配置计算。",
+			"export_hint": "保存为 JSON 文件，下次可以直接导入。",
+			"copy_code_hint": "复制成一段文本，方便分享给别人。"
 		},
 		"error": {
 			"config": {
@@ -280,6 +287,19 @@
 			"paste_code": "粘贴神秘代码",
 			"change": "更换配置",
 			"new": "新建配置"
+		},
+		"onboarding": {
+			"title": "先载入一份配置",
+			"description": "配置记录了炮的 TNT 位置、珍珠位置和 Bit 模板。",
+			"drop_title": "拖入 JSON",
+			"drop_hint": "或点击选择文件",
+			"code_title": "粘贴神秘代码",
+			"code_placeholder": "留空则读取剪贴板",
+			"code_import": "导入",
+			"new_title": "新建配置",
+			"new_hint": "按步骤填写炮的参数，生成一份新配置。",
+			"new_action": "开始 →",
+			"skip": "跳过，使用默认配置"
 		}
 	}
 }

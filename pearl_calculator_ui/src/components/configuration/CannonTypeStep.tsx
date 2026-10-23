@@ -1,11 +1,4 @@
 import { useTranslation } from "react-i18next";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
 import { useConfigurationState } from "@/context/ConfigurationStateContext";
 import { cn } from "@/lib/utils";
 import type { CannonMode } from "@/types/domain";
@@ -45,38 +38,37 @@ export function CannonTypeStep() {
 	const { t } = useTranslation();
 
 	return (
-		<div className="flex-1 flex items-center justify-center px-4 pb-4">
-			<Card className="w-full max-w-[500px]">
-				<CardHeader>
-					<CardTitle>{t("configuration_page.cannon_type_title")}</CardTitle>
-					<CardDescription>
-						{t("configuration_page.cannon_type_desc")}
-					</CardDescription>
-				</CardHeader>
-				<CardContent>
-					<div className="grid gap-3">
-						{CANNON_MODES.map((mode) => (
-							<button
-								key={mode.value}
-								type="button"
-								onClick={() => setWizardMode(mode.value)}
-								className={cn(
-									"w-full text-left p-4 rounded-lg border-2 transition-all duration-100 active:scale-[0.98]",
-									"hover:border-primary/50 hover:bg-accent/50",
-									wizardMode === mode.value
-										? "border-primary bg-primary/5 shadow-sm"
-										: "border-muted bg-background",
-								)}
-							>
-								<div className="font-medium">{t(mode.titleKey)}</div>
-								<div className="text-sm text-muted-foreground mt-1">
-									{t(mode.descKey)}
-								</div>
-							</button>
-						))}
-					</div>
-				</CardContent>
-			</Card>
-		</div>
+		<fieldset className="grid max-w-[560px] gap-2">
+			<legend className="sr-only">
+				{t("configuration_page.cannon_type_title")}
+			</legend>
+			{CANNON_MODES.map((mode) => {
+				const selected = wizardMode === mode.value;
+				return (
+					<label
+						key={mode.value}
+						className={cn(
+							"flex cursor-pointer items-start gap-3 rounded-lg border p-4 transition-colors has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ring/50",
+							selected ? "border-foreground bg-muted/40" : "hover:bg-muted/40",
+						)}
+					>
+						<input
+							type="radio"
+							name="cannon-mode"
+							value={mode.value}
+							checked={selected}
+							onChange={() => setWizardMode(mode.value)}
+							className="mt-0.5 size-4 shrink-0 accent-foreground"
+						/>
+						<span className="flex flex-col gap-1">
+							<span className="text-sm font-medium">{t(mode.titleKey)}</span>
+							<span className="text-[13px] text-muted-foreground">
+								{t(mode.descKey)}
+							</span>
+						</span>
+					</label>
+				);
+			})}
+		</fieldset>
 	);
 }

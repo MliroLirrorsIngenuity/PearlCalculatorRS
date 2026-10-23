@@ -1,7 +1,7 @@
+import { useId } from "react";
 import { useTranslation } from "react-i18next";
-import { Badge } from "@/components/ui/badge";
+import { AxisInput } from "@/components/common/AxisInput";
 import { cn } from "@/lib/utils";
-import { CompactInput } from "./CompactInput";
 
 interface TNTInputGroupProps {
 	title: string;
@@ -9,13 +9,36 @@ interface TNTInputGroupProps {
 	onUpdate: (key: "x" | "y" | "z", val: string) => void;
 	className?: string;
 	isRedTNT?: boolean;
+	isBlueTNT?: boolean;
 	onSetRedTNT?: () => void;
 	errors?: { x?: string; y?: string; z?: string };
 	hasError?: boolean;
-	yOffset?: number;
 	xSign?: string;
 	zSign?: string;
 	inputIdX?: string;
+}
+
+function GroupTag({ color, label }: { color: "red" | "blue"; label: string }) {
+	return (
+		<span
+			className={cn(
+				"flex h-6 items-center gap-1.5 rounded-md px-2 text-xs font-medium",
+				color === "red"
+					? "bg-red-600/10 text-red-700 dark:text-red-400"
+					: "bg-blue-600/10 text-blue-700 dark:text-blue-400",
+			)}
+		>
+			<span
+				className={cn(
+					"size-2",
+					color === "red"
+						? "bg-red-600 dark:bg-red-400"
+						: "bg-blue-600 dark:bg-blue-400",
+				)}
+			/>
+			{label}
+		</span>
+	);
 }
 
 export function TNTInputGroup({
@@ -24,110 +47,76 @@ export function TNTInputGroup({
 	onUpdate,
 	className,
 	isRedTNT,
+	isBlueTNT,
 	onSetRedTNT,
 	errors,
 	hasError,
-	yOffset = 0,
 	xSign,
 	zSign,
 	inputIdX,
 }: TNTInputGroupProps) {
 	const { t } = useTranslation();
-	let yValue: string | number = data.y;
-	if (yOffset !== 0) {
-		if (typeof data.y === "number") {
-			yValue = data.y + yOffset;
-		} else {
-			const parsed = parseFloat(data.y);
-			if (!Number.isNaN(parsed)) {
-				yValue = parsed + yOffset;
-			}
-		}
-	}
+	const id = useId();
 
 	return (
 		<div
 			className={cn(
-				"space-y-1.5 w-[280px] bg-card p-3 rounded-lg border shadow-sm",
+				"flex flex-col gap-2 rounded-lg border bg-card p-3",
+				isRedTNT && "border-red-600/40 dark:border-red-400/40",
 				className,
 			)}
 		>
-			<div className="flex items-center justify-between mb-2">
-				<div className="text-xs font-bold text-foreground/80">{title}</div>
-				{onSetRedTNT && (
-					<div onClick={onSetRedTNT} className="shrink-0">
-						{isRedTNT ? (
-							<Badge
-								variant="destructive"
-								className="cursor-default px-2 h-auto min-h-0 leading-none"
-							>
-								{t("configuration_page.red_tnt_badge")}
-							</Badge>
-						) : (
-							<Badge
-								variant="outline"
-								className={cn(
-									"cursor-pointer hover:bg-accent hover:text-accent-foreground transition-colors px-2 h-auto min-h-0 leading-none",
-									hasError &&
-										"border-destructive text-destructive hover:bg-destructive/10",
-								)}
-							>
-								{t("configuration_page.set_red_badge")}
-							</Badge>
+			<div className="flex h-6 items-center justify-between gap-2">
+				<span className="text-[13px] font-medium">{title}</span>
+				{isRedTNT && (
+					<GroupTag color="red" label={t("configuration_page.red_tnt_badge")} />
+				)}
+				{!isRedTNT && isBlueTNT && (
+					<button
+						type="button"
+						title={t("configuration_page.set_red_badge")}
+						onClick={onSetRedTNT}
+						disabled={!onSetRedTNT}
+					>
+						<GroupTag color="blue" label={t("configuration_page.color_blue")} />
+					</button>
+				)}
+				{!isRedTNT && !isBlueTNT && onSetRedTNT && (
+					<button
+						type="button"
+						onClick={onSetRedTNT}
+						className={cn(
+							"h-6 rounded-md border px-2 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
+							hasError && "border-destructive text-destructive",
 						)}
-					</div>
+					>
+						{t("configuration_page.set_red_badge")}
+					</button>
 				)}
 			</div>
-			<div className="grid gap-1.5">
-				<CompactInput
-					label={t("configuration_page.label_x")}
-					labelClassName="w-3 text-left pr-0"
-					value={data.x}
-					onChange={(v) => onUpdate("x", v)}
-					error={errors?.x}
-					suffix={
-						xSign && (
-							<span className="text-xs font-mono text-muted-foreground w-full text-center">
-								({xSign})
-							</span>
-						)
-					}
-					id={inputIdX}
-				/>
-				<CompactInput
-					label={t("configuration_page.label_y")}
-					labelClassName="w-3 text-left pr-0"
-					value={yValue}
-					onChange={(v) => {
-						if (yOffset !== 0) {
-							const val = parseFloat(v);
-							if (!Number.isNaN(val)) {
-								onUpdate("y", (val - yOffset).toString());
-							} else {
-								onUpdate("y", v);
-							}
-						} else {
-							onUpdate("y", v);
-						}
-					}}
-					error={errors?.y}
-					suffix={xSign || zSign ? <span /> : undefined}
-				/>
-				<CompactInput
-					label={t("configuration_page.label_z")}
-					labelClassName="w-3 text-left pr-0"
-					value={data.z}
-					onChange={(v) => onUpdate("z", v)}
-					error={errors?.z}
-					suffix={
-						zSign && (
-							<span className="text-xs font-mono text-muted-foreground w-full text-center">
-								({zSign})
-							</span>
-						)
-					}
-				/>
-			</div>
+			<AxisInput
+				axis="X"
+				id={inputIdX ?? `${id}-x`}
+				value={data.x}
+				onValueChange={(v) => onUpdate("x", v)}
+				error={errors?.x}
+				hint={xSign}
+			/>
+			<AxisInput
+				axis="Y"
+				id={`${id}-y`}
+				value={data.y}
+				onValueChange={(v) => onUpdate("y", v)}
+				error={errors?.y}
+			/>
+			<AxisInput
+				axis="Z"
+				id={`${id}-z`}
+				value={data.z}
+				onValueChange={(v) => onUpdate("z", v)}
+				error={errors?.z}
+				hint={zSign}
+			/>
 		</div>
 	);
 }

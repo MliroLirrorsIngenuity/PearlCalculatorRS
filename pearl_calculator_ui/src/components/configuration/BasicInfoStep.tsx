@@ -1,232 +1,139 @@
 import { useTranslation } from "react-i18next";
-import { BufferedNumberInput } from "@/components/common/BufferedNumberInput";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
+import { AxisInput } from "@/components/common/AxisInput";
+import { sectionLabelClass } from "@/components/common/Metric";
 import { useConfigurationState } from "@/context/ConfigurationStateContext";
-import { cn } from "@/lib/utils";
 
 interface BasicInfoStepProps {
 	errors: Record<string, string>;
 	onForceNext?: () => void;
 }
 
+function Field({
+	label,
+	hint,
+	children,
+}: {
+	label: string;
+	hint: string;
+	children: React.ReactNode;
+}) {
+	return (
+		<section className="flex flex-col gap-2">
+			<span className={sectionLabelClass}>{label}</span>
+			{children}
+			<p className="text-xs text-muted-foreground">{hint}</p>
+		</section>
+	);
+}
+
 export function BasicInfoStep({ errors, onForceNext }: BasicInfoStepProps) {
 	const { draftConfig, setDraftConfig, wizardMode } = useConfigurationState();
 	const { t } = useTranslation();
 
+	const update = (patch: Partial<typeof draftConfig>) =>
+		setDraftConfig({ ...draftConfig, ...patch });
+
+	const tabToNext: React.KeyboardEventHandler<HTMLInputElement> = (event) => {
+		if (event.key === "Tab" && !event.shiftKey) {
+			event.preventDefault();
+			onForceNext?.();
+		}
+	};
+
+	const limit =
+		wizardMode === "Vector3D"
+			? {
+					label: t("configuration_page.max_vertical_tnt_label"),
+					hint: t("configuration_page.max_vertical_tnt_desc"),
+					value: draftConfig.max_vertical_tnt,
+					error: errors.max_vertical_tnt,
+					onChange: (v: string) => update({ max_vertical_tnt: v }),
+				}
+			: wizardMode === "Standard"
+				? {
+						label: t("configuration_page.max_tnt_label"),
+						hint: t("configuration_page.max_tnt_desc"),
+						value: draftConfig.max_tnt,
+						error: errors.max_tnt,
+						onChange: (v: string) => update({ max_tnt: v }),
+					}
+				: null;
+
 	return (
-		<div className="flex-1 flex items-center justify-center p-4">
-			<Card className="w-full max-w-[450px]">
-				<CardHeader>
-					<CardTitle>{t("configuration_page.basic_info_title")}</CardTitle>
-					<CardDescription>
-						{t("configuration_page.basic_info_desc")}
-					</CardDescription>
-				</CardHeader>
-				<CardContent>
-					<div className="grid w-full items-center gap-4">
-						<div className="flex flex-col space-y-1.5">
-							<Label>{t("configuration_page.pearl_coord_label")}</Label>
-							<div className="grid grid-cols-3 gap-2">
-								<div className="space-y-1">
-									<Label className="text-xs text-muted-foreground">
-										{t("configuration_page.label_x")}
-									</Label>
-									<BufferedNumberInput
-										value={draftConfig.pearl_x_position}
-										onValueChange={(v) =>
-											setDraftConfig({
-												...draftConfig,
-												pearl_x_position: v,
-											})
-										}
-										placeholder={errors.pearl_x}
-										className={cn(
-											"h-7 text-xs font-mono px-2 py-0 shadow-none",
-											errors.pearl_x &&
-												"border-destructive focus-visible:ring-destructive placeholder:text-destructive/60",
-										)}
-									/>
-								</div>
-								<div className="space-y-1">
-									<Label className="text-xs text-muted-foreground">
-										{t("configuration_page.label_y")}
-									</Label>
-									<BufferedNumberInput
-										value={draftConfig.pearl_y_position}
-										onValueChange={(v) =>
-											setDraftConfig({
-												...draftConfig,
-												pearl_y_position: v,
-											})
-										}
-										placeholder={errors.pearl_y}
-										className={cn(
-											"h-7 text-xs font-mono px-2 py-0 shadow-none",
-											errors.pearl_y &&
-												"border-destructive focus-visible:ring-destructive placeholder:text-destructive/60",
-										)}
-									/>
-								</div>
-								<div className="space-y-1">
-									<Label className="text-xs text-muted-foreground">
-										{t("configuration_page.label_z")}
-									</Label>
-									<BufferedNumberInput
-										value={draftConfig.pearl_z_position}
-										onValueChange={(v) =>
-											setDraftConfig({
-												...draftConfig,
-												pearl_z_position: v,
-											})
-										}
-										placeholder={errors.pearl_z}
-										className={cn(
-											"h-7 text-xs font-mono px-2 py-0 shadow-none",
-											errors.pearl_z &&
-												"border-destructive focus-visible:ring-destructive placeholder:text-destructive/60",
-										)}
-									/>
-								</div>
-							</div>
-							<p className="text-[0.8rem] text-muted-foreground">
-								{t("configuration_page.pearl_coord_desc")}
-							</p>
-						</div>
+		<div className="flex max-w-[560px] flex-col gap-6">
+			<Field
+				label={t("configuration_page.pearl_coord_label")}
+				hint={t("configuration_page.pearl_coord_desc")}
+			>
+				<div className="grid grid-cols-3 gap-3">
+					<AxisInput
+						axis="X"
+						id="wizard-pearl-x"
+						value={draftConfig.pearl_x_position}
+						onValueChange={(v) => update({ pearl_x_position: v })}
+						error={errors.pearl_x}
+					/>
+					<AxisInput
+						axis="Y"
+						id="wizard-pearl-y"
+						value={draftConfig.pearl_y_position}
+						onValueChange={(v) => update({ pearl_y_position: v })}
+						error={errors.pearl_y}
+					/>
+					<AxisInput
+						axis="Z"
+						id="wizard-pearl-z"
+						value={draftConfig.pearl_z_position}
+						onValueChange={(v) => update({ pearl_z_position: v })}
+						error={errors.pearl_z}
+					/>
+				</div>
+			</Field>
 
-						<div className="flex flex-col space-y-1.5">
-							<Label>{t("configuration_page.pearl_momentum_label")}</Label>
-							<div className="grid grid-cols-3 gap-2">
-								<div className="space-y-1">
-									<Label className="text-xs text-muted-foreground">
-										{t("configuration_page.label_x")}
-									</Label>
-									<BufferedNumberInput
-										value={draftConfig.pearl_x_motion}
-										onValueChange={(v) =>
-											setDraftConfig({
-												...draftConfig,
-												pearl_x_motion: v,
-											})
-										}
-										placeholder={errors.momentum_x}
-										className={cn(
-											"h-7 text-xs font-mono px-2 py-0 shadow-none",
-											errors.momentum_x &&
-												"border-destructive focus-visible:ring-destructive placeholder:text-destructive/60",
-										)}
-									/>
-								</div>
-								<div className="space-y-1">
-									<Label className="text-xs text-muted-foreground">
-										{t("configuration_page.label_y")}
-									</Label>
-									<BufferedNumberInput
-										value={draftConfig.pearl_y_motion}
-										onValueChange={(v) => {
-											setDraftConfig({
-												...draftConfig,
-												pearl_y_motion: v,
-											});
-										}}
-										placeholder={errors.momentum_y}
-										className={cn(
-											"h-7 text-xs font-mono px-2 py-0 shadow-none",
-											errors.momentum_y &&
-												"border-destructive focus-visible:ring-destructive placeholder:text-destructive/60",
-										)}
-									/>
-								</div>
-								<div className="space-y-1">
-									<Label className="text-xs text-muted-foreground">
-										{t("configuration_page.label_z")}
-									</Label>
-									<BufferedNumberInput
-										value={draftConfig.pearl_z_motion}
-										onValueChange={(v) =>
-											setDraftConfig({
-												...draftConfig,
-												pearl_z_motion: v,
-											})
-										}
-										placeholder={errors.momentum_z}
-										className={cn(
-											"h-7 text-xs font-mono px-2 py-0 shadow-none",
-											errors.momentum_z &&
-												"border-destructive focus-visible:ring-destructive placeholder:text-destructive/60",
-										)}
-									/>
-								</div>
-							</div>
-							<p className="text-[0.8rem] text-muted-foreground">
-								{t("configuration_page.pearl_momentum_desc")}
-							</p>
-						</div>
+			<Field
+				label={t("configuration_page.pearl_momentum_label")}
+				hint={t("configuration_page.pearl_momentum_desc")}
+			>
+				<div className="grid grid-cols-3 gap-3">
+					<AxisInput
+						axis="X"
+						id="wizard-motion-x"
+						value={draftConfig.pearl_x_motion}
+						onValueChange={(v) => update({ pearl_x_motion: v })}
+						error={errors.momentum_x}
+					/>
+					<AxisInput
+						axis="Y"
+						id="wizard-motion-y"
+						value={draftConfig.pearl_y_motion}
+						onValueChange={(v) => update({ pearl_y_motion: v })}
+						error={errors.momentum_y}
+					/>
+					<AxisInput
+						axis="Z"
+						id="wizard-motion-z"
+						value={draftConfig.pearl_z_motion}
+						onValueChange={(v) => update({ pearl_z_motion: v })}
+						error={errors.momentum_z}
+						onKeyDown={limit ? undefined : tabToNext}
+					/>
+				</div>
+			</Field>
 
-						{wizardMode === "Vector3D" && (
-							<div className="flex flex-col space-y-1.5">
-								<Label>{t("configuration_page.max_vertical_tnt_label")}</Label>
-								<BufferedNumberInput
-									value={draftConfig.max_vertical_tnt}
-									onValueChange={(v) =>
-										setDraftConfig({
-											...draftConfig,
-											max_vertical_tnt: v,
-										})
-									}
-									onKeyDown={(e) => {
-										if (e.key === "Tab" && !e.shiftKey) {
-											e.preventDefault();
-											onForceNext?.();
-										}
-									}}
-									placeholder={errors.max_vertical_tnt}
-									className={cn(
-										"h-7 text-xs font-mono px-2 py-0 shadow-none",
-										errors.max_vertical_tnt &&
-											"border-destructive focus-visible:ring-destructive placeholder:text-destructive/60",
-									)}
-								/>
-								<p className="text-[0.8rem] text-muted-foreground">
-									{t("configuration_page.max_vertical_tnt_desc")}
-								</p>
-							</div>
-						)}
-						{wizardMode === "Standard" && (
-							<div className="flex flex-col space-y-1.5">
-								<Label>{t("configuration_page.max_tnt_label")}</Label>
-								<BufferedNumberInput
-									value={draftConfig.max_tnt}
-									onValueChange={(v) =>
-										setDraftConfig({ ...draftConfig, max_tnt: v })
-									}
-									onKeyDown={(e) => {
-										if (e.key === "Tab" && !e.shiftKey) {
-											e.preventDefault();
-											onForceNext?.();
-										}
-									}}
-									placeholder={errors.max_tnt}
-									className={cn(
-										"h-7 text-xs font-mono px-2 py-0 shadow-none",
-										errors.max_tnt &&
-											"border-destructive focus-visible:ring-destructive placeholder:text-destructive/60",
-									)}
-								/>
-								<p className="text-[0.8rem] text-muted-foreground">
-									{t("configuration_page.max_tnt_desc")}
-								</p>
-							</div>
-						)}
+			{limit && (
+				<Field label={limit.label} hint={limit.hint}>
+					<div className="grid grid-cols-3 gap-3">
+						<AxisInput
+							axis="#"
+							id="wizard-max-tnt"
+							value={limit.value}
+							onValueChange={limit.onChange}
+							error={limit.error}
+							onKeyDown={tabToNext}
+						/>
 					</div>
-				</CardContent>
-			</Card>
+				</Field>
+			)}
 		</div>
 	);
 }
