@@ -40,7 +40,7 @@ pub fn calculate_pearl_trace(input: PearlTraceInput) -> Result<PearlTraceOutput,
         input.blue_tnt,
         input.vertical_tnt_amount.unwrap_or(0),
         flight_direction,
-        10000,
+        input.max_ticks.unwrap_or(10000).min(10000),
         &[],
         version,
     )
