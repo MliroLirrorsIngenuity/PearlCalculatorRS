@@ -13,7 +13,13 @@ import { cn } from "@/lib/utils";
 import pkg from "../../../package.json";
 import tauriConf from "../../../src-tauri/tauri.conf.json";
 
-export function AppInfo({ className }: { className?: string }) {
+export function AppInfo({
+	className,
+	children,
+}: {
+	className?: string;
+	children?: React.ReactNode;
+}) {
 	const mobileViewContext = useMobileViewOptional();
 	const isMobile = mobileViewContext?.isMobile ?? false;
 	const [isOpen, setIsOpen] = useState(false);
@@ -38,19 +44,21 @@ export function AppInfo({ className }: { className?: string }) {
 		<div className={className}>
 			<HoverCard {...hoverCardProps}>
 				<HoverCardTrigger asChild>
-					<Button
-						variant="ghost"
-						size="icon"
-						className="h-4 w-4 rounded-full text-muted-foreground hover:text-foreground"
-						style={{ touchAction: "manipulation" }}
-						onPointerDown={() => {
-							if (isMobile) {
-								setIsOpen((prev) => !prev);
-							}
-						}}
-					>
-						<BadgeInfo className="h-3.5 w-3.5" />
-					</Button>
+					{children ?? (
+						<Button
+							variant="ghost"
+							size="icon"
+							className="h-4 w-4 rounded-full text-muted-foreground hover:text-foreground"
+							style={{ touchAction: "manipulation" }}
+							onPointerDown={() => {
+								if (isMobile) {
+									setIsOpen((prev) => !prev);
+								}
+							}}
+						>
+							<BadgeInfo className="h-3.5 w-3.5" />
+						</Button>
+					)}
 				</HoverCardTrigger>
 				<HoverCardContent
 					className={cn(

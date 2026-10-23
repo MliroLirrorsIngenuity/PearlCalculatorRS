@@ -3,6 +3,12 @@
 
 @custom-variant dark (&:is(.dark *));
 
+@theme {
+	--font-sans:
+		"Geist Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+		"PingFang SC", "Microsoft YaHei", sans-serif;
+}
+
 :root {
 	--safe-area-inset-top: env(safe-area-inset-top, 0px);
 	--safe-area-inset-right: env(safe-area-inset-right, 0px);
@@ -86,24 +92,24 @@
 }
 
 .dark {
-	--background: oklch(0.141 0.005 285.823);
-	--foreground: oklch(0.985 0 0);
-	--card: oklch(0.21 0.006 285.885);
-	--card-foreground: oklch(0.985 0 0);
-	--popover: oklch(0.21 0.006 285.885);
-	--popover-foreground: oklch(0.985 0 0);
+	--background: oklch(0.165 0.005 285.823);
+	--foreground: oklch(0.95 0 0);
+	--card: oklch(0.215 0.006 285.885);
+	--card-foreground: oklch(0.95 0 0);
+	--popover: oklch(0.24 0.006 285.885);
+	--popover-foreground: oklch(0.95 0 0);
 	--primary: oklch(0.92 0.004 286.32);
 	--primary-foreground: oklch(0.21 0.006 285.885);
 	--secondary: oklch(0.274 0.006 286.033);
 	--secondary-foreground: oklch(0.985 0 0);
 	--muted: oklch(0.274 0.006 286.033);
-	--muted-foreground: oklch(0.705 0.015 286.067);
+	--muted-foreground: oklch(0.75 0.012 286.067);
 	--accent: oklch(0.274 0.006 286.033);
 	--accent-foreground: oklch(0.985 0 0);
 	--destructive: oklch(0.704 0.191 22.216);
 	--destructive-foreground: oklch(0.985 0 0);
-	--border: oklch(1 0 0 / 10%);
-	--input: oklch(1 0 0 / 15%);
+	--border: oklch(1 0 0 / 12%);
+	--input: oklch(1 0 0 / 18%);
 	--ring: oklch(0.552 0.016 285.938);
 	--chart-1: oklch(0.488 0.243 264.376);
 	--chart-2: oklch(0.696 0.17 162.48);
@@ -152,6 +158,16 @@
 	textarea {
 		user-select: text;
 		-webkit-user-select: text;
+	}
+
+	input[type="number"] {
+		-moz-appearance: textfield;
+	}
+
+	input[type="number"]::-webkit-inner-spin-button,
+	input[type="number"]::-webkit-outer-spin-button {
+		-webkit-appearance: none;
+		margin: 0;
 	}
 
 	a,

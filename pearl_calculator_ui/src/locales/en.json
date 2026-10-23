@@ -18,6 +18,11 @@
 					"Standard": "Std (2D)",
 					"Accumulation": "Acc",
 					"Vector3D": "3D"
+				},
+				"segment": {
+					"Standard": "Standard",
+					"Accumulation": "Accum.",
+					"Vector3D": "3D"
 				}
 			},
 			"select_config": "Select Config",
@@ -29,7 +34,9 @@
 			"completed": "Completed",
 			"settings": "Settings",
 			"bit_calculation": "Bit Calculation",
-			"results": "Results"
+			"results": "Results",
+			"label": "Breadcrumb",
+			"trace_summary": "Blue {{blue}} · Red {{red}} · {{direction}}"
 		},
 		"calculator": {
 			"no_configuration": "No Configuration",
@@ -249,6 +256,30 @@
 					"positive_integer": "Positive integer required"
 				}
 			}
+		},
+		"nav": {
+			"calculator": "Calculate",
+			"simulator": "Simulate",
+			"configuration": "Config",
+			"settings": "Settings",
+			"modules": "Modules",
+			"theme": "Theme",
+			"version": "Version",
+			"language": "Language",
+			"theme_system": "System",
+			"theme_light": "Light",
+			"theme_dark": "Dark"
+		},
+		"config_menu": {
+			"current": "Current config",
+			"unnamed": "Untitled config",
+			"max_tnt": "Max TNT {{count}}",
+			"bit_template": "Bit template {{count}} bits",
+			"edit": "Edit current config",
+			"import_file": "Import config file",
+			"paste_code": "Paste config code",
+			"change": "Change config",
+			"new": "New config"
 		}
 	}
 }

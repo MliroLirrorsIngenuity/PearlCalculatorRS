@@ -51,6 +51,10 @@ export function useBreadcrumbItems() {
 	const resetFinished = () => setIsFinished(false);
 
 	const getHomeBreadcrumbs = (): BreadcrumbItemType[] => {
+		const selectConfig = {
+			label: t("breadcrumb.select_config"),
+			onClick: resetConfig,
+		};
 		return match({ hasConfig, showPearlTrace, showBitCalculation })
 			.with({ hasConfig: false }, () => [
 				{ label: t("breadcrumb.select_config"), href: "/", active: true },
@@ -58,7 +62,7 @@ export function useBreadcrumbItems() {
 			.with({ showPearlTrace: false }, () => {
 				if (isMobileResults) {
 					return [
-						{ label: t("breadcrumb.select_config"), onClick: resetConfig },
+						selectConfig,
 						{
 							label: t("breadcrumb.calculator"),
 							onClick: () => showInput?.(),
@@ -67,17 +71,17 @@ export function useBreadcrumbItems() {
 					];
 				}
 				return [
-					{ label: t("breadcrumb.select_config"), onClick: resetConfig },
+					selectConfig,
 					{ label: t("breadcrumb.calculator"), href: "/", active: true },
 				];
 			})
 			.with({ showBitCalculation: false }, () => [
-				{ label: t("breadcrumb.select_config"), onClick: resetConfig },
+				selectConfig,
 				{ label: t("breadcrumb.calculator"), href: "/", onClick: resetTrace },
 				{ label: t("breadcrumb.pearl_trace"), active: true },
 			])
 			.otherwise(() => [
-				{ label: t("breadcrumb.select_config"), onClick: resetConfig },
+				selectConfig,
 				{ label: t("breadcrumb.calculator"), href: "/", onClick: resetTrace },
 				{ label: t("breadcrumb.pearl_trace"), onClick: resetBit },
 				{ label: t("breadcrumb.bit_calculation"), active: true },

@@ -18,6 +18,11 @@
 					"Standard": "标准",
 					"Accumulation": "堆叠",
 					"Vector3D": "矢量"
+				},
+				"segment": {
+					"Standard": "标准",
+					"Accumulation": "累加",
+					"Vector3D": "3D"
 				}
 			},
 			"select_config": "选择配置",
@@ -29,7 +34,9 @@
 			"completed": "已完成",
 			"settings": "设置",
 			"bit_calculation": "Bit计算",
-			"results": "结果"
+			"results": "结果",
+			"label": "导航路径",
+			"trace_summary": "蓝 {{blue}} · 红 {{red}} · {{direction}}"
 		},
 		"calculator": {
 			"no_configuration": "无配置",
@@ -249,6 +256,30 @@
 					"positive_integer": "需要正整数"
 				}
 			}
+		},
+		"nav": {
+			"calculator": "计算",
+			"simulator": "模拟",
+			"configuration": "配置",
+			"settings": "设置",
+			"modules": "功能",
+			"theme": "主题",
+			"version": "版本",
+			"language": "语言",
+			"theme_system": "跟随系统",
+			"theme_light": "浅色",
+			"theme_dark": "深色"
+		},
+		"config_menu": {
+			"current": "当前配置",
+			"unnamed": "未命名配置",
+			"max_tnt": "最大 TNT {{count}}",
+			"bit_template": "Bit 模板 {{count}} 位",
+			"edit": "编辑当前配置",
+			"import_file": "导入配置文件",
+			"paste_code": "粘贴神秘代码",
+			"change": "更换配置",
+			"new": "新建配置"
 		}
 	}
 }

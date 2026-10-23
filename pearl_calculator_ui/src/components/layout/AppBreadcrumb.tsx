@@ -1,18 +1,10 @@
-import { ArrowLeftRight, ChevronLeft, ChevronsRight, Menu } from "lucide-react";
+import { ArrowLeftRight, ChevronLeft } from "lucide-react";
 import { Fragment } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router";
 import { match, P } from "ts-pattern";
-import { Badge } from "@/components/ui/badge";
-
-import {
-	Breadcrumb,
-	BreadcrumbItem,
-	BreadcrumbLink,
-	BreadcrumbList,
-	BreadcrumbPage,
-	BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
+import { Segmented } from "@/components/common/Metric";
+import { ConfigMenu } from "@/components/layout/ConfigMenu";
 import { Button } from "@/components/ui/button";
 import {
 	DropdownMenu,
@@ -20,144 +12,155 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useSidebar } from "@/components/ui/sidebar";
+import { useCalculatorState } from "@/context/CalculatorStateContext";
+import { useConfig } from "@/context/ConfigContext";
 import { useConfigurationState } from "@/context/ConfigurationStateContext";
 import { useMobileView } from "@/context/MobileViewContext";
-import { useBreadcrumbItems } from "@/hooks/use-breadcrumb-items";
+import {
+	type BreadcrumbItemType,
+	useBreadcrumbItems,
+} from "@/hooks/use-breadcrumb-items";
+import { useDirectionLabel } from "@/hooks/use-direction-label";
 import type { CannonMode } from "@/types/domain";
+
+const MODES: CannonMode[] = ["Standard", "Accumulation", "Vector3D"];
+
+function ModeSwitcher() {
+	const { t } = useTranslation();
+	const { isMobile } = useMobileView();
+	const { calculationMode, setCalculationMode } = useConfigurationState();
+
+	if (isMobile) {
+		return (
+			<DropdownMenu>
+				<DropdownMenuTrigger asChild>
+					<Button variant="ghost" size="sm" className="h-8 shrink-0 gap-1">
+						<ArrowLeftRight className="size-3.5" />
+						<span className="text-xs font-medium">
+							{t(`breadcrumb.mode.short.${calculationMode}`)}
+						</span>
+					</Button>
+				</DropdownMenuTrigger>
+				<DropdownMenuContent align="end">
+					{MODES.map((mode) => (
+						<DropdownMenuItem
+							key={mode}
+							onClick={() => setCalculationMode(mode)}
+						>
+							{t(`breadcrumb.mode.${mode}`)}
+						</DropdownMenuItem>
+					))}
+				</DropdownMenuContent>
+			</DropdownMenu>
+		);
+	}
+
+	return (
+		<Segmented
+			value={calculationMode}
+			onChange={setCalculationMode}
+			options={MODES.map((mode) => ({
+				value: mode,
+				label: t(`breadcrumb.mode.segment.${mode}`),
+			}))}
+		/>
+	);
+}
+
+function Crumb({
+	item,
+	onSelect,
+}: {
+	item: BreadcrumbItemType;
+	onSelect: (item: BreadcrumbItemType) => void;
+}) {
+	if (item.active) {
+		return (
+			<span aria-current="page" className="truncate font-medium">
+				{item.label}
+			</span>
+		);
+	}
+	if (!item.onClick && !item.href) {
+		return <span className="truncate text-muted-foreground">{item.label}</span>;
+	}
+	return (
+		<button
+			type="button"
+			onClick={() => onSelect(item)}
+			className="truncate text-muted-foreground transition-colors hover:text-foreground"
+		>
+			{item.label}
+		</button>
+	);
+}
 
 export function AppBreadcrumb() {
 	const navigate = useNavigate();
 	const location = useLocation();
 	const { t } = useTranslation();
 	const items = useBreadcrumbItems();
-	const { calculationMode, setCalculationMode } = useConfigurationState();
-
-	const showModeSwitcher = location.pathname === "/";
 	const { isMobile } = useMobileView();
-	const { toggleSidebar } = useSidebar();
+	const { hasConfig } = useConfig();
+	const { defaultCalculator } = useCalculatorState();
+	const { getCardinalLabel } = useDirectionLabel();
 
-	const handleBack = () => {
-		const prev = items[items.length - 2];
-		match(prev)
-			.with({ onClick: P.nonNullable }, (item) => item.onClick())
-			.with({ href: P.string }, (item) => navigate(item.href))
+	const onCalculator = location.pathname === "/";
+	const trace = defaultCalculator.trace;
+	const visibleItems = isMobile ? items.slice(-1) : items;
+
+	const select = (item: BreadcrumbItemType) =>
+		match(item)
+			.with({ onClick: P.nonNullable }, (i) => i.onClick())
+			.with({ href: P.string }, (i) => navigate(i.href))
 			.otherwise(() => {});
-	};
-
-	const handleModeChange = (mode: CannonMode) => {
-		setCalculationMode(mode);
-	};
 
 	return (
-		<div className="flex items-center gap-2 w-full justify-between">
-			<div className="flex items-center gap-2 min-w-0 overflow-hidden">
-				{isMobile && (
-					<Button
-						variant="ghost"
-						size="icon"
-						className="h-6 w-6 shrink-0"
-						onClick={toggleSidebar}
-					>
-						<Menu className="h-4 w-4" />
-					</Button>
-				)}
-				<Button
-					variant="outline"
-					className="h-6 px-2 shrink-0 gap-1"
-					onClick={handleBack}
-					disabled={items.length < 2}
-				>
-					<ChevronLeft className="h-3.5 w-3.5" />
-					<span className="text-xs">{t("breadcrumb.back")}</span>
-				</Button>
-				<Breadcrumb className="min-w-0">
-					<BreadcrumbList className="flex-nowrap">
-						{(() => {
-							if (isMobile) {
-								const currentItem = items[items.length - 1];
-								if (!currentItem) return null;
-								return (
-									<BreadcrumbItem className="min-w-0">
-										<BreadcrumbPage>
-											<Badge className="shadow-none rounded-full whitespace-nowrap">
-												{currentItem.label}
-											</Badge>
-										</BreadcrumbPage>
-									</BreadcrumbItem>
-								);
-							}
-
-							return items.map((item, index) => (
-								<Fragment key={index}>
-									{index > 0 && (
-										<BreadcrumbSeparator>
-											<ChevronsRight />
-										</BreadcrumbSeparator>
-									)}
-									<BreadcrumbItem>
-										{item.active ? (
-											<BreadcrumbPage>
-												<Badge className="shadow-none rounded-full">
-													{item.label}
-												</Badge>
-											</BreadcrumbPage>
-										) : (
-											<BreadcrumbLink
-												className={
-													item.onClick ? "cursor-pointer" : "cursor-default"
-												}
-												onClick={(e) => {
-													if (item.onClick) {
-														e.preventDefault();
-														item.onClick();
-													}
-												}}
-											>
-												<Badge
-													variant="outline"
-													className="font-medium shadow-none rounded-full"
-												>
-													{item.label}
-												</Badge>
-											</BreadcrumbLink>
-										)}
-									</BreadcrumbItem>
-								</Fragment>
-							));
-						})()}
-					</BreadcrumbList>
-				</Breadcrumb>
-			</div>
-
-			{showModeSwitcher && (
-				<DropdownMenu>
-					<DropdownMenuTrigger asChild>
-						<Button variant="ghost" size="sm" className="h-8 gap-1 shrink-0">
-							<ArrowLeftRight
-								className="h-3.5 w-3.5 shrink-0"
-								style={{ transform: "translateY(-0.5px)" }}
-							/>
-							<span className="text-xs font-medium whitespace-nowrap">
-								{isMobile
-									? t(`breadcrumb.mode.short.${calculationMode}`)
-									: t(`breadcrumb.mode.${calculationMode}`)}
+		<div className="flex w-full items-center gap-2">
+			<Button
+				variant="outline"
+				size="sm"
+				className="h-6 shrink-0 gap-1 px-2 text-xs"
+				onClick={() => select(items[items.length - 2])}
+				disabled={items.length < 2}
+			>
+				<ChevronLeft className="size-3.5" />
+				{t("breadcrumb.back")}
+			</Button>
+			<nav
+				aria-label={t("breadcrumb.label")}
+				className="flex min-w-0 items-center gap-2 text-sm"
+			>
+				{visibleItems.map((item, index) => (
+					<Fragment key={item.label}>
+						{index > 0 && (
+							<span aria-hidden="true" className="text-muted-foreground/60">
+								›
 							</span>
-						</Button>
-					</DropdownMenuTrigger>
-					<DropdownMenuContent align="end">
-						<DropdownMenuItem onClick={() => handleModeChange("Standard")}>
-							{t("breadcrumb.mode.Standard")}
-						</DropdownMenuItem>
-						<DropdownMenuItem onClick={() => handleModeChange("Accumulation")}>
-							{t("breadcrumb.mode.Accumulation")}
-						</DropdownMenuItem>
-						<DropdownMenuItem onClick={() => handleModeChange("Vector3D")}>
-							{t("breadcrumb.mode.Vector3D")}
-						</DropdownMenuItem>
-					</DropdownMenuContent>
-				</DropdownMenu>
-			)}
+						)}
+						<Crumb item={item} onSelect={select} />
+					</Fragment>
+				))}
+				{onCalculator && hasConfig && !trace.show && (
+					<>
+						<span aria-hidden="true" className="text-muted-foreground/60">
+							›
+						</span>
+						<ConfigMenu />
+					</>
+				)}
+				{onCalculator && trace.show && trace.tnt && !isMobile && (
+					<span className="ml-1.5 shrink-0 text-[13px] text-muted-foreground tabular-nums">
+						{t("breadcrumb.trace_summary", {
+							blue: trace.tnt.blue,
+							red: trace.tnt.red,
+							direction: getCardinalLabel(trace.direction),
+						})}
+					</span>
+				)}
+			</nav>
+			<div className="flex-1" />
+			{onCalculator && <ModeSwitcher />}
 		</div>
 	);
 }
