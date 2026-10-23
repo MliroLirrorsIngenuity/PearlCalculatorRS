@@ -13,15 +13,15 @@ export function AppRail() {
 	return (
 		<nav
 			aria-label={t("nav.modules")}
-			className="flex w-[72px] shrink-0 flex-col items-center gap-1.5 overflow-y-auto border-r bg-zinc-100 pt-[calc(0.75rem+var(--safe-area-inset-top))] pb-[calc(0.75rem+var(--safe-area-inset-bottom))] pl-[var(--safe-area-inset-left)] [scrollbar-width:none] dark:bg-zinc-900/50"
+			className="flex w-[72px] shrink-0 flex-col items-center gap-1.5 overflow-y-auto border-r bg-zinc-100 pt-[var(--safe-area-inset-top)] pb-[calc(0.75rem+var(--safe-area-inset-bottom))] pl-[var(--safe-area-inset-left)] [scrollbar-width:none] dark:bg-zinc-900/50"
 		>
-			<AppInfo className="mb-3.5">
-				<button type="button" aria-label="Pearl Calculator RS">
-					<img
-						src={appIcon}
-						alt=""
-						className="size-[34px] rounded-[10px] border"
-					/>
+			<AppInfo className="mb-0.5 flex h-12 shrink-0 items-center pt-1">
+				<button
+					type="button"
+					aria-label="Pearl Calculator RS"
+					className="rounded-full outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+				>
+					<img src={appIcon} alt="" className="size-9" />
 				</button>
 			</AppInfo>
 			{NAV_ITEMS.map(({ to, icon: Icon, labelKey }) => {
