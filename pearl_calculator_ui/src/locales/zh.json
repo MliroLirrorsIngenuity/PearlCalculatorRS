@@ -355,6 +355,10 @@
 				"west": "西面"
 			},
 			"rows": "{{count}} 行",
+			"copy_hint": "点击行复制",
+			"copied_trajectory": "已复制第 {{tick}} tick 的坐标",
+			"copied_momentum": "已复制第 {{tick}} tick 的动量",
+			"copy_failed": "复制失败",
 			"view_face": "命中面"
 		},
 		"bit": {

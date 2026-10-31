@@ -172,7 +172,7 @@ export interface BitsResult {
 }
 
 export interface CopyInput {
-	kind: "bits" | "row" | "configCode";
+	kind: "bits" | "row" | "configCode" | "trace";
 	text: string;
 	data: unknown;
 }

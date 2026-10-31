@@ -9,7 +9,10 @@ import { useTranslation } from "react-i18next";
 import { landingIndex } from "@/components/charts/trajectory";
 import { Segmented } from "@/components/common/Metric";
 import { useElementSize } from "@/hooks/use-element-size";
+import { useToastNotifications } from "@/hooks/use-toast-notifications";
 import { cn } from "@/lib/utils";
+import { copyText } from "@/plugins/copy";
+import { calculatorService } from "@/services";
 import type { PearlTraceResult } from "@/types/domain";
 
 export interface TraceDataPanelRef {
@@ -30,6 +33,7 @@ const gridClass =
 const TraceDataPanel = forwardRef<TraceDataPanelRef, TraceDataPanelProps>(
 	function TraceDataPanel({ data }, ref) {
 		const { t } = useTranslation();
+		const { showSuccess, showError } = useToastNotifications();
 		const [view, setView] = useState<View>("trajectory");
 		const [scrollTop, setScrollTop] = useState(0);
 		const [flashRow, setFlashRow] = useState<number | null>(null);
@@ -60,6 +64,28 @@ const TraceDataPanel = forwardRef<TraceDataPanelRef, TraceDataPanelProps>(
 			},
 		}));
 
+		const copyRow = async (
+			tick: number,
+			point: { X: number; Y: number; Z: number },
+		) => {
+			const values = [point.X, point.Y, point.Z].map((value) =>
+				value.toFixed(10),
+			);
+			try {
+				const text = await copyText("trace", values.join(" "), {
+					tick,
+					view,
+					x: point.X,
+					y: point.Y,
+					z: point.Z,
+				});
+				await calculatorService.copyToClipboard(text);
+				showSuccess(t(`trace.copied_${view}`, { tick }));
+			} catch (error) {
+				showError(t("trace.copy_failed"), error);
+			}
+		};
+
 		const first = Math.max(0, Math.floor(scrollTop / ROW_HEIGHT) - OVERSCAN);
 		const last = Math.min(
 			points.length,
@@ -79,7 +105,7 @@ const TraceDataPanel = forwardRef<TraceDataPanelRef, TraceDataPanelProps>(
 					];
 
 		return (
-			<div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border">
+			<div className="@container flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border">
 				<div className="flex items-center gap-2.5 p-2">
 					<Segmented
 						className="grid flex-1 grid-cols-2"
@@ -92,6 +118,10 @@ const TraceDataPanel = forwardRef<TraceDataPanelRef, TraceDataPanelProps>(
 					/>
 					<span className="shrink-0 text-xs text-muted-foreground tabular-nums">
 						{t("trace.rows", { count: points.length })}
+						<span className="hidden @[22rem]:inline">
+							{" · "}
+							{t("trace.copy_hint")}
+						</span>
 					</span>
 				</div>
 				<div
@@ -117,11 +147,14 @@ const TraceDataPanel = forwardRef<TraceDataPanelRef, TraceDataPanelProps>(
 						{points.slice(first, last).map((point, offset) => {
 							const tick = first + offset;
 							return (
-								<div
+								<button
+									type="button"
 									key={tick}
+									title={t("trace.copy_hint")}
+									onClick={() => copyRow(tick, point)}
 									className={cn(
 										gridClass,
-										"absolute inset-x-0 items-center border-b border-border/50 text-right text-xs tabular-nums transition-colors",
+										"absolute inset-x-0 cursor-pointer items-center border-b border-border/50 text-right text-xs tabular-nums transition-colors hover:bg-muted/70 focus-visible:bg-muted/70 focus-visible:outline-none",
 										tick === landing && "bg-primary/[0.06] font-medium",
 										tick === flashRow && "bg-primary/15",
 									)}
@@ -133,7 +166,7 @@ const TraceDataPanel = forwardRef<TraceDataPanelRef, TraceDataPanelProps>(
 									<span>{point.X.toFixed(10)}</span>
 									<span>{point.Y.toFixed(10)}</span>
 									<span>{point.Z.toFixed(10)}</span>
-								</div>
+								</button>
 							);
 						})}
 					</div>

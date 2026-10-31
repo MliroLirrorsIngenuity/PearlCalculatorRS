@@ -211,14 +211,14 @@ slots: {
 | `trace` | 结果预览、珍珠轨迹页 | `PearlTraceInput` | `PearlTraceResult` |
 | `simulate` | 模拟页 | `RawTraceInput` | `PearlTraceResult` |
 | `bits` | Bit 计算页 | `BitsInput` | `BitsResult` |
-| `copy` | 复制 Bit 结果、复制神秘代码、复制工具结果 | `{ kind, text, data }` | 字符串 |
+| `copy` | 复制 Bit 结果、复制神秘代码、复制工具结果、复制轨迹表的一行 | `{ kind, text, data }` | 字符串 |
 | `importConfig` | 导入配置文件（打开、拖放、模拟页导入） | `{ name, content }` | `ImportedConfiguration` |
 | `exportConfig` | 导出配置 JSON | 配置对象 | 配置对象 |
 
 类型的完整定义见 `pearlcalc-plugin.d.ts`。几点约定：
 
 - `solve` 返回的每条结果必须包含 `distance`、`tick`、`blue`、`red`、`total`、`pearl_end_pos`、`pearl_end_motion`、`direction`，可以附加任意字段，配合 `resultColumns` 显示。
-- `copy` 的 `kind` 是 `"bits"`、`"configCode"` 或 `"row"`，`text` 是内置生成的文本，`data` 是对应的原始数据。
+- `copy` 的 `kind` 是 `"bits"`、`"configCode"`、`"row"` 或 `"trace"`，`text` 是内置生成的文本，`data` 是对应的原始数据。`"trace"` 来自珍珠轨迹页和模拟页的轨迹表，`text` 是空格分隔的三个值，`data` 是 `{ tick, view, x, y, z }`，`view` 为 `"trajectory"`（坐标）或 `"momentum"`（动量）。
 - 配置附带的插件只从用户选择的文件或粘贴的神秘代码原文里读取。`exportConfig` 返回值里的 `Plugins` 字段会被移除；`pc.files.save`、`pc.clipboard.write` 以及 `copy` 槽和工具 `copy()` 的输出，只要能被读成带插件的配置（任何位置出现 `Plugins` 键都算，包括转义写法和带 BOM 的文本）或含有神秘代码的插件段（`#~`），就会被拒绝。插件段由软件在 `copy` 槽之后追加，`copy` 槽看到的 `text` 不含插件。插件没办法把自己或别的代码塞进其他配置。
 - 配置页（向导）里的导入、导出和复制神秘代码不经过任何插件；向导里带进来的插件只会在导出时原样保留，不会运行。
 - `importConfig` 只处理插件在 `fileTypes` 里声明的扩展名，本软件自己的 `.json` 配置不经过它；申请了任何权限的插件不能接管 `importConfig`（它会看到你打开的其他文件）；插件拿到的 `name` 只是文件名，不含路径。常见写法是把内容转换成本软件的配置 JSON，再交给 `next`：

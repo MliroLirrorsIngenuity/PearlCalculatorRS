@@ -205,14 +205,14 @@ slots: {
 | `trace` | Result previews, pearl trace page | `PearlTraceInput` | `PearlTraceResult` |
 | `simulate` | Simulator page | `RawTraceInput` | `PearlTraceResult` |
 | `bits` | Bit calculation page | `BitsInput` | `BitsResult` |
-| `copy` | Copying Bit results, config codes, tool results | `{ kind, text, data }` | string |
+| `copy` | Copying Bit results, config codes, tool results, a row of the trace table | `{ kind, text, data }` | string |
 | `importConfig` | Opening config files (dialog, drop, simulator import) | `{ name, content }` | `ImportedConfiguration` |
 | `exportConfig` | Exporting config JSON | config object | config object |
 
 The full types are in `pearlcalc-plugin.d.ts`. Conventions:
 
 - Every result returned by `solve` needs `distance`, `tick`, `blue`, `red`, `total`, `pearl_end_pos`, `pearl_end_motion` and `direction`; extra fields are allowed and can be shown via `resultColumns`.
-- `copy` gets `kind` = `"bits"`, `"configCode"` or `"row"`, the built-in `text`, and the raw `data`.
+- `copy` gets `kind` = `"bits"`, `"configCode"`, `"row"` or `"trace"`, the built-in `text`, and the raw `data`. `"trace"` comes from the trace table on the pearl trace and simulator pages: `text` is three space-separated values and `data` is `{ tick, view, x, y, z }`, where `view` is `"trajectory"` (position) or `"momentum"`.
 - Embedded plugins are only read from the original bytes of the file the user picked or the config code the user pasted. Any `Plugins` field in the `exportConfig` output is removed. `pc.files.save`, `pc.clipboard.write`, the `copy` slot and tool `copy()` output are rejected whenever they could be read as a config containing plugins (a `Plugins` key anywhere counts, including escaped spellings and text with a BOM) or contain a config-code plugin segment (`#~`). The app appends the plugin segment after the `copy` slot runs, so the `text` the slot sees has no plugins in it. A plugin cannot plant itself or other code into other configs.
 - Import, export and config-code copying on the Configuration page (wizard) never pass through plugins. Plugins carried into the wizard are only kept as-is on export and never run there.
 - `importConfig` only handles the extensions a plugin declares in `fileTypes`; the app's own `.json` configs never pass through it. Plugins with any permission cannot take over `importConfig`, since it would see other files you open. `name` is just the file name without the path. A custom format is usually converted to this app's config JSON and passed on:

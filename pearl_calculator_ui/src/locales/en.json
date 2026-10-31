@@ -355,6 +355,10 @@
 				"west": "west face"
 			},
 			"rows": "{{count}} rows",
+			"copy_hint": "click to copy",
+			"copied_trajectory": "Copied position at tick {{tick}}",
+			"copied_momentum": "Copied momentum at tick {{tick}}",
+			"copy_failed": "Copy failed",
 			"view_face": "Face"
 		},
 		"bit": {
