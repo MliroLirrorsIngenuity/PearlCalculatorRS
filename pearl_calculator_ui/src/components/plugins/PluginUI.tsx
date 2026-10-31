@@ -281,7 +281,7 @@ function TableNode({
 							key={id}
 							className={cn(
 								"border-b last:border-0",
-								clickable && "cursor-pointer hover:bg-muted/50",
+								clickable && "hover:bg-muted/50",
 								node.selected === index && "bg-muted",
 							)}
 							onClick={
@@ -338,7 +338,6 @@ function SvgShape({ node, ctx }: { node: SvgNode; ctx: RenderContext }) {
 			? {
 					onClick: () =>
 						ctx.emit({ on: String(node.on), payload: node.payload }),
-					className: "cursor-pointer",
 				}
 			: {};
 	const num = (value: unknown) => finite(value, 0);

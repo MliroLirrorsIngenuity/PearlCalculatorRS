@@ -134,6 +134,10 @@
 		cursor: default;
 	}
 
+	svg * {
+		cursor: inherit;
+	}
+
 	html {
 		overflow: hidden;
 		height: 100%;

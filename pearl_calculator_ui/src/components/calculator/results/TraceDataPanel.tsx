@@ -129,7 +129,7 @@ const TraceDataPanel = forwardRef<TraceDataPanelRef, TraceDataPanelProps>(
 									onClick={() => copyPoint(tick, view, point)}
 									className={cn(
 										gridClass,
-										"absolute inset-x-0 cursor-pointer items-center border-b border-border/50 text-right text-xs tabular-nums transition-colors hover:bg-muted/70 focus-visible:bg-muted/70 focus-visible:outline-none",
+										"absolute inset-x-0 items-center border-b border-border/50 text-right text-xs tabular-nums transition-colors hover:bg-muted/70 focus-visible:bg-muted/70 focus-visible:outline-none",
 										tick === landing && "bg-primary/[0.06] font-medium",
 										tick === flashRow && "bg-primary/15",
 									)}

@@ -48,7 +48,7 @@ export function CannonTypeStep() {
 					<label
 						key={mode.value}
 						className={cn(
-							"flex cursor-pointer items-start gap-3 rounded-lg border p-4 transition-colors has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ring/50",
+							"flex items-start gap-3 rounded-lg border p-4 transition-colors has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ring/50",
 							selected ? "border-foreground bg-muted/40" : "hover:bg-muted/40",
 						)}
 					>

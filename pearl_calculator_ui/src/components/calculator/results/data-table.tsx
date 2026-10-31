@@ -70,7 +70,7 @@ const DataTableRow = React.memo(
 		return (
 			<TableRow
 				data-state={row.getIsSelected() && "selected"}
-				className={`group/row h-9 border-border/50 *:whitespace-nowrap transition-colors ${onOpen ? "cursor-pointer focus-visible:bg-muted focus-visible:outline-none" : ""} ${isHighlighted ? "!bg-primary/15" : ""} ${isActive ? "!bg-muted" : ""}`}
+				className={`group/row h-9 border-border/50 *:whitespace-nowrap transition-colors ${onOpen ? "focus-visible:bg-muted focus-visible:outline-none" : ""} ${isHighlighted ? "!bg-primary/15" : ""} ${isActive ? "!bg-muted" : ""}`}
 				style={{
 					contain: "layout style paint",
 				}}
