@@ -29,7 +29,7 @@ const sideCount = (value: unknown) =>
 	(value as number) <= MAX_SIDES;
 
 function checkImported(output: unknown): ImportedConfiguration {
-	const imported = output as ImportedConfiguration;
+	const imported = JSON.parse(stringifyConfig(output)) as ImportedConfiguration;
 	const bits = BitTemplateConfigSchema.safeParse(imported?.bitTemplate);
 	const multiplier = MultiplierConfigSchema.safeParse(
 		imported?.multiplierTemplate,

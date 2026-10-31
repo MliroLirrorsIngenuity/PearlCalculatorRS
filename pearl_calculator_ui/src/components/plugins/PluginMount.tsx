@@ -67,7 +67,7 @@ export function PanelBody({
 			)}
 			{snapshot.ready ? (
 				<PluginErrorBoundary
-					key={snapshot.version}
+					resetKey={snapshot.version}
 					label={plugin.manifest.name}
 					onError={(message) => appendLog(plugin.uid, "error", message)}
 				>

@@ -3,6 +3,7 @@ import { Component, type ReactNode } from "react";
 
 interface Props {
 	label: string;
+	resetKey?: unknown;
 	onError?: (message: string) => void;
 	children: ReactNode;
 }
@@ -15,6 +16,15 @@ export class PluginErrorBoundary extends Component<
 
 	static getDerivedStateFromError(error: unknown) {
 		return { message: error instanceof Error ? error.message : String(error) };
+	}
+
+	componentDidUpdate(previous: Props) {
+		if (
+			this.state.message !== null &&
+			previous.resetKey !== this.props.resetKey
+		) {
+			this.setState({ message: null });
+		}
 	}
 
 	componentDidCatch(error: unknown) {

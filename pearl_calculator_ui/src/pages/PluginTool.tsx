@@ -248,7 +248,7 @@ function ToolDetail({
 						</p>
 					)}
 					{views && (
-						<PluginErrorBoundary label={plugin.manifest.name}>
+						<PluginErrorBoundary label={plugin.manifest.name} resetKey={views}>
 							<PluginViews
 								views={views}
 								policy={{
