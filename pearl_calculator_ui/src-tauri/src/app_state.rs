@@ -438,11 +438,17 @@ impl AppStateSnapshot {
     }
 
     fn reset_config(&mut self) {
-        self.config = ConfigStoreState::default();
+        self.config = ConfigStoreState {
+            version: self.config.version,
+            ..ConfigStoreState::default()
+        };
     }
 
     fn reset_draft(&mut self) {
-        self.configuration = ConfigurationStoreState::default();
+        self.configuration = ConfigurationStoreState {
+            calculation_mode: self.configuration.calculation_mode,
+            ..ConfigurationStoreState::default()
+        };
     }
 
     fn reset_default_calculator(&mut self) {
@@ -518,18 +524,26 @@ impl AppStateSnapshot {
         self.calculator.default_calculator.inputs.cannon_y = pearl_y.floor().to_string();
 
         self.config.config_data = config;
+        self.config.config_path = self.configuration.saved_path.clone().unwrap_or_default();
         self.config.has_config = true;
 
         self.config.bit_template_config = self
             .configuration
             .bit_template_state
             .as_ref()
+            .filter(|_| !self.configuration.is_bit_config_skipped)
             .map(input_state_to_config);
 
         self.config.multiplier_config = self
             .configuration
             .multiplier_bit_state
             .as_ref()
+            .filter(|state| {
+                state
+                    .side_values
+                    .iter()
+                    .any(|value| !value.trim().is_empty())
+            })
             .map(input_state_to_multiplier_config);
     }
 }
@@ -561,8 +575,8 @@ fn apply_calculator_input_update(
         CalculatorInputField::DestZ => inputs.dest_z = value_to_string(value),
         CalculatorInputField::CannonY => inputs.cannon_y = value_to_string(value),
         CalculatorInputField::TickRange => {
-            if let Some(range) = parse_range(&value) {
-                inputs.tick_range = range;
+            if let Some([low, high]) = parse_range(&value) {
+                inputs.tick_range = [low as u32, high as u32];
             }
         }
         CalculatorInputField::DistanceRange => {
@@ -580,11 +594,11 @@ fn value_to_string(value: Value) -> String {
         .unwrap_or_else(|| value.to_string().trim_matches('"').to_string())
 }
 
-fn parse_range(value: &Value) -> Option<[u32; 2]> {
+fn parse_range(value: &Value) -> Option<[f64; 2]> {
     let values = value.as_array()?;
     if values.len() != 2 {
         return None;
     }
 
-    Some([values[0].as_u64()? as u32, values[1].as_u64()? as u32])
+    Some([values[0].as_f64()?, values[1].as_f64()?])
 }

@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useCalculatorState } from "@/context/CalculatorStateContext";
 import { useConfig } from "@/context/ConfigContext";
+import { useConfigurationState } from "@/context/ConfigurationStateContext";
 import { useConfigActions } from "@/hooks/use-config-actions";
 import { clearConfigPlugins } from "@/plugins/config-plugins";
 
@@ -21,11 +22,13 @@ export function ConfigOnboarding() {
 	const { importFromFile, importFromCode } = useConfigActions();
 	const { resetConfig, setHasConfig } = useConfig();
 	const { resetDefaultCalculator } = useCalculatorState();
+	const { setCalculationMode } = useConfigurationState();
 
 	const skip = () => {
 		void clearConfigPlugins();
 		resetConfig();
 		resetDefaultCalculator();
+		setCalculationMode("Standard");
 		setHasConfig(true);
 	};
 

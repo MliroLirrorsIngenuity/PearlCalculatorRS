@@ -68,6 +68,7 @@ impl PearlTraceOutput {
         result: CalculationResult,
         destination: Option<(f64, f64)>,
         destination_y: Option<f64>,
+        plane_intercept_y: bool,
         origin: Space3D,
     ) -> Self {
         let pearl_trace_output: Vec<Space3DOutput> = result
@@ -84,7 +85,7 @@ impl PearlTraceOutput {
             .collect();
 
         let closest_approach = destination.and_then(|(dest_x, dest_z)| {
-            let closest = if let Some(target_y) = destination_y {
+            let closest = if let Some(target_y) = destination_y.filter(|_| plane_intercept_y) {
                 pearl_trace_output
                     .windows(2)
                     .enumerate()
@@ -97,19 +98,19 @@ impl PearlTraceOutput {
                             horizontal_axis_distance(upper, dest_x, dest_z),
                         ))
                     })
-                    .min_by(|a, b| a.2.partial_cmp(&b.2).unwrap().then_with(|| a.0.cmp(&b.0)))
+                    .min_by(|a, b| a.2.total_cmp(&b.2).then_with(|| a.0.cmp(&b.0)))
             } else {
                 pearl_trace_output
                     .iter()
                     .enumerate()
                     .map(|(tick, &point)| {
-                        (
-                            tick as u32,
-                            point,
-                            horizontal_distance(point, dest_x, dest_z),
-                        )
+                        let distance = match destination_y {
+                            Some(dest_y) => spatial_distance(point, dest_x, dest_y, dest_z),
+                            None => horizontal_distance(point, dest_x, dest_z),
+                        };
+                        (tick as u32, point, distance)
                     })
-                    .min_by(|a, b| a.2.partial_cmp(&b.2).unwrap().then_with(|| a.0.cmp(&b.0)))
+                    .min_by(|a, b| a.2.total_cmp(&b.2).then_with(|| a.0.cmp(&b.0)))
             };
 
             closest.map(|(tick, point, distance)| ClosestApproachOutput {
@@ -156,6 +157,12 @@ impl PearlTraceOutput {
 
 fn horizontal_distance(point: Space3DOutput, dest_x: f64, dest_z: f64) -> f64 {
     (point.x - dest_x).hypot(point.z - dest_z)
+}
+
+fn spatial_distance(point: Space3DOutput, dest_x: f64, dest_y: f64, dest_z: f64) -> f64 {
+    (point.x - dest_x)
+        .hypot(point.y - dest_y)
+        .hypot(point.z - dest_z)
 }
 
 fn horizontal_axis_distance(point: Space3DOutput, dest_x: f64, dest_z: f64) -> f64 {

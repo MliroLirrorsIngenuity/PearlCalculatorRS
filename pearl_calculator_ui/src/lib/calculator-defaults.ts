@@ -11,7 +11,8 @@ export function defaultDistanceRange(mode: string): [number, number] {
 	return isLongRange(mode) ? [0, 50] : [0, 20];
 }
 
-const sameRange = (a: number[], b: number[]) => a[0] === b[0] && a[1] === b[1];
+export const sameRange = (a: number[], b: number[]) =>
+	a[0] === b[0] && a[1] === b[1];
 
 export function hasCustomFilters(inputs: CalculatorInputs, mode: CannonMode) {
 	if (inputs.planeInterceptY) return false;

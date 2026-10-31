@@ -3,20 +3,17 @@ import { readTextFile } from "@tauri-apps/plugin-fs";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router";
-import { useCalculatorState } from "@/context/CalculatorStateContext";
 import { useConfig } from "@/context/ConfigContext";
-import { useConfigurationState } from "@/context/ConfigurationStateContext";
+import { useConfigActions } from "@/hooks/use-config-actions";
+import { useWizardImport } from "@/hooks/use-configuration-controller";
 import { useToastNotifications } from "@/hooks/use-toast-notifications";
-import { configToInputState } from "@/lib/bit-template-utils";
 import {
 	configExtensions,
 	extensionOf,
 	importConfigurationContent,
 	PLUGIN_EXTENSIONS,
 } from "@/lib/config-service";
-import { convertConfigToDraft } from "@/lib/config-utils";
-import { dispatchTauriAppStateAction } from "@/lib/tauri-app-state";
-import { applyConfigPlugins, attachPlugin } from "@/plugins/config-plugins";
+import { attachPlugin } from "@/plugins/config-plugins";
 import { noticeWizardPlugins, toastPluginError } from "@/plugins/errors";
 import { setWizardPlugins } from "@/plugins/store";
 import { isTauri } from "@/services";
@@ -35,19 +32,13 @@ export function useDragDrop() {
 	const { t } = useTranslation();
 	const location = useLocation();
 	const navigate = useNavigate();
-	const { updateDefaultInput } = useCalculatorState();
-	const { hasConfig, setConfigData, setHasConfig, setBitTemplateConfig } =
-		useConfig();
+	const { hasConfig } = useConfig();
 	const hasConfigRef = useRef(hasConfig);
 	hasConfigRef.current = hasConfig;
-	const {
-		setDraftConfig,
-		setPearlMomentum,
-		setRedTNTLocation,
-		setBitTemplateState,
-		setIsWizardActive,
-		setSavedPath,
-	} = useConfigurationState();
+	const { applyConfig } = useConfigActions();
+	const importToWizard = useWizardImport();
+	const importers = useRef({ applyConfig, importToWizard });
+	importers.current = { applyConfig, importToWizard };
 	const { showSuccess, showError } = useToastNotifications();
 
 	const locationRef = useRef(location);
@@ -58,85 +49,30 @@ export function useDragDrop() {
 	const handleContentLoad = useCallback(
 		async (content: string, path: string) => {
 			try {
-				const { config, bitTemplate, plugins } =
-					await importConfigurationContent(content, path);
-
-				const currentlyOnConfigPage =
-					locationRef.current.pathname === "/configuration";
-
-				if (currentlyOnConfigPage) {
-					setWizardPlugins(plugins);
-					noticeWizardPlugins(plugins.length);
-					if (isTauri) {
-						await dispatchTauriAppStateAction({
-							type: "applyConfigToWizard",
-							config,
-							bitTemplate,
-							multiplierTemplate: null,
-							path,
-						});
-					} else {
-						const { draft, momentum, redLocation } =
-							convertConfigToDraft(config);
-						setDraftConfig(draft);
-						setPearlMomentum(momentum);
-						setRedTNTLocation(redLocation);
-
-						const bitInput = configToInputState(bitTemplate);
-						setBitTemplateState(bitInput);
-						setSavedPath(path);
-						setIsWizardActive(true);
-					}
+				const imported = await importConfigurationContent(content, path);
+				if (locationRef.current.pathname === "/configuration") {
+					setWizardPlugins(imported.plugins);
+					noticeWizardPlugins(imported.plugins.length);
+					importers.current.importToWizard(
+						imported.config,
+						imported.bitTemplate,
+						path,
+						imported.multiplierTemplate,
+					);
 					showSuccess(t("configuration_page.toast_imported"));
-				} else {
-					void applyConfigPlugins(plugins);
-					if (isTauri) {
-						await dispatchTauriAppStateAction({
-							type: "applyConfigToCalculator",
-							config,
-							bitTemplate,
-							multiplierTemplate: null,
-							path,
-						});
-					} else {
-						setConfigData(config);
-						setBitTemplateConfig(bitTemplate);
-						setHasConfig(true);
-
-						updateDefaultInput("pearlX", "0");
-						updateDefaultInput("pearlZ", "0");
-						updateDefaultInput(
-							"cannonY",
-							Math.floor(config.pearl_y_position).toString(),
-						);
-					}
-
-					showSuccess(t("calculator.toast_config_loaded"));
-					if (locationRef.current.pathname !== "/") {
-						navigate("/");
-					}
+					return;
+				}
+				await importers.current.applyConfig(imported);
+				showSuccess(t("calculator.toast_config_loaded"));
+				if (locationRef.current.pathname !== "/") {
+					navigate("/");
 				}
 			} catch (e) {
 				console.error("Parse error:", e);
 				showError(t("error.calculator.import_failed"), e);
 			}
 		},
-		[
-			t,
-			navigate,
-			setDraftConfig,
-			setPearlMomentum,
-			setRedTNTLocation,
-			setBitTemplateState,
-			setSavedPath,
-			setIsWizardActive,
-			setConfigData,
-			setBitTemplateConfig,
-			setHasConfig,
-			updateDefaultInput,
-			showSuccess,
-			showError,
-		],
+		[t, navigate, showSuccess, showError],
 	);
 
 	const handleFileContent = useCallback(

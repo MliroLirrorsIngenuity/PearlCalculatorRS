@@ -3,34 +3,39 @@ mod plugin_physics;
 use pearl_calculator_bridge::api;
 use pearl_calculator_bridge::inputs::{CalculationInput, PearlTraceInput, RawTraceInput};
 use pearl_calculator_utils as utils;
+use serde::Serialize;
 use wasm_bindgen::prelude::*;
+
+fn to_js<T: Serialize>(value: &T) -> Result<JsValue, serde_wasm_bindgen::Error> {
+    value.serialize(&serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true))
+}
 
 #[wasm_bindgen]
 pub fn calculate_tnt_amount(val: JsValue) -> Result<JsValue, JsError> {
     let input: CalculationInput = serde_wasm_bindgen::from_value(val)?;
     let results = api::calculate_tnt_amount(input).map_err(|e| JsError::new(&e))?;
-    Ok(serde_wasm_bindgen::to_value(&results)?)
+    Ok(to_js(&results)?)
 }
 
 #[wasm_bindgen]
 pub fn calculate_pearl_trace(val: JsValue) -> Result<JsValue, JsError> {
     let input: PearlTraceInput = serde_wasm_bindgen::from_value(val)?;
     let result = api::calculate_pearl_trace(input).map_err(|e| JsError::new(&e))?;
-    Ok(serde_wasm_bindgen::to_value(&result)?)
+    Ok(to_js(&result)?)
 }
 
 #[wasm_bindgen]
 pub fn calculate_raw_trace(val: JsValue) -> Result<JsValue, JsError> {
     let input: RawTraceInput = serde_wasm_bindgen::from_value(val)?;
     let result = api::calculate_raw_trace(input).map_err(|e| JsError::new(&e))?;
-    Ok(serde_wasm_bindgen::to_value(&result)?)
+    Ok(to_js(&result)?)
 }
 
 #[wasm_bindgen]
 pub fn parse_configuration_content(content: &str, path: &str) -> Result<JsValue, JsError> {
     let result =
         utils::parse_configuration_content(content, path).map_err(|error| JsError::new(&error))?;
-    Ok(serde_wasm_bindgen::to_value(&result)?)
+    Ok(to_js(&result)?)
 }
 
 #[wasm_bindgen]
@@ -43,14 +48,14 @@ pub fn convert_draft_to_config(
     let red_tnt_location = serde_wasm_bindgen::from_value(red_tnt_location).ok();
     let mode = serde_wasm_bindgen::from_value(mode).ok();
     let result = utils::convert_draft_to_config(&draft, red_tnt_location, mode);
-    Ok(serde_wasm_bindgen::to_value(&result)?)
+    Ok(to_js(&result)?)
 }
 
 #[wasm_bindgen]
 pub fn convert_config_to_draft(config: JsValue) -> Result<JsValue, JsError> {
     let config = serde_wasm_bindgen::from_value(config)?;
     let result = utils::convert_config_to_draft(&config);
-    Ok(serde_wasm_bindgen::to_value(&result)?)
+    Ok(to_js(&result)?)
 }
 
 #[wasm_bindgen]
@@ -74,7 +79,7 @@ pub fn build_export_config(
         mode,
         multiplier_bit_state.as_ref(),
     );
-    Ok(serde_wasm_bindgen::to_value(&result)?)
+    Ok(to_js(&result)?)
 }
 
 #[wasm_bindgen]
@@ -88,7 +93,7 @@ pub fn build_encodable_config(
     let multiplier_template = serde_wasm_bindgen::from_value(multiplier_template).ok();
     let result =
         utils::build_encodable_config(&config, bit_template.as_ref(), multiplier_template.as_ref());
-    Ok(serde_wasm_bindgen::to_value(&result)?)
+    Ok(to_js(&result)?)
 }
 
 #[wasm_bindgen]
@@ -100,49 +105,49 @@ pub fn encode_config(config: JsValue) -> Result<String, JsError> {
 #[wasm_bindgen]
 pub fn decode_config(code: &str) -> Result<JsValue, JsError> {
     let result = utils::decode_config(code).map_err(|error| JsError::new(&error))?;
-    Ok(serde_wasm_bindgen::to_value(&result)?)
+    Ok(to_js(&result)?)
 }
 
 #[wasm_bindgen]
 pub fn config_to_input_state(config: JsValue) -> Result<JsValue, JsError> {
     let config = serde_wasm_bindgen::from_value(config).ok();
     let result = utils::config_to_input_state(config.as_ref());
-    Ok(serde_wasm_bindgen::to_value(&result)?)
+    Ok(to_js(&result)?)
 }
 
 #[wasm_bindgen]
 pub fn input_state_to_config(state: JsValue) -> Result<JsValue, JsError> {
     let state = serde_wasm_bindgen::from_value(state)?;
     let result = utils::input_state_to_config(&state);
-    Ok(serde_wasm_bindgen::to_value(&result)?)
+    Ok(to_js(&result)?)
 }
 
 #[wasm_bindgen]
 pub fn config_to_multiplier_input_state(config: JsValue) -> Result<JsValue, JsError> {
     let config = serde_wasm_bindgen::from_value(config).ok();
     let result = utils::config_to_multiplier_input_state(config.as_ref());
-    Ok(serde_wasm_bindgen::to_value(&result)?)
+    Ok(to_js(&result)?)
 }
 
 #[wasm_bindgen]
 pub fn input_state_to_multiplier_config(state: JsValue) -> Result<JsValue, JsError> {
     let state = serde_wasm_bindgen::from_value(state)?;
     let result = utils::input_state_to_multiplier_config(&state);
-    Ok(serde_wasm_bindgen::to_value(&result)?)
+    Ok(to_js(&result)?)
 }
 
 #[wasm_bindgen]
 pub fn validate_bit_template(values: JsValue) -> Result<JsValue, JsError> {
     let values: Vec<u32> = serde_wasm_bindgen::from_value(values)?;
     let result = utils::validate_bit_template(&values);
-    Ok(serde_wasm_bindgen::to_value(&result)?)
+    Ok(to_js(&result)?)
 }
 
 #[wasm_bindgen]
 pub fn decode_bit_value(values: JsValue, target_value: u32) -> Result<JsValue, JsError> {
     let values: Vec<u32> = serde_wasm_bindgen::from_value(values)?;
     let result = utils::decode_bit_value(&values, target_value);
-    Ok(serde_wasm_bindgen::to_value(&result)?)
+    Ok(to_js(&result)?)
 }
 
 #[wasm_bindgen]
@@ -153,21 +158,21 @@ pub fn decode_with_multiplier(
 ) -> Result<JsValue, JsError> {
     let values: Vec<u32> = serde_wasm_bindgen::from_value(values)?;
     let result = utils::decode_with_multiplier(&values, multiplier, target_value);
-    Ok(serde_wasm_bindgen::to_value(&result)?)
+    Ok(to_js(&result)?)
 }
 
 #[wasm_bindgen]
 pub fn get_direction_bits(masks: JsValue, direction: &str) -> Result<JsValue, JsError> {
     let masks: Vec<utils::MaskGroup> = serde_wasm_bindgen::from_value(masks)?;
     let result = utils::get_direction_bits(&masks, direction);
-    Ok(serde_wasm_bindgen::to_value(&result)?)
+    Ok(to_js(&result)?)
 }
 
 #[wasm_bindgen]
 pub fn parse_template_values(state: JsValue) -> Result<JsValue, JsError> {
     let state = serde_wasm_bindgen::from_value(state)?;
     let result = utils::parse_template_values(&state);
-    Ok(serde_wasm_bindgen::to_value(&result)?)
+    Ok(to_js(&result)?)
 }
 
 #[wasm_bindgen]
@@ -179,5 +184,5 @@ pub fn calculate_bits(
 ) -> Result<JsValue, JsError> {
     let state = serde_wasm_bindgen::from_value(state)?;
     let result = utils::calculate_bits(&state, blue_tnt, red_tnt, direction);
-    Ok(serde_wasm_bindgen::to_value(&result)?)
+    Ok(to_js(&result)?)
 }

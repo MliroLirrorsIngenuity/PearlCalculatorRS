@@ -175,7 +175,7 @@ export function createPluginApi(
 			motion.z,
 			count,
 		);
-		return view(pointer, (count + 1) * STRIDE);
+		return view(pointer, (count + 1) * STRIDE).slice();
 	};
 
 	const stateAt = (values: Float64Array, tick: number): PearlState => {

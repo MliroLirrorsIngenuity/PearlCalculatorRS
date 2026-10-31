@@ -145,15 +145,16 @@ export default function BitCalculationPanel() {
 		setInputState(configToInputState(bitTemplateConfig));
 	}, [bitTemplateConfig]);
 
+	const multiplierKey = JSON.stringify(multiplierConfig ?? null);
 	useEffect(() => {
-		const newState = configToMultiplierInputState(multiplierConfig);
+		const newState = configToMultiplierInputState(JSON.parse(multiplierKey));
 		if (newState) {
 			setMultiplierState(newState);
 			setIsMultiplierEnabled(true);
 		} else {
 			setIsMultiplierEnabled(false);
 		}
-	}, [multiplierConfig]);
+	}, [multiplierKey]);
 
 	const handleInputChange = (state: BitInputState) => {
 		setInputState(state);
@@ -177,6 +178,7 @@ export default function BitCalculationPanel() {
 			blue: [],
 			red: [],
 		});
+	const [resultUsesMultiplier, setResultUsesMultiplier] = useState(false);
 
 	const hasTemplateValues = useMemo(() => {
 		if (!inputState) return false;
@@ -221,7 +223,11 @@ export default function BitCalculationPanel() {
 			setMultiplierResult(
 				multiplierEnabled ? result.multiplier : { blue: [], red: [] },
 			);
+			setResultUsesMultiplier(multiplierEnabled);
 		} catch (error) {
+			setCalculationResult({ blue: [], red: [], direction: [false, false] });
+			setMultiplierResult({ blue: [], red: [] });
+			setResultUsesMultiplier(false);
 			if (error instanceof BitTemplateError) {
 				if (error.errorKey) {
 					showError(
@@ -298,7 +304,7 @@ export default function BitCalculationPanel() {
 			),
 			`${t("calculator.direction_label")}: ${calculationResult.direction.map(Number).join("")}`,
 		];
-		if (hasMultiplierSupport && isMultiplierEnabled) {
+		if (resultUsesMultiplier) {
 			lines.push(
 				...rows(
 					multiplierState.sideCount,

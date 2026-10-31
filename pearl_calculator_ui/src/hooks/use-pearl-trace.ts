@@ -68,10 +68,11 @@ export function buildPearlTraceInput(
 		defaultBlueDirection: config.default_blue_tnt_position,
 		destinationX: parseFloat(inputs.destX) || 0,
 		destinationY:
-			inputs.planeInterceptY && inputs.destY
+			(inputs.planeInterceptY || isVector) && inputs.destY
 				? parseFloat(inputs.destY) || 0
 				: undefined,
 		destinationZ: parseFloat(inputs.destZ) || 0,
+		planeInterceptY: inputs.planeInterceptY,
 		redTnt: tnt.red,
 		blueTnt: tnt.blue,
 		direction: tnt.direction,

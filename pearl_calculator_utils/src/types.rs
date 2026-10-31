@@ -200,7 +200,7 @@ pub struct CalculatorInputs {
     #[serde(default = "default_tick_range")]
     pub tick_range: [u32; 2],
     #[serde(default = "default_distance_range")]
-    pub distance_range: [u32; 2],
+    pub distance_range: [f64; 2],
 }
 
 impl Default for CalculatorInputs {
@@ -223,8 +223,8 @@ pub const fn default_tick_range() -> [u32; 2] {
     [0, 20]
 }
 
-pub const fn default_distance_range() -> [u32; 2] {
-    [0, 20]
+pub const fn default_distance_range() -> [f64; 2] {
+    [0.0, 20.0]
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]

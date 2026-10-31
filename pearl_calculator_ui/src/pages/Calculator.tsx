@@ -21,6 +21,7 @@ import { useToastNotifications } from "@/hooks/use-toast-notifications";
 import {
 	defaultDistanceRange,
 	defaultTickRange,
+	sameRange,
 } from "@/lib/calculator-defaults";
 import {
 	type CalculatorTab,
@@ -28,8 +29,6 @@ import {
 	useCalculatorTab,
 } from "@/lib/calculator-tab";
 import type { CalculatorInputs } from "@/types/domain";
-
-const sameRange = (a: number[], b: number[]) => a[0] === b[0] && a[1] === b[1];
 
 function InputTabs({
 	onCalculate,
@@ -102,7 +101,6 @@ function CalculatorContent() {
 	const inputs = defaultCalculator.inputs;
 	const trace = defaultCalculator.trace;
 	const isFirstRender = useRef(true);
-	const prevMode = useRef(calculationMode);
 	const prevPlaneInterceptY = useRef(inputs.planeInterceptY);
 	const savedTickRange = useRef<[number, number] | null>(null);
 	const savedDistanceRange = useRef<[number, number] | null>(null);
@@ -110,27 +108,6 @@ function CalculatorContent() {
 	useEffect(() => {
 		isFirstRender.current = false;
 	}, []);
-
-	useEffect(() => {
-		if (prevMode.current === calculationMode) return;
-		if (sameRange(inputs.tickRange, defaultTickRange(prevMode.current))) {
-			updateDefaultInput("tickRange", defaultTickRange(calculationMode));
-		}
-		if (
-			sameRange(inputs.distanceRange, defaultDistanceRange(prevMode.current))
-		) {
-			updateDefaultInput(
-				"distanceRange",
-				defaultDistanceRange(calculationMode),
-			);
-		}
-		prevMode.current = calculationMode;
-	}, [
-		calculationMode,
-		inputs.tickRange,
-		inputs.distanceRange,
-		updateDefaultInput,
-	]);
 
 	useEffect(() => {
 		if (prevPlaneInterceptY.current === inputs.planeInterceptY) return;
@@ -201,7 +178,7 @@ function CalculatorContent() {
 			updateDefaultTrace({
 				data: result,
 				direction,
-				tnt: { blue, red, total: blue + red, vertical },
+				tnt: { blue, red, total: blue + red + (vertical ?? 0), vertical },
 				show: true,
 			});
 		}

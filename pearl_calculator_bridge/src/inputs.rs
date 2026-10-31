@@ -108,6 +108,7 @@ pub struct PearlTraceInput {
     pub vertical_tnt: Option<Space3DInput>,
     pub mode: Option<String>,
     pub max_ticks: Option<u32>,
+    pub plane_intercept_y: Option<bool>,
 }
 
 impl PearlTraceInput {

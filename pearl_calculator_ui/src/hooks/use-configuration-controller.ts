@@ -71,6 +71,55 @@ export const ERROR_MAPPINGS = [
 	["verticalTNT.z", "vertical_tnt_z"],
 ] as const;
 
+const hasValues = (values: string[]) =>
+	values.some((value) => value.trim() !== "");
+
+export function useWizardImport() {
+	const {
+		setDraftConfig,
+		setPearlMomentum,
+		setRedTNTLocation,
+		setBitTemplateState,
+		setMultiplierBitState,
+		setSavedPath,
+		setWizardMode,
+		setIsWizardActive,
+		setIsFinished,
+		setIsBitConfigSkipped,
+		setIsMultiplierConfigSkipped,
+	} = useConfigurationState();
+
+	return (
+		config: GeneralConfig,
+		bitTemplate: BitTemplateConfig | null,
+		path: string | null,
+		multiplierTemplate: MultiplierConfig | null,
+	) => {
+		if (isTauri) {
+			void dispatchTauriAppStateAction({
+				type: "applyConfigToWizard",
+				config,
+				bitTemplate,
+				multiplierTemplate,
+				path,
+			});
+			return;
+		}
+		const { draft, momentum, redLocation } = convertConfigToDraft(config);
+		setDraftConfig(draft);
+		setPearlMomentum(momentum);
+		setRedTNTLocation(redLocation);
+		setBitTemplateState(configToInputState(bitTemplate));
+		setMultiplierBitState(configToMultiplierInputState(multiplierTemplate));
+		setSavedPath(path);
+		setWizardMode(config.mode ?? "Standard");
+		setIsWizardActive(true);
+		setIsFinished(false);
+		setIsBitConfigSkipped(false);
+		setIsMultiplierConfigSkipped(false);
+	};
+}
+
 export function useConfigurationController() {
 	const navigate = useNavigate();
 	const { t } = useTranslation();
@@ -83,23 +132,18 @@ export function useConfigurationController() {
 		setIsWizardActive,
 		isFinished,
 		setIsFinished,
-		setDraftConfig,
-		setRedTNTLocation,
-		setBitTemplateState,
 		isBitConfigSkipped,
 		setIsBitConfigSkipped,
 		savedPath,
 		setSavedPath,
-		calculationMode,
 		setCalculationMode,
 		wizardMode,
-		setWizardMode,
 		multiplierBitState,
-		setMultiplierBitState,
 		setIsMultiplierConfigSkipped,
 	} = useConfigurationState();
 	const {
 		setConfigData,
+		setConfigPath,
 		setHasConfig,
 		setBitTemplateConfig,
 		setMultiplierConfig,
@@ -108,6 +152,11 @@ export function useConfigurationController() {
 	const { showSuccess, showError } = useToastNotifications();
 
 	const [shouldRestoreLastPage, setShouldRestoreLastPage] = useState(false);
+	const wizardBitState = isBitConfigSkipped ? undefined : bitTemplateState;
+	const wizardMultiplierState =
+		multiplierBitState && hasValues(multiplierBitState.sideValues)
+			? multiplierBitState
+			: undefined;
 	const [errors, setErrors] = useState<Record<string, string>>({});
 
 	const validateStep = (step: number) => {
@@ -167,8 +216,16 @@ export function useConfigurationController() {
 						skipped: isBitConfigSkipped,
 					});
 				}
-				if (wizardMode === "Accumulation") {
-					return { success: true, error: null };
+				const multiplierValues = multiplierBitState?.sideValues ?? [];
+				if (
+					wizardMode === "Accumulation" &&
+					hasValues(multiplierValues) &&
+					multiplierValues.some((value) => value.trim() === "")
+				) {
+					return {
+						success: false,
+						error: { issues: [{ path: [], message: "multiplier_incomplete" }] },
+					};
 				}
 				return { success: true, error: null };
 			})
@@ -182,6 +239,13 @@ export function useConfigurationController() {
 			const newErrors: Record<string, string> = {};
 			zodErrors.forEach((issue) => {
 				const path = issue.path.join(".");
+
+				if (issue.message === "multiplier_incomplete") {
+					newErrors.multiplier_values_incomplete = t(
+						"error.configuration_page.validation.required",
+					);
+					return;
+				}
 
 				if (issue.message === "incomplete") {
 					match(bitTemplateState)
@@ -290,15 +354,16 @@ export function useConfigurationController() {
 		updateDefaultInput("cannonY", Math.floor(pearlY).toString());
 
 		setConfigData(config);
+		setConfigPath(savedPath ?? "");
 		setHasConfig(true);
-
-		if (bitTemplateState) {
-			setBitTemplateConfig(inputStateToConfig(bitTemplateState));
-		}
-
-		if (multiplierBitState) {
-			setMultiplierConfig(inputStateToMultiplierConfig(multiplierBitState));
-		}
+		setBitTemplateConfig(
+			wizardBitState ? inputStateToConfig(wizardBitState) : null,
+		);
+		setMultiplierConfig(
+			wizardMultiplierState
+				? inputStateToMultiplierConfig(wizardMultiplierState)
+				: null,
+		);
 
 		navigate("/");
 	};
@@ -308,9 +373,9 @@ export function useConfigurationController() {
 			const config = buildExportConfig(
 				draftConfig,
 				redTNTLocation,
-				bitTemplateState,
+				wizardBitState,
 				wizardMode,
-				multiplierBitState,
+				wizardMultiplierState,
 			);
 			const path = await exportConfiguration(
 				config,
@@ -338,47 +403,7 @@ export function useConfigurationController() {
 		}
 	};
 
-	const hydrateWizard = (
-		config: GeneralConfig,
-		bitTemplate: BitTemplateConfig | null,
-		path: string | null = null,
-		multiplierTemplate?: MultiplierConfig | null,
-	) => {
-		if (isTauri) {
-			void dispatchTauriAppStateAction({
-				type: "applyConfigToWizard",
-				config,
-				bitTemplate,
-				multiplierTemplate: multiplierTemplate ?? null,
-				path,
-			});
-			return;
-		}
-
-		const { draft, redLocation } = convertConfigToDraft(config);
-		setDraftConfig(draft);
-		setRedTNTLocation(redLocation);
-
-		const bitInput = configToInputState(bitTemplate);
-		setBitTemplateState(bitInput);
-
-		if (multiplierTemplate) {
-			const multiplierInput = configToMultiplierInputState(multiplierTemplate);
-			if (multiplierInput) {
-				setMultiplierBitState(multiplierInput);
-			}
-		}
-
-		if (path) {
-			setSavedPath(path);
-		} else {
-			setSavedPath(null);
-		}
-
-		setWizardMode(config.mode || "Standard");
-
-		setIsWizardActive(true);
-	};
+	const hydrateWizard = useWizardImport();
 
 	const handleImportFromClipboard = async () => {
 		try {
@@ -427,9 +452,9 @@ export function useConfigurationController() {
 			const config = buildExportConfig(
 				draftConfig,
 				redTNTLocation,
-				bitTemplateState,
-				calculationMode,
-				multiplierBitState,
+				wizardBitState,
+				wizardMode,
+				wizardMultiplierState,
 			);
 			const encoded = encodeConfig(config as unknown as EncodableConfig);
 			const { calculatorService } = await import("@/services");

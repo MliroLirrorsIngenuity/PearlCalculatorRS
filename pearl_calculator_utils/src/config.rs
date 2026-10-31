@@ -241,8 +241,6 @@ pub fn build_export_config(
             "IsRedArrowCenter".to_string(),
             Value::from(bit_template_state.is_swapped),
         );
-    } else {
-        return Value::Object(root);
     }
 
     if let Some(multiplier_bit_state) = multiplier_bit_state {
@@ -1567,6 +1565,36 @@ mod tests {
         assert_eq!(decoded.general_config.max_vertical_tnt, Some(64));
         assert_close(decoded.general_config.vertical_tnt.unwrap().y, 96.0, 1e-6);
         assert_eq!(decoded.multiplier_template.unwrap().multiplier, 320);
+    }
+
+    #[test]
+    fn export_keeps_multiplier_without_bit_template() {
+        let multiplier = MultiplierBitInputState {
+            side_count: 2,
+            side_values: vec!["2".to_string(), "1".to_string()],
+            multiplier: 320,
+            is_swapped: true,
+        };
+        let exported = build_export_config(
+            &DraftConfig::default(),
+            None,
+            None,
+            Some(CannonMode::Accumulation),
+            Some(&multiplier),
+        );
+        let imported =
+            parse_configuration_content(&exported.to_string(), "export.json").unwrap();
+
+        assert_eq!(imported.bit_template, None);
+        assert_eq!(
+            imported.multiplier_template,
+            Some(MultiplierConfig {
+                multiplier_side_mode: 2,
+                multiplier_values: vec![1, 2],
+                multiplier: 320,
+                multiplier_is_swapped: true,
+            })
+        );
     }
 
     #[test]

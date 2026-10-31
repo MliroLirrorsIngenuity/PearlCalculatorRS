@@ -464,6 +464,26 @@ export default function Configuration() {
 						<ChevronLeft />
 						{t("configuration_page.previous_btn")}
 					</Button>
+					{isMobile && (
+						<ConfirmDialog
+							destructive
+							title={t("configuration_page.reset_dialog_title")}
+							description={t("configuration_page.reset_dialog_desc")}
+							onConfirm={() => {
+								handleReset();
+								restart();
+							}}
+							trigger={
+								<Button
+									variant="ghost"
+									size="icon"
+									aria-label={t("configuration_page.reset_btn")}
+								>
+									<RotateCcw />
+								</Button>
+							}
+						/>
+					)}
 					<div className="flex-1" />
 					{current === bitStep && (
 						<ConfirmDialog

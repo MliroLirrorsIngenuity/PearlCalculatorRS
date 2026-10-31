@@ -51,14 +51,13 @@ export function useResultTraces(
 		const pending = selections.filter((tnt) => !keys.has(traceKey(tnt)));
 		for (const tnt of pending) keys.add(traceKey(tnt));
 
+		const remaining = new Set(pending.map(traceKey));
 		let cancelled = false;
 		(async () => {
 			for (const tnt of pending) {
+				if (cancelled) return;
 				const key = traceKey(tnt);
-				if (cancelled) {
-					keys.delete(key);
-					continue;
-				}
+				remaining.delete(key);
 				try {
 					const trace = await tracePearl({
 						...buildPearlTraceInput(
@@ -87,6 +86,7 @@ export function useResultTraces(
 
 		return () => {
 			cancelled = true;
+			for (const key of remaining) keys.delete(key);
 		};
 	}, [selections, inputs, configData, version, calculationMode, contextKey]);
 

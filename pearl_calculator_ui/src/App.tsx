@@ -4,6 +4,7 @@ import Layout from "@/components/layout/Layout";
 import { CalculatorStateProvider } from "@/context/CalculatorStateContext";
 import { ConfigProvider } from "@/context/ConfigContext";
 import { ConfigurationStateProvider } from "@/context/ConfigurationStateContext";
+import { useCalculatorSync } from "@/hooks/use-calculator-sync";
 import Calculator from "@/pages/Calculator";
 import Configuration from "@/pages/Configuration";
 import PluginTool from "@/pages/PluginTool";
@@ -39,6 +40,7 @@ function App() {
 		<ConfigProvider>
 			<CalculatorStateProvider>
 				<ConfigurationStateProvider>
+					<CalculatorSync />
 					<BrowserRouter>
 						<Routes>
 							<Route path="/" element={<Layout />}>
@@ -57,4 +59,9 @@ function App() {
 		</ConfigProvider>
 	);
 }
+function CalculatorSync() {
+	useCalculatorSync();
+	return null;
+}
+
 export default App;

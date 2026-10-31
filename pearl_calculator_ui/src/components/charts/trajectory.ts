@@ -22,14 +22,20 @@ export function toProfile(trace: PearlTraceResult): ProfilePoint[] {
 
 export function profileUntil(
 	trace: PearlTraceResult,
-	distance: number,
+	from: number,
+	byTick: boolean,
+	done: (point: ProfilePoint) => boolean,
 ): ProfilePoint[] {
 	const [start] = trace.pearl_trace;
 	const points: ProfilePoint[] = [];
-	for (const p of trace.pearl_trace) {
-		const d = Math.hypot(p.X - start.X, p.Z - start.Z);
-		points.push({ d, y: p.Y });
-		if (d >= distance) break;
+	for (let i = Math.max(from, 0); i < trace.pearl_trace.length; i++) {
+		const p = trace.pearl_trace[i];
+		const point = {
+			d: byTick ? i : Math.hypot(p.X - start.X, p.Z - start.Z),
+			y: p.Y,
+		};
+		points.push(point);
+		if (done(point)) break;
 	}
 	return points;
 }
@@ -68,6 +74,7 @@ export function niceTicks(min: number, max: number, count: number) {
 	const ticks: number[] = [];
 	for (let v = lo; v <= hi + step / 2; v += step) {
 		ticks.push(Number(v.toFixed(10)));
+		if (v + step === v) break;
 	}
 	return { ticks, step };
 }

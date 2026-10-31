@@ -148,5 +148,12 @@ export function useConfigActions() {
 		setHasConfig(false);
 	};
 
-	return { importFromFile, importFromCode, copyCode, exportJson, changeConfig };
+	return {
+		applyConfig,
+		importFromFile,
+		importFromCode,
+		copyCode,
+		exportJson,
+		changeConfig,
+	};
 }

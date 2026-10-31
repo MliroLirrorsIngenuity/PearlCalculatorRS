@@ -50,6 +50,7 @@ pub fn calculate_pearl_trace(input: PearlTraceInput) -> Result<PearlTraceOutput,
         result,
         Some((input.destination_x, input.destination_z)),
         input.destination_y,
+        input.plane_intercept_y.unwrap_or(true),
         input.get_origin(),
     ))
 }
@@ -78,6 +79,7 @@ pub fn calculate_raw_trace(input: RawTraceInput) -> Result<PearlTraceOutput, Str
         result,
         None,
         None,
+        false,
         Space3D::default(),
     ))
 }

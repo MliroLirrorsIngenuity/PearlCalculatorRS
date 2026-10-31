@@ -119,6 +119,7 @@ export interface PearlTraceInput {
 	verticalTnt?: Vec3;
 	mode?: string;
 	maxTicks?: number;
+	planeInterceptY?: boolean;
 }
 
 export interface RawTraceInput {

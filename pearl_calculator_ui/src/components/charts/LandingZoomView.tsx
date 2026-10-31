@@ -30,8 +30,12 @@ export function LandingZoomView({
 }: LandingZoomViewProps) {
 	const { t } = useTranslation();
 	const { east, south } = landingOffset(trace, target);
-	const deviation = Math.hypot(east, south);
-	const { step } = niceTicks(0, Math.max(deviation * 1.8, 0.0005), 4);
+	const deviation = trace.closest_approach?.distance ?? trace.distance;
+	const { step } = niceTicks(
+		0,
+		Math.max(Math.hypot(east, south) * 1.8, 0.0005),
+		4,
+	);
 	const range = step * 4;
 	const k = HALF / range;
 	const lx = CX + east * k;

@@ -20,6 +20,7 @@ type Variant = "compact" | "full";
 const END_LABEL_GAP = 72;
 const HIT_LABEL_GAP = 56;
 const OVERRUN = 0.12;
+const OVERRUN_Y = 0.5;
 const PEAK_LABEL_MIN_WIDTH = 420;
 
 const PEAK_OFFSET = {
@@ -73,9 +74,22 @@ export function HeightProfileChart({
 	const reach = Math.max(...all.map((p) => p.d), 1);
 	const showHit = Boolean(trace.closest_approach);
 	const dMax = showHit ? reach * (1 + OVERRUN) : reach;
+	const flightYs = all
+		.map((p) => p.y)
+		.concat(targetY === undefined ? [] : [targetY]);
+	const flightLo = Math.min(...flightYs);
+	const flightHi = Math.max(...flightYs);
+	const yMargin = Math.max(flightHi - flightLo, 1) * OVERRUN_Y;
+	const yMin = flightLo - yMargin;
+	const yMax = flightHi + yMargin;
 	const overrun = useMemo(() => {
 		if (!showHit) return [];
-		const points = profileUntil(trace, dMax).slice(landing);
+		const points = profileUntil(
+			trace,
+			landing,
+			byTick,
+			(p) => p.d >= dMax || p.y < yMin || p.y > yMax,
+		);
 		const last = points[points.length - 1];
 		const prev = points[points.length - 2];
 		if (!last || !prev || last.d <= dMax) return points;
@@ -84,14 +98,13 @@ export function HeightProfileChart({
 			...points.slice(0, -1),
 			{ d: dMax, y: prev.y + (last.y - prev.y) * k },
 		];
-	}, [trace, showHit, dMax, landing]);
+	}, [trace, showHit, dMax, landing, byTick, yMin, yMax]);
 	const hitD = main[landing]?.d ?? 0;
 	const labelAt = showHit ? hitD : dMax;
 	const labelGap = showHit ? HIT_LABEL_GAP : END_LABEL_GAP;
-	const ys = all
-		.concat(overrun)
-		.map((p) => p.y)
-		.concat(targetY === undefined ? [] : [targetY]);
+	const ys = flightYs.concat(
+		overrun.map((p) => Math.min(Math.max(p.y, yMin), yMax)),
+	);
 	const yAxis = niceTicks(
 		Math.min(...ys),
 		Math.max(...ys),
@@ -212,7 +225,12 @@ export function HeightProfileChart({
 					{showHit && (
 						<>
 							<clipPath id={clipId}>
-								<rect x={pad.l} y={0} width={X(dMax) - pad.l} height={height} />
+								<rect
+									x={pad.l}
+									y={pad.t}
+									width={X(dMax) - pad.l}
+									height={height - pad.t - pad.b}
+								/>
 							</clipPath>
 							<line
 								x1={X(hitD)}
