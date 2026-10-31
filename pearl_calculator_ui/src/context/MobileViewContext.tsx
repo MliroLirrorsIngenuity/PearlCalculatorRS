@@ -7,6 +7,7 @@ import {
 	useMemo,
 	useState,
 } from "react";
+import { useLocation } from "react-router";
 
 type MobileView = "input" | "results";
 
@@ -24,8 +25,15 @@ const MobileViewContext = createContext<MobileViewContextType | undefined>(
 const MOBILE_BREAKPOINT = 768;
 
 export function MobileViewProvider({ children }: { children: ReactNode }) {
+	const { pathname } = useLocation();
 	const [mobileView, setMobileView] = useState<MobileView>("input");
+	const [viewPathname, setViewPathname] = useState(pathname);
 	const [isMobile, setIsMobile] = useState(false);
+
+	if (viewPathname !== pathname) {
+		setViewPathname(pathname);
+		setMobileView("input");
+	}
 
 	useEffect(() => {
 		const checkMobile = () => {

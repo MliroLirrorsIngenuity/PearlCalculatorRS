@@ -10,7 +10,12 @@ import {
 } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { useToolLinks } from "@/plugins/tool-links";
-import { LanguageMenu, ThemeToggle, VersionMenu } from "./AppSettingsControls";
+import {
+	AboutTile,
+	LanguageMenu,
+	ThemeToggle,
+	VersionMenu,
+} from "./AppSettingsControls";
 import { NAV_ITEMS } from "./navigation";
 
 const isActive = (pathname: string, to: string) =>
@@ -77,10 +82,11 @@ export function MobileTabBar() {
 					<SheetHeader>
 						<SheetTitle>{t("nav.settings")}</SheetTitle>
 					</SheetHeader>
-					<div className="flex justify-center gap-4 px-4">
-						<ThemeToggle className="h-14 w-20" />
-						<VersionMenu side="top" className="h-14 w-20" />
-						<LanguageMenu side="top" className="h-14 w-20" />
+					<div className="grid auto-cols-[minmax(0,5rem)] grid-flow-col justify-center gap-4 px-4">
+						<ThemeToggle className="h-14 w-full" />
+						<VersionMenu side="top" className="h-14 w-full" />
+						<LanguageMenu side="top" className="h-14 w-full" />
+						<AboutTile className="h-14 w-full" />
 					</div>
 				</SheetContent>
 			</Sheet>

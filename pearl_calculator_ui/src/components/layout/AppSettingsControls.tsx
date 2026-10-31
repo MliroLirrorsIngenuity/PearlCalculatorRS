@@ -1,4 +1,4 @@
-import { Check, Monitor, Moon, Sun } from "lucide-react";
+import { BadgeInfo, Check, Monitor, Moon, Sun } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import {
 	DropdownMenu,
@@ -10,6 +10,7 @@ import {
 import { useConfig } from "@/context/ConfigContext";
 import { useThemePreference } from "@/context/ThemeContext";
 import { cn } from "@/lib/utils";
+import { AppInfo } from "./AppInfo";
 import { LANGUAGES, PEARL_VERSIONS } from "./navigation";
 
 const THEME_ICONS = { system: Monitor, light: Sun, dark: Moon };
@@ -33,6 +34,24 @@ export function ThemeToggle({ className }: { className?: string }) {
 			<Icon className="size-[15px]" />
 			<span className="text-[9px] text-muted-foreground">{label}</span>
 		</button>
+	);
+}
+
+export function AboutTile({ className }: { className?: string }) {
+	const { t } = useTranslation();
+
+	return (
+		<AppInfo>
+			<button
+				type="button"
+				className={cn(tileClass, "h-10 gap-0.5", className)}
+			>
+				<BadgeInfo className="size-[15px]" />
+				<span className="text-[9px] text-muted-foreground">
+					{t("nav.about")}
+				</span>
+			</button>
+		</AppInfo>
 	);
 }
 

@@ -1,5 +1,5 @@
 import { BadgeInfo } from "lucide-react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { GitHubIcon } from "@/components/ui/github-icon";
@@ -23,6 +23,7 @@ export function AppInfo({
 	const mobileViewContext = useMobileViewOptional();
 	const isMobile = mobileViewContext?.isMobile ?? false;
 	const [isOpen, setIsOpen] = useState(false);
+	const triggerRef = useRef<HTMLAnchorElement>(null);
 
 	const hoverCardProps = isMobile
 		? {
@@ -34,27 +35,30 @@ export function AppInfo({
 				closeDelay: 0,
 			};
 
-	const handleContentInteractOutside = () => {
-		if (isMobile) {
-			setIsOpen(false);
-		}
+	const handleContentInteractOutside = (event: Event) => {
+		if (!isMobile) return;
+		if (triggerRef.current?.contains(event.target as Node)) return;
+		setIsOpen(false);
 	};
 
 	return (
 		<div className={className}>
 			<HoverCard {...hoverCardProps}>
-				<HoverCardTrigger asChild>
+				<HoverCardTrigger
+					ref={triggerRef}
+					asChild
+					onPointerDown={() => {
+						if (isMobile) {
+							setIsOpen((prev) => !prev);
+						}
+					}}
+				>
 					{children ?? (
 						<Button
 							variant="ghost"
 							size="icon"
 							className="h-4 w-4 rounded-full text-muted-foreground hover:text-foreground"
 							style={{ touchAction: "manipulation" }}
-							onPointerDown={() => {
-								if (isMobile) {
-									setIsOpen((prev) => !prev);
-								}
-							}}
 						>
 							<BadgeInfo className="h-3.5 w-3.5" />
 						</Button>

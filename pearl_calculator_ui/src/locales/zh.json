@@ -21,8 +21,8 @@
 				},
 				"segment": {
 					"Standard": "标准",
-					"Accumulation": "累加",
-					"Vector3D": "3D"
+					"Accumulation": "堆叠",
+					"Vector3D": "矢量"
 				}
 			},
 			"select_config": "选择配置",
@@ -160,6 +160,7 @@
 			"import": "导入",
 			"import_hint": "填入珍珠和 TNT 位置，TNT 数量不变",
 			"imported": "已填入珍珠和 TNT 位置",
+			"imported_without_vertical": "已填入珍珠和四组 TNT 位置，模拟页没有竖直 TNT，竖直 TNT 未导入",
 			"view_height": "高度"
 		},
 		"configuration_page": {
@@ -286,7 +287,8 @@
 			"language": "语言",
 			"theme_system": "跟随系统",
 			"theme_light": "浅色",
-			"theme_dark": "深色"
+			"theme_dark": "深色",
+			"about": "关于"
 		},
 		"config_menu": {
 			"current": "当前配置",

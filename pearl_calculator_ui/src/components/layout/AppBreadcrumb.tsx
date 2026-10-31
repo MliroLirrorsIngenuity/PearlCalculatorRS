@@ -108,6 +108,7 @@ export function AppBreadcrumb() {
 	const onCalculator = location.pathname === "/";
 	const trace = defaultCalculator.trace;
 	const visibleItems = isMobile ? items.slice(-1) : items;
+	const previous: BreadcrumbItemType | undefined = items[items.length - 2];
 
 	const select = (item: BreadcrumbItemType) =>
 		match(item)
@@ -121,8 +122,8 @@ export function AppBreadcrumb() {
 				variant="outline"
 				size="sm"
 				className="h-6 shrink-0 gap-1 px-2 text-xs"
-				onClick={() => select(items[items.length - 2])}
-				disabled={items.length < 2}
+				onClick={() => previous && select(previous)}
+				disabled={!previous?.onClick && !previous?.href}
 			>
 				<ChevronLeft className="size-3.5" />
 				{t("breadcrumb.back")}

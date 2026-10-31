@@ -14,6 +14,14 @@ export interface BreadcrumbItemType {
 	onClick?: () => void;
 }
 
+function decodeSegment(segment: string) {
+	try {
+		return decodeURIComponent(segment);
+	} catch {
+		return segment;
+	}
+}
+
 export function useBreadcrumbItems() {
 	const location = useLocation();
 	const { t } = useTranslation();
@@ -123,7 +131,7 @@ export function useBreadcrumbItems() {
 	const getToolBreadcrumbs = (): BreadcrumbItemType[] => {
 		const [, , pluginId = "", toolId = ""] = location.pathname
 			.split("/")
-			.map((part) => decodeURIComponent(part));
+			.map(decodeSegment);
 		const plugin = plugins.find((entry) => entry.manifest.id === pluginId);
 		const tool = plugin?.manifest.tools.find((entry) => entry.id === toolId);
 		const page = plugin?.manifest.panels.find(

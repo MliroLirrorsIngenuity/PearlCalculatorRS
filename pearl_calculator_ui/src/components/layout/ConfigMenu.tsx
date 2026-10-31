@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useConfig } from "@/context/ConfigContext";
 import { useConfigurationState } from "@/context/ConfigurationStateContext";
+import { useMobileView } from "@/context/MobileViewContext";
 import { useConfigActions } from "@/hooks/use-config-actions";
 import { setCalculatorTab } from "@/lib/calculator-tab";
 import { usePluginState } from "@/plugins/store";
@@ -36,6 +37,7 @@ export function ConfigMenu() {
 	const navigate = useNavigate();
 	const { configPath, configData, bitTemplateConfig } = useConfig();
 	const { calculationMode } = useConfigurationState();
+	const { showInput } = useMobileView();
 	const actions = useConfigActions();
 	const name = configDisplayName(configPath) || t("config_menu.unnamed");
 	const bitCount = bitTemplateConfig?.SideMode;
@@ -76,7 +78,12 @@ export function ConfigMenu() {
 							.join(" · ")}
 					</span>
 				</div>
-				<DropdownMenuItem onClick={() => setCalculatorTab("config")}>
+				<DropdownMenuItem
+					onClick={() => {
+						setCalculatorTab("config");
+						showInput();
+					}}
+				>
 					<Pencil />
 					{t("config_menu.edit")}
 				</DropdownMenuItem>

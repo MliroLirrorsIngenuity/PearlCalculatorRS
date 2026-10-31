@@ -49,7 +49,11 @@ export function SimulatorImportMenu({
 
 	const apply = (general: GeneralConfig) => {
 		onImport(toSimulatorConfig(general, config));
-		showSuccess(t("simulator.imported"));
+		showSuccess(
+			general.vertical_tnt
+				? t("simulator.imported_without_vertical")
+				: t("simulator.imported"),
+		);
 	};
 
 	const fromFile = async () => {
@@ -64,7 +68,7 @@ export function SimulatorImportMenu({
 	const fromCode = async () => {
 		try {
 			const text = await calculatorService.readFromClipboard();
-			apply(decodeConfig(text.trim()).generalConfig);
+			apply(decodeConfig(text.replace(/\s+/g, "")).generalConfig);
 		} catch (error) {
 			showError(t("error.calculator.code_import_failed"), error);
 		}

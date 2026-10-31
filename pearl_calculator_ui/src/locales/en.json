@@ -50,6 +50,7 @@
 			"calculate_btn": "Calculate TNT Amount",
 			"toast_config_loaded": "Configuration Loaded",
 			"toast_found_configs": "Found {{count}} configurations",
+			"toast_found_configs_one": "Found {{count}} configuration",
 			"label_pearl_x": "Pearl X",
 			"label_pearl_z": "Pearl Z",
 			"label_cannon_y": "Cannon Muzzle Y-Position",
@@ -81,6 +82,7 @@
 			"label_distance_range": "Distance Range (blocks)",
 			"cannon_y_tooltip": "The integer part of the cannon muzzle Y coordinate.",
 			"found_solutions": "Found {{count}} Solutions",
+			"found_solutions_one": "Found {{count}} Solution",
 			"label_direction": "Direction: ",
 			"header_distance": "Distance",
 			"header_ticks": "Ticks",
@@ -142,7 +144,8 @@
 			"empty_title": "No results yet",
 			"empty_hint": "Enter the target coordinates and press Calculate TNT Amount.",
 			"filtered_title": "Nothing matches the filters",
-			"filtered_hint": "{{count}} results are hidden by the filters. Widen the tick or distance range at the top right."
+			"filtered_hint": "{{count}} results are hidden by the filters. Widen the tick or distance range at the top right.",
+			"filtered_hint_one": "{{count}} result is hidden by the filters. Widen the tick or distance range at the top right."
 		},
 		"simulator": {
 			"reset": "Reset",
@@ -154,12 +157,14 @@
 			"empty_title": "No trajectory yet",
 			"empty_hint": "Fill in the pearl and TNT, then press Trace Pearl.",
 			"range_ticks": "{{count}} ticks",
+			"range_ticks_one": "{{count}} tick",
 			"horizontal_speed": "Initial horizontal speed",
 			"vertical_speed": "Initial vertical speed",
 			"speed_unit": "blocks / tick",
 			"import": "Import",
 			"import_hint": "Fills pearl and TNT positions; TNT amounts stay as they are",
 			"imported": "Pearl and TNT positions filled in",
+			"imported_without_vertical": "Pearl and the four TNT positions filled in. The simulator has no vertical TNT, so it was not imported",
 			"view_height": "Height"
 		},
 		"configuration_page": {
@@ -286,19 +291,22 @@
 			"language": "Language",
 			"theme_system": "System",
 			"theme_light": "Light",
-			"theme_dark": "Dark"
+			"theme_dark": "Dark",
+			"about": "About"
 		},
 		"config_menu": {
 			"current": "Current config",
 			"unnamed": "Untitled config",
 			"max_tnt": "Max TNT {{count}}",
 			"bit_template": "Bit template {{count}} bits",
+			"bit_template_one": "Bit template {{count}} bit",
 			"edit": "Edit current config",
 			"import_file": "Import config file",
 			"paste_code": "Paste config code",
 			"change": "Change config",
 			"new": "New config",
-			"plugins": "{{count}} plugins"
+			"plugins": "{{count}} plugins",
+			"plugins_one": "{{count}} plugin"
 		},
 		"chart": {
 			"blocks": "{{value}} blocks",
@@ -355,6 +363,7 @@
 				"west": "west face"
 			},
 			"rows": "{{count}} rows",
+			"rows_one": "{{count}} row",
 			"copy_hint": "click to copy",
 			"copied_trajectory": "Copied position at tick {{tick}}",
 			"copied_momentum": "Copied momentum at tick {{tick}}",
@@ -371,6 +380,7 @@
 			"copy_failed": "Copy failed",
 			"template_title": "Bit template",
 			"template_summary": "{{count}} bits · {{values}} … {{last}}",
+			"template_summary_one": "{{count}} bit · {{values}} … {{last}}",
 			"template_empty": "Not filled in",
 			"template_edit": "Edit"
 		},
@@ -461,7 +471,9 @@
 			"run_status": {
 				"running": "Running, {{count}} so far",
 				"done": "Done, {{count}} results",
+				"done_one": "Done, {{count}} result",
 				"stopped": "Stopped, {{count}} results",
+				"stopped_one": "Stopped, {{count}} result",
 				"error": "Failed"
 			},
 			"section_slots": "Features taken over",
@@ -490,6 +502,7 @@
 			"shards": "shards {{done}}/{{total}}",
 			"elapsed": "{{seconds}} s",
 			"workers_hint": "Up to {{count}} threads in parallel",
+			"workers_hint_one": "Up to {{count}} thread in parallel",
 			"copy_table": "Copy table",
 			"running_title": "Calculating",
 			"running_hint": "Results appear as they are found.",
@@ -530,8 +543,10 @@
 			"review_permissions": "Review permissions",
 			"field_data": "Data",
 			"data_value": "{{count}} entries · {{kb}} KB",
+			"data_value_one": "{{count}} entry · {{kb}} KB",
 			"data_clear": "Clear",
-			"load_title": "This config comes with {{count}} plugin(s)",
+			"load_title": "This config comes with {{count}} plugins",
+			"load_title_one": "This config comes with a plugin",
 			"load_body": "Plugins are code written by someone else. Once loaded they run in an isolated sandbox, and plugins that ask for permissions such as network access ask again. If you are unsure where the config came from, don't load them: the config still works and the plugins stay in it, so you can load them later from the plugin list in the Config tab.",
 			"load_allow": "Load plugins",
 			"load_decline": "Don't load",
@@ -540,7 +555,8 @@
 			"toast_from": "Plugin \"{{name}}\" ({{id}})",
 			"export_unreadable": "The exported config could not be opened again, probably because a plugin wrote invalid data: {{reason}}",
 			"consent_combined": "Other plugins in this config also have permissions: {{plugins}}. Plugins can pass information to each other through features they both take over or data shared in the app, so consider their permissions together before allowing.",
-			"wizard_carried": "This config carries {{count}} plugin(s). They are kept as-is on export and do not run on the configuration page"
+			"wizard_carried": "This config carries {{count}} plugins. They are kept as-is on export and do not run on the configuration page",
+			"wizard_carried_one": "This config carries a plugin. It is kept as-is on export and does not run on the configuration page"
 		}
 	}
 }
