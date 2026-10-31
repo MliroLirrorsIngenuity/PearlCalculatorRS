@@ -1,3 +1,5 @@
+mod plugin_physics;
+
 use pearl_calculator_bridge::api;
 use pearl_calculator_bridge::inputs::{CalculationInput, PearlTraceInput, RawTraceInput};
 use pearl_calculator_utils as utils;

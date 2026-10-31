@@ -2,6 +2,8 @@ import { ClipboardPaste, Info } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { AxisInput } from "@/components/common/AxisInput";
 import { BufferedNumberInput } from "@/components/common/BufferedNumberInput";
+import { PluginCalculatorInputs } from "@/components/plugins/PluginCalculatorInputs";
+import { PluginMount } from "@/components/plugins/PluginMount";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
@@ -169,6 +171,11 @@ export default function TNTCalculationForm({
 						/>
 					</div>
 				</div>
+				<PluginCalculatorInputs />
+				<PluginMount
+					point="calculator.general"
+					className="border-t border-border/60 pt-3.5"
+				/>
 			</div>
 		</ScrollArea>
 	);

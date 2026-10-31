@@ -1,8 +1,8 @@
 use crate::types::{
     BitDirection, BitInputState, BitTemplateConfig, CannonMode, ConvertedConfigDraft,
-    DecodedConfig, DraftConfig, DraftVector3, EncodableConfig, EncodablePearl, EncodableVector3,
-    GeneralConfig, ImportedConfiguration, MaskGroup, MultiplierBitInputState, MultiplierConfig,
-    PearlMomentum, TntDirection, Vector3,
+    DecodedConfig, DraftConfig, DraftVector3, EmbeddedPlugin, EncodableConfig, EncodablePearl,
+    EncodableVector3, GeneralConfig, ImportedConfiguration, MaskGroup, MultiplierBitInputState,
+    MultiplierConfig, PearlMomentum, TntDirection, Vector3,
 };
 use base64::{Engine as _, engine::general_purpose::STANDARD};
 use serde_json::{Map, Value, json};
@@ -547,12 +547,14 @@ pub fn parse_configuration_content(
     let config = normalize_config(root)?;
     let bit_template = extract_bit_template_config(root)?;
     let multiplier_template = extract_multiplier_config(root)?;
+    let plugins = extract_plugins(root).or_else(|| extract_plugins(&json));
 
     Ok(ImportedConfiguration {
         config,
         bit_template,
         multiplier_template,
         path: path.to_string(),
+        plugins: plugins.unwrap_or_default(),
     })
 }
 
@@ -796,6 +798,35 @@ fn extract_multiplier_config(root: &Value) -> Result<Option<MultiplierConfig>, S
             .and_then(Value::as_bool)
             .unwrap_or(false),
     }))
+}
+
+fn extract_plugins(root: &Value) -> Option<Vec<EmbeddedPlugin>> {
+    let entries = root.get("Plugins")?.as_array()?;
+    Some(
+        entries
+            .iter()
+            .filter_map(|entry| {
+                Some(EmbeddedPlugin {
+                    id: entry.get("Id")?.as_str()?.to_string(),
+                    source: entry.get("Source")?.as_str()?.to_string(),
+                    version: string_at(entry, "Version"),
+                    api_version: value_to_u32(entry.get("ApiVersion")),
+                    sha256: string_at(entry, "Sha256"),
+                    params_json: entry
+                        .get("Params")
+                        .map_or_else(|| "{}".to_string(), Value::to_string),
+                })
+            })
+            .collect(),
+    )
+}
+
+fn string_at(value: &Value, key: &str) -> String {
+    value
+        .get(key)
+        .and_then(Value::as_str)
+        .unwrap_or_default()
+        .to_string()
 }
 
 fn extract_root<'a>(value: &'a Value) -> &'a Value {
@@ -1256,6 +1287,52 @@ mod tests {
 
         assert_close(encodable.pearl.position.x, 0.0, 1e-12);
         assert_close(encodable.pearl.position.z, 0.0, 1e-12);
+    }
+
+    #[test]
+    fn embedded_plugins_are_read_from_cannon_or_document_root() {
+        let cannon = json!({
+            "MaxTNT": 100,
+            "Pearl": { "Position": { "X": 0, "Y": 100, "Z": 0 }, "Motion": { "X": 0, "Y": 0, "Z": 0 } },
+            "Plugins": [
+                {
+                    "Id": "demo.plugin",
+                    "Version": "1.2.0",
+                    "ApiVersion": 1,
+                    "Sha256": "abc",
+                    "Params": { "settings": { "salt": 7 } },
+                    "Source": "export default {}"
+                },
+                { "Id": "missing.source" }
+            ]
+        });
+        let imported = parse_configuration_content(
+            &json!({ "CannonSettings": [cannon] }).to_string(),
+            "a.json",
+        )
+        .unwrap();
+        assert_eq!(imported.plugins.len(), 1);
+        let plugin = &imported.plugins[0];
+        assert_eq!(plugin.id, "demo.plugin");
+        assert_eq!(plugin.version, "1.2.0");
+        assert_eq!(plugin.api_version, 1);
+        assert_eq!(plugin.source, "export default {}");
+        assert_eq!(
+            serde_json::from_str::<Value>(&plugin.params_json).unwrap(),
+            json!({ "settings": { "salt": 7 } })
+        );
+
+        let top_level = json!({
+            "CannonSettings": [{ "MaxTNT": 1 }],
+            "Plugins": [{ "Id": "top", "Source": "x" }]
+        });
+        let imported = parse_configuration_content(&top_level.to_string(), "b.json").unwrap();
+        assert_eq!(imported.plugins[0].id, "top");
+        assert_eq!(imported.plugins[0].params_json, "{}");
+
+        let plain =
+            parse_configuration_content(&json!({ "MaxTNT": 1 }).to_string(), "c.json").unwrap();
+        assert!(plain.plugins.is_empty());
     }
 
     fn assert_close(actual: f64, expected: f64, tolerance: f64) {

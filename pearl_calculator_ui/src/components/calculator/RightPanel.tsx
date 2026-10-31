@@ -8,8 +8,15 @@ import { useCalculatorState } from "@/context/CalculatorStateContext";
 import { useConfigurationState } from "@/context/ConfigurationStateContext";
 import { useDirectionLabel } from "@/hooks/use-direction-label";
 import { useElementSize } from "@/hooks/use-element-size";
+import { usePluginState } from "@/plugins/store";
 import type { CalculatorInputs, TNTResult } from "@/types/domain";
-import { type CalculationResult, columns } from "./results/columns";
+import {
+	BUILTIN_RESULT_KEYS,
+	type CalculationResult,
+	columns,
+	pluginResultColumn,
+	withPluginColumns,
+} from "./results/columns";
 import { DataTable } from "./results/data-table";
 
 const PREVIEW_OTHERS = 12;
@@ -85,6 +92,7 @@ export default function RightPanel({
 	const tableData: CalculationResult[] = useMemo(
 		() =>
 			filteredResults.map((result, index) => ({
+				...result,
 				id: index.toString(),
 				distance: result.distance,
 				ticks: result.tick,
@@ -130,16 +138,58 @@ export default function RightPanel({
 		[byAccuracy],
 	);
 
-	const activeColumns = useMemo(
+	const plugins = usePluginState((state) => state.plugins);
+	const pluginColumns = useMemo(
 		() =>
-			columns.filter((col) => {
-				if (!("accessorKey" in col)) return true;
-				if (col.accessorKey === "vertical")
-					return calculationMode === "Vector3D";
-				return col.accessorKey !== "charges";
-			}),
-		[calculationMode],
+			plugins
+				.filter((plugin) => plugin.active)
+				.flatMap((plugin) => plugin.manifest.resultColumns),
+		[plugins],
 	);
+	const pluginColumnKey = pluginColumns
+		.map((column) => `${column.key}:${column.hidden ? 0 : 1}:${column.label}`)
+		.join("|");
+	const { overrides, extraColumns } = useMemo(() => {
+		const overrides = new Map(
+			pluginColumns
+				.filter((column) => BUILTIN_RESULT_KEYS.includes(column.key))
+				.map((column) => [column.key, column]),
+		);
+		return {
+			overrides,
+			extraColumns: pluginColumns.filter(
+				(column) => !BUILTIN_RESULT_KEYS.includes(column.key),
+			),
+		};
+	}, [pluginColumns]);
+	const activeColumns = useMemo(() => {
+		const builtin = columns.filter((col) => {
+			if (!("accessorKey" in col)) return true;
+			if (col.accessorKey === "vertical") return calculationMode === "Vector3D";
+			return col.accessorKey !== "charges";
+		});
+		const actions = builtin.pop() as (typeof builtin)[number];
+		const shown = builtin.flatMap((col) => {
+			const key = "accessorKey" in col ? String(col.accessorKey) : "";
+			const override = overrides.get(key);
+			if (!override) return [col];
+			return override.hidden ? [] : [pluginResultColumn(override, key)];
+		});
+		return [
+			...shown,
+			...extraColumns.map((column) => pluginResultColumn(column)),
+			actions,
+		];
+	}, [calculationMode, overrides, extraColumns]);
+	const columnSizing = useMemo(() => {
+		const base = COLUMN_SIZING[calculationMode] ?? COLUMN_SIZING.Standard;
+		return withPluginColumns(
+			Object.fromEntries(
+				Object.entries(base).filter(([key]) => !overrides.get(key)?.hidden),
+			),
+			extraColumns,
+		);
+	}, [calculationMode, overrides, extraColumns]);
 
 	const direction = filteredResults[0]?.direction;
 
@@ -198,12 +248,10 @@ export default function RightPanel({
 					)}
 					<div className="min-h-0 flex-1">
 						<DataTable
-							key={calculationMode}
+							key={`${calculationMode}-${pluginColumnKey}`}
 							columns={activeColumns}
 							data={tableData}
-							defaultColumnSizing={
-								COLUMN_SIZING[calculationMode] ?? COLUMN_SIZING.Standard
-							}
+							defaultColumnSizing={columnSizing}
 							activeRowId={activeId}
 							onRowHover={handleRowHover}
 							onRowOpen={handleRowOpen}

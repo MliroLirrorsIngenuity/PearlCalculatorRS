@@ -28,8 +28,9 @@ interface DataTableProps<TData, TValue> {
 	defaultColumnSizing?: Record<string, number>;
 	minColumnSizes?: Record<string, number>;
 	columnVisibility?: VisibilityState;
-	defaultSortColumn?: string;
+	defaultSortColumn?: string | null;
 	activeRowId?: string;
+	minWidth?: number;
 	onRowHover?: (row: TData | null) => void;
 	onRowOpen?: (row: TData) => void;
 }
@@ -109,6 +110,7 @@ export const DataTable = React.forwardRef<
 		columnVisibility = {},
 		defaultSortColumn,
 		activeRowId,
+		minWidth,
 		onRowHover,
 		onRowOpen,
 	},
@@ -117,6 +119,7 @@ export const DataTable = React.forwardRef<
 	const { t } = useTranslation();
 
 	const getInitialSortColumn = React.useCallback((): SortingState => {
+		if (defaultSortColumn === null) return [];
 		const columnIds = columns
 			.map((col) => {
 				if ("accessorKey" in col && typeof col.accessorKey === "string") {
@@ -320,12 +323,14 @@ export const DataTable = React.forwardRef<
 			className="h-full w-full rounded-lg border"
 			viewportRef={viewportRef}
 			onScroll={handleScroll}
+			orientation={minWidth ? "both" : "vertical"}
 		>
 			<table
 				ref={tableRef}
 				className="w-full caption-bottom text-sm text-left table-fixed"
 				style={{
 					contentVisibility: "auto",
+					minWidth,
 				}}
 			>
 				<colgroup>

@@ -1,6 +1,8 @@
 import { RotateCcw } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { AxisInput } from "@/components/common/AxisInput";
+import { PluginSimulatorInputs } from "@/components/plugins/PluginCalculatorInputs";
+import { PluginMount } from "@/components/plugins/PluginMount";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { CoercedNumberSchema } from "@/lib/schemas";
@@ -127,6 +129,11 @@ export default function SimulatorInputForm({
 							);
 						})}
 					</section>
+					<PluginSimulatorInputs />
+					<PluginMount
+						point="simulator.inputs"
+						className="border-t border-border/60 pt-3.5"
+					/>
 				</div>
 			</ScrollArea>
 			<div className="mt-2 flex gap-2">

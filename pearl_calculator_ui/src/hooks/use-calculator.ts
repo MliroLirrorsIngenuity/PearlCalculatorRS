@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { z } from "zod";
 import { toBackendMode } from "@/lib/config-utils";
+import { TNTResultSchema } from "@/lib/schemas";
+import { runSlot } from "@/plugins/pipeline";
 import { calculatorService } from "@/services";
 import type {
 	CalculatorInputs,
@@ -92,8 +94,12 @@ export function useTNTCalculator() {
 
 			console.log("Sending calculation input:", calculationInput);
 
-			const results =
-				await calculatorService.calculateTNTAmount(calculationInput);
+			const results = await runSlot(
+				"solve",
+				calculationInput,
+				(input) => calculatorService.calculateTNTAmount(input),
+				(output) => z.array(TNTResultSchema).parse(output),
+			);
 
 			return { success: true, data: results };
 		} catch (error) {

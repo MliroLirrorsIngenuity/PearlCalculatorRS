@@ -4,7 +4,7 @@ mod commands;
 use commands::state::AppStateStore;
 use commands::{
     calculate_pearl_trace_command, calculate_raw_trace_command, calculate_tnt_amount_command,
-    dispatch_app_state_action, get_app_state, load_config, load_config_from_content, verify_config,
+    dispatch_app_state_action, get_app_state,
 };
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -18,9 +18,6 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             get_app_state,
             dispatch_app_state_action,
-            verify_config,
-            load_config,
-            load_config_from_content,
             calculate_tnt_amount_command,
             calculate_pearl_trace_command,
             calculate_raw_trace_command

@@ -1,35 +1,33 @@
+import i18n from "i18next";
 import { TriangleAlertIcon } from "lucide-react";
-import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
-export function useToastNotifications() {
-	const { t } = useTranslation();
+function errorText(error: unknown) {
+	const translate = (key: string) => i18n.t(key as any);
+	if (error instanceof Error) {
+		return error.message.startsWith("error.")
+			? translate(error.message)
+			: error.message;
+	}
+	if (typeof error === "string") {
+		return error.startsWith("error.") ? translate(error) : error;
+	}
+	return String(error || i18n.t("error.unknown" as any, "Unknown error"));
+}
 
+export function toastError(title: string, error?: unknown) {
+	toast(title, {
+		description: errorText(error),
+		icon: <TriangleAlertIcon className="size-4 text-red-600" />,
+		className:
+			"!text-red-600 [&_[data-title]]:!text-red-600 [&_[data-description]]:!text-red-600",
+	});
+}
+
+export function useToastNotifications() {
 	const showSuccess = (message: string) => {
 		toast.success(message);
 	};
 
-	const showError = (title: string, error?: unknown) => {
-		let errorMessage: string;
-		if (error instanceof Error) {
-			errorMessage = error.message.startsWith("error.")
-				? t(error.message as any)
-				: error.message;
-		} else if (typeof error === "string") {
-			errorMessage = error.startsWith("error.") ? t(error as any) : error;
-		} else {
-			errorMessage = String(
-				error || t("error.unknown" as any, "Unknown error"),
-			);
-		}
-
-		toast(title, {
-			description: errorMessage,
-			icon: <TriangleAlertIcon className="size-4 text-red-600" />,
-			className:
-				"!text-red-600 [&_[data-title]]:!text-red-600 [&_[data-description]]:!text-red-600",
-		});
-	};
-
-	return { showSuccess, showError };
+	return { showSuccess, showError: toastError };
 }

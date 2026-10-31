@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import TraceDataPanel, {
 	type TraceDataPanelRef,
@@ -27,6 +27,7 @@ import {
 	TntCounts,
 	Unit,
 } from "@/components/common/Metric";
+import { PluginMount } from "@/components/plugins/PluginMount";
 import { Button } from "@/components/ui/button";
 import { useCalculatorState } from "@/context/CalculatorStateContext";
 import { useConfigurationState } from "@/context/ConfigurationStateContext";
@@ -48,6 +49,21 @@ export default function PearlTracePanel() {
 	);
 
 	const { data: trace, tnt, direction } = defaultCalculator.trace;
+	const pluginView = useMemo(
+		() =>
+			trace
+				? {
+						trace,
+						tnt: {
+							blue: tnt?.blue ?? 0,
+							red: tnt?.red ?? 0,
+							vertical: tnt?.vertical,
+							direction: direction ?? "",
+						},
+					}
+				: {},
+		[trace, tnt, direction],
+	);
 	const inputs = defaultCalculator.inputs;
 	if (!trace) return null;
 
@@ -221,6 +237,11 @@ export default function PearlTracePanel() {
 						)}
 					</div>
 				</div>
+				<PluginMount
+					point="trace"
+					view={pluginView}
+					className="border-t border-border/60 pt-4"
+				/>
 			</div>
 
 			<div

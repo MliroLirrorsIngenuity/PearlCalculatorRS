@@ -5,6 +5,7 @@ import { useCalculatorState } from "@/context/CalculatorStateContext";
 import { useConfig } from "@/context/ConfigContext";
 import { useConfigurationState } from "@/context/ConfigurationStateContext";
 import { useMobileViewOptional } from "@/context/MobileViewContext";
+import { setToolDetail, usePluginState } from "@/plugins/store";
 
 export interface BreadcrumbItemType {
 	label: string | undefined;
@@ -21,6 +22,9 @@ export function useBreadcrumbItems() {
 		useCalculatorState();
 	const { isWizardActive, isFinished, setIsFinished, setIsWizardActive } =
 		useConfigurationState();
+
+	const plugins = usePluginState((state) => state.plugins);
+	const toolDetail = usePluginState((state) => state.detail);
 
 	const showPearlTrace = defaultCalculator.trace.show;
 	const showBitCalculation = defaultCalculator.trace.bitCalculation?.show;
@@ -115,6 +119,36 @@ export function useBreadcrumbItems() {
 				{ label: t("breadcrumb.completed"), active: true },
 			]);
 	};
+
+	const getToolBreadcrumbs = (): BreadcrumbItemType[] => {
+		const [, , pluginId = "", toolId = ""] = location.pathname
+			.split("/")
+			.map((part) => decodeURIComponent(part));
+		const plugin = plugins.find((entry) => entry.manifest.id === pluginId);
+		const tool = plugin?.manifest.tools.find((entry) => entry.id === toolId);
+		const page = plugin?.manifest.panels.find(
+			(entry) => entry.mount === "page" && entry.id === toolId,
+		);
+		const pluginCrumb = { label: plugin?.manifest.name ?? pluginId };
+		const toolLabel = tool?.title ?? page?.title ?? toolId;
+		if (toolDetail?.key === `${pluginId}/${toolId}`) {
+			return [
+				pluginCrumb,
+				{ label: toolLabel, onClick: () => setToolDetail(null) },
+				{ label: t("breadcrumb.plugin_detail"), active: true },
+			];
+		}
+		if (isMobileResults) {
+			return [
+				pluginCrumb,
+				{ label: toolLabel, onClick: () => showInput?.() },
+				{ label: t("breadcrumb.results"), active: true },
+			];
+		}
+		return [pluginCrumb, { label: toolLabel, active: true }];
+	};
+
+	if (location.pathname.startsWith("/tools/")) return getToolBreadcrumbs();
 
 	return match(location.pathname)
 		.with("/", () => getHomeBreadcrumbs())

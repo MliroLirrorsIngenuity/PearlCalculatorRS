@@ -96,6 +96,34 @@ fn run_internal<M: PearlMovement + Clone>(
     })
 }
 
+pub fn fly(
+    position: Space3D,
+    motion: Space3D,
+    ticks: u32,
+    version: PearlVersion,
+    visit: impl FnMut(Space3D, Space3D),
+) {
+    match version {
+        PearlVersion::Legacy => fly_internal::<MovementLegacy>(position, motion, ticks, visit),
+        PearlVersion::Post1205 => fly_internal::<MovementPost1205>(position, motion, ticks, visit),
+        PearlVersion::Post1212 => fly_internal::<MovementPost1212>(position, motion, ticks, visit),
+    }
+}
+
+fn fly_internal<M: PearlMovement>(
+    position: Space3D,
+    motion: Space3D,
+    ticks: u32,
+    mut visit: impl FnMut(Space3D, Space3D),
+) {
+    let mut pearl = PearlEntity::<M>::new(position, motion);
+    visit(pearl.data.position, pearl.data.motion);
+    for _ in 0..ticks {
+        M::run_tick_sequence(&mut pearl, &[]);
+        visit(pearl.data.position, pearl.data.motion);
+    }
+}
+
 pub fn scan_trajectory(
     data: &GeneralData,
     destination: Space3D,

@@ -32,6 +32,10 @@ import {
 	WizardVerticalTNTSchema,
 } from "@/lib/schemas";
 import { dispatchTauriAppStateAction } from "@/lib/tauri-app-state";
+import { applyWizardPlugins } from "@/plugins/config-plugins";
+import { copyText } from "@/plugins/copy";
+import { noticeWizardPlugins } from "@/plugins/errors";
+import { setWizardPlugins, wizardExportPlugins } from "@/plugins/store";
 import { isTauri } from "@/services";
 import type {
 	BitTemplateConfig,
@@ -234,6 +238,7 @@ export function useConfigurationController() {
 	};
 
 	const handleStart = () => {
+		setWizardPlugins([]);
 		setIsWizardActive(true);
 		setIsFinished(false);
 		setSavedPath(null);
@@ -241,6 +246,7 @@ export function useConfigurationController() {
 	};
 
 	const handleReset = () => {
+		setWizardPlugins([]);
 		resetDraft();
 		setIsFinished(false);
 		setSavedPath(null);
@@ -257,6 +263,7 @@ export function useConfigurationController() {
 	};
 
 	const handleApplyToCalculator = () => {
+		void applyWizardPlugins();
 		if (isTauri) {
 			void (async () => {
 				await dispatchTauriAppStateAction({
@@ -304,7 +311,11 @@ export function useConfigurationController() {
 				wizardMode,
 				multiplierBitState,
 			);
-			const path = await exportConfiguration(config);
+			const path = await exportConfiguration(
+				config,
+				wizardExportPlugins(),
+				false,
+			);
 			if (path) {
 				setSavedPath(path);
 				showSuccess(t("configuration_page.toast_exported"));
@@ -377,6 +388,7 @@ export function useConfigurationController() {
 				return;
 			}
 			const decoded = decodeConfig(text);
+			setWizardPlugins([]);
 			hydrateWizard(decoded.generalConfig, decoded.bitTemplate, null, null);
 		} catch (error) {
 			console.error(error);
@@ -388,6 +400,8 @@ export function useConfigurationController() {
 		try {
 			const result = await loadConfiguration();
 			if (result) {
+				setWizardPlugins(result.plugins);
+				noticeWizardPlugins(result.plugins.length);
 				hydrateWizard(
 					result.config,
 					result.bitTemplate,
@@ -412,7 +426,9 @@ export function useConfigurationController() {
 			);
 			const encoded = encodeConfig(config as unknown as EncodableConfig);
 			const { calculatorService } = await import("@/services");
-			await calculatorService.copyToClipboard(encoded);
+			await calculatorService.copyToClipboard(
+				await copyText("configCode", encoded, config, false),
+			);
 			showSuccess(t("configuration_page.toast_code_copied"));
 		} catch (error) {
 			console.error(error);

@@ -1,4 +1,3 @@
-use pearl_calculator_bridge::outputs::{PearlTraceOutput, TNTResultOutput};
 use pearl_calculator_utils::{
     BitInputState, BitTemplateConfig, CalculatorInputs, CannonMode, GeneralConfig,
     MultiplierBitInputState, MultiplierConfig, PearlMomentum, PearlVersion, SimulatorConfig,
@@ -106,7 +105,7 @@ impl Default for CalculatorStoreState {
 #[serde(rename_all = "camelCase")]
 pub struct DefaultCalculatorState {
     pub inputs: CalculatorInputs,
-    pub results: Vec<TNTResultOutput>,
+    pub results: Vec<Value>,
     pub trace: CalculatorTraceState,
 }
 
@@ -123,7 +122,7 @@ impl Default for DefaultCalculatorState {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CalculatorTraceState {
-    pub data: Option<PearlTraceOutput>,
+    pub data: Option<Value>,
     pub direction: String,
     pub tnt: Option<TraceTntState>,
     pub show: bool,
@@ -169,7 +168,7 @@ impl Default for SimulatorState {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SimulatorTraceState {
-    pub data: Option<PearlTraceOutput>,
+    pub data: Option<Value>,
     pub direction: String,
     pub tnt: Option<TraceTntState>,
     pub show: bool,
@@ -266,7 +265,7 @@ pub enum AppStateAction {
         value: Value,
     },
     SetDefaultResults {
-        results: Vec<TNTResultOutput>,
+        results: Vec<Value>,
     },
     UpdateDefaultTrace {
         patch: DefaultTracePatch,
@@ -316,7 +315,7 @@ pub enum CalculatorInputField {
 #[derive(Debug, Clone, Deserialize, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct DefaultTracePatch {
-    pub data: Option<PearlTraceOutput>,
+    pub data: Option<Value>,
     pub direction: Option<String>,
     pub tnt: Option<TraceTntState>,
     pub show: Option<bool>,
@@ -325,7 +324,7 @@ pub struct DefaultTracePatch {
 #[derive(Debug, Clone, Deserialize, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct SimulatorTracePatchPatch {
-    pub data: Option<PearlTraceOutput>,
+    pub data: Option<Value>,
     pub direction: Option<String>,
     pub tnt: Option<TraceTntState>,
     pub show: Option<bool>,

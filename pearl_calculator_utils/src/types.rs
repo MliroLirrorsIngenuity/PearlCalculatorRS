@@ -258,6 +258,19 @@ pub struct ImportedConfiguration {
     pub bit_template: Option<BitTemplateConfig>,
     pub multiplier_template: Option<MultiplierConfig>,
     pub path: String,
+    #[serde(default)]
+    pub plugins: Vec<EmbeddedPlugin>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct EmbeddedPlugin {
+    pub id: String,
+    pub version: String,
+    pub api_version: u32,
+    pub sha256: String,
+    pub params_json: String,
+    pub source: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

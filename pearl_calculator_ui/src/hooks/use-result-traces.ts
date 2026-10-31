@@ -5,8 +5,9 @@ import {
 	buildPearlTraceInput,
 	type PearlTraceInputs,
 	type TraceTntSelection,
+	tracePearl,
 } from "@/hooks/use-pearl-trace";
-import { calculatorService } from "@/services";
+import { slotSignature, usePluginState } from "@/plugins/store";
 import type { PearlTraceResult } from "@/types/domain";
 
 type TraceCache = { context: string; traces: Record<string, PearlTraceResult> };
@@ -27,7 +28,9 @@ export function useResultTraces(
 	const { calculationMode } = useConfigurationState();
 	const [cache, setCache] = useState<TraceCache>({ context: "", traces: {} });
 	const requested = useRef({ context: "", keys: new Set<string>() });
+	const pluginSignature = usePluginState(() => slotSignature("trace"));
 	const contextKey = JSON.stringify([
+		pluginSignature,
 		inputs.pearlX,
 		inputs.pearlZ,
 		inputs.cannonY,
@@ -57,7 +60,7 @@ export function useResultTraces(
 					continue;
 				}
 				try {
-					const trace = await calculatorService.calculatePearlTrace({
+					const trace = await tracePearl({
 						...buildPearlTraceInput(
 							inputs,
 							tnt,

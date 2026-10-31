@@ -1,4 +1,5 @@
 import type { DraftConfig } from "@/context/ConfigurationStateContext";
+import type { EmbeddedPluginEntry } from "@/plugins/store";
 import type {
 	BitInputState,
 	BitTemplateConfig,
@@ -13,6 +14,7 @@ interface ImportedConfiguration {
 	bitTemplate: BitTemplateConfig | null;
 	multiplierTemplate: MultiplierConfig | null;
 	path: string;
+	plugins: EmbeddedPluginEntry[];
 }
 
 interface ConvertedConfigDraft {

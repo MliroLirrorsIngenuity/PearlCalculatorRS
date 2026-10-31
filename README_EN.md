@@ -31,6 +31,7 @@
     - **Simulator**: Built-in pearl trajectory simulation for quick momentum and landing spot prediction.
     - **Configuration Wizard**: Intuitive configuration process for easy cannon setup.
     - **Configuration Creation Mod**: Companion [carpet-ftlconfig](https://github.com/MliroLirrorsIngenuity/carpet-ftlconfig) Carpet extension for quickly capturing configuration data and importing it into the calculator.
+    - **Plugins**: Layer custom calculation protocols in JavaScript: add parallel tools and pages, put your own UI on app pages, add or rewrite result columns, rewrite copied text, or take over solving, tracing, simulation, Bit calculation and config import/export. Plugins travel inside config files; opening a config asks whether to load them, they run sandboxed, and permissions such as network access need separate consent. See the [plugin development guide](PLUGINS_EN.md).
 - **Cross-Platform Support**: Powered by Tauri, supporting Windows, macOS, and Linux. No external dependencies required.
 
 ## Usage

@@ -1,6 +1,8 @@
 import { useTranslation } from "react-i18next";
 import { AxisInput } from "@/components/common/AxisInput";
 import { sectionLabelClass } from "@/components/common/Metric";
+import { ConfigPluginsSection } from "@/components/plugins/ConfigPluginsSection";
+import { PluginMount } from "@/components/plugins/PluginMount";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
 	Select,
@@ -286,6 +288,9 @@ export default function ConfigurationDataForm({
 						/>
 					</div>
 				</Section>
+
+				<PluginMount point="calculator.config" />
+				<ConfigPluginsSection />
 			</div>
 		</ScrollArea>
 	);

@@ -6,6 +6,7 @@ import { ConfigProvider } from "@/context/ConfigContext";
 import { ConfigurationStateProvider } from "@/context/ConfigurationStateContext";
 import Calculator from "@/pages/Calculator";
 import Configuration from "@/pages/Configuration";
+import PluginTool from "@/pages/PluginTool";
 import Simulator from "@/pages/Simulator";
 
 function App() {
@@ -44,6 +45,10 @@ function App() {
 								<Route index element={<Calculator />} />
 								<Route path="simulator" element={<Simulator />} />
 								<Route path="configuration" element={<Configuration />} />
+								<Route
+									path="tools/:pluginId/:toolId"
+									element={<PluginTool />}
+								/>
 							</Route>
 						</Routes>
 					</BrowserRouter>

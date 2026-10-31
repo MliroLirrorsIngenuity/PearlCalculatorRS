@@ -22,6 +22,7 @@ import { useConfig } from "@/context/ConfigContext";
 import { useConfigurationState } from "@/context/ConfigurationStateContext";
 import { useConfigActions } from "@/hooks/use-config-actions";
 import { setCalculatorTab } from "@/lib/calculator-tab";
+import { usePluginState } from "@/plugins/store";
 
 function configDisplayName(path: string) {
 	return path
@@ -38,6 +39,9 @@ export function ConfigMenu() {
 	const actions = useConfigActions();
 	const name = configDisplayName(configPath) || t("config_menu.unnamed");
 	const bitCount = bitTemplateConfig?.SideMode;
+	const pluginCount = usePluginState(
+		(state) => state.plugins.length + state.dormant.length,
+	);
 
 	return (
 		<DropdownMenu>
@@ -63,6 +67,9 @@ export function ConfigMenu() {
 							t("config_menu.max_tnt", { count: configData.max_tnt }),
 							bitCount
 								? t("config_menu.bit_template", { count: bitCount })
+								: null,
+							pluginCount > 0
+								? t("config_menu.plugins", { count: pluginCount })
 								: null,
 						]
 							.filter(Boolean)

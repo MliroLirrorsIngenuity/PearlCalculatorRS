@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { useCalculatorState } from "@/context/CalculatorStateContext";
 import { useConfig } from "@/context/ConfigContext";
 import { useConfigActions } from "@/hooks/use-config-actions";
+import { clearConfigPlugins } from "@/plugins/config-plugins";
 
 export function ConfigOnboarding() {
 	const { t } = useTranslation();
@@ -22,6 +23,7 @@ export function ConfigOnboarding() {
 	const { resetDefaultCalculator } = useCalculatorState();
 
 	const skip = () => {
+		void clearConfigPlugins();
 		resetConfig();
 		resetDefaultCalculator();
 		setHasConfig(true);

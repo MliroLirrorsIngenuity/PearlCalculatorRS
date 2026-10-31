@@ -8,10 +8,26 @@ import { useConfig } from "@/context/ConfigContext";
 import { useConfigurationState } from "@/context/ConfigurationStateContext";
 import { useToastNotifications } from "@/hooks/use-toast-notifications";
 import { configToInputState } from "@/lib/bit-template-utils";
-import { parseConfigurationContent } from "@/lib/config-service";
+import {
+	configExtensions,
+	extensionOf,
+	importConfigurationContent,
+	PLUGIN_EXTENSIONS,
+} from "@/lib/config-service";
 import { convertConfigToDraft } from "@/lib/config-utils";
 import { dispatchTauriAppStateAction } from "@/lib/tauri-app-state";
+import { applyConfigPlugins, attachPlugin } from "@/plugins/config-plugins";
+import { noticeWizardPlugins, toastPluginError } from "@/plugins/errors";
+import { setWizardPlugins } from "@/plugins/store";
 import { isTauri } from "@/services";
+
+function isAcceptedFile(path: string) {
+	const extension = extensionOf(path);
+	return (
+		PLUGIN_EXTENSIONS.includes(extension) ||
+		configExtensions().includes(extension)
+	);
+}
 
 export function useDragDrop() {
 	const [isDragOver, setIsDragOver] = useState(false);
@@ -20,7 +36,10 @@ export function useDragDrop() {
 	const location = useLocation();
 	const navigate = useNavigate();
 	const { updateDefaultInput } = useCalculatorState();
-	const { setConfigData, setHasConfig, setBitTemplateConfig } = useConfig();
+	const { hasConfig, setConfigData, setHasConfig, setBitTemplateConfig } =
+		useConfig();
+	const hasConfigRef = useRef(hasConfig);
+	hasConfigRef.current = hasConfig;
 	const {
 		setDraftConfig,
 		setPearlMomentum,
@@ -39,15 +58,15 @@ export function useDragDrop() {
 	const handleContentLoad = useCallback(
 		async (content: string, path: string) => {
 			try {
-				const { config, bitTemplate } = parseConfigurationContent(
-					content,
-					path,
-				);
+				const { config, bitTemplate, plugins } =
+					await importConfigurationContent(content, path);
 
 				const currentlyOnConfigPage =
 					locationRef.current.pathname === "/configuration";
 
 				if (currentlyOnConfigPage) {
+					setWizardPlugins(plugins);
+					noticeWizardPlugins(plugins.length);
 					if (isTauri) {
 						await dispatchTauriAppStateAction({
 							type: "applyConfigToWizard",
@@ -70,6 +89,7 @@ export function useDragDrop() {
 					}
 					showSuccess(t("configuration_page.toast_imported"));
 				} else {
+					void applyConfigPlugins(plugins);
 					if (isTauri) {
 						await dispatchTauriAppStateAction({
 							type: "applyConfigToCalculator",
@@ -119,6 +139,28 @@ export function useDragDrop() {
 		],
 	);
 
+	const handleFileContent = useCallback(
+		async (content: string, path: string) => {
+			if (PLUGIN_EXTENSIONS.includes(extensionOf(path))) {
+				if (!hasConfigRef.current) {
+					showError(t("plugins.toast_need_config"));
+					return;
+				}
+				try {
+					const record = await attachPlugin(content);
+					showSuccess(
+						t("plugins.toast_attached", { name: record.manifest.name }),
+					);
+				} catch (e) {
+					toastPluginError(t("plugins.toast_load_failed"), e);
+				}
+				return;
+			}
+			await handleContentLoad(content, path);
+		},
+		[handleContentLoad, showError, showSuccess, t],
+	);
+
 	const handleTauriFileLoad = useCallback(
 		async (path: string) => {
 			if (isProcessingRef.current) return;
@@ -126,7 +168,7 @@ export function useDragDrop() {
 
 			try {
 				const content = await readTextFile(path);
-				await handleContentLoad(content, path);
+				await handleFileContent(content, path);
 			} catch (e) {
 				console.error("File load error:", e);
 				showError(t("error.calculator.import_failed"), e);
@@ -134,7 +176,7 @@ export function useDragDrop() {
 				isProcessingRef.current = false;
 			}
 		},
-		[handleContentLoad, showError, t],
+		[handleFileContent, showError, t],
 	);
 
 	const handleWebFileDrop = useCallback(
@@ -144,7 +186,7 @@ export function useDragDrop() {
 
 			try {
 				const content = await file.text();
-				await handleContentLoad(content, file.name);
+				await handleFileContent(content, file.name);
 			} catch (e) {
 				console.error("File load error:", e);
 				showError(t("error.calculator.import_failed"), e);
@@ -152,7 +194,7 @@ export function useDragDrop() {
 				isProcessingRef.current = false;
 			}
 		},
-		[handleContentLoad, showError, t],
+		[handleFileContent, showError, t],
 	);
 
 	const dismissOverlay = () => setIsDragOver(false);
@@ -174,7 +216,7 @@ export function useDragDrop() {
 						const paths = event.payload.paths;
 						if (paths && paths.length > 0) {
 							const path = paths[0];
-							if (path.endsWith(".json")) {
+							if (isAcceptedFile(path)) {
 								await handleTauriFileLoad(path);
 							}
 						}
@@ -214,7 +256,7 @@ export function useDragDrop() {
 				const files = e.dataTransfer?.files;
 				if (files && files.length > 0) {
 					const file = files[0];
-					if (file.name.endsWith(".json")) {
+					if (isAcceptedFile(file.name)) {
 						await handleWebFileDrop(file);
 					}
 				}

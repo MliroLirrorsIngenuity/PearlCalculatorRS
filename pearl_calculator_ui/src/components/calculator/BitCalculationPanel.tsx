@@ -27,13 +27,15 @@ import { useMobileView } from "@/context/MobileViewContext";
 import { useDirectionLabel } from "@/hooks/use-direction-label";
 import { useElementSize } from "@/hooks/use-element-size";
 import { useToastNotifications } from "@/hooks/use-toast-notifications";
-import { calculateBits, decodeWithMultiplier } from "@/lib/bit-decoder";
 import {
 	configToInputState,
 	configToMultiplierInputState,
 	inputStateToConfig,
 	inputStateToMultiplierConfig,
 } from "@/lib/bit-template-utils";
+import { BitTemplateError, builtinBits } from "@/lib/bits-builtin";
+import { copyText } from "@/plugins/copy";
+import { runSlot } from "@/plugins/pipeline";
 import { calculatorService } from "@/services";
 import type { BitCalculationResult, BitInputState } from "@/types/domain";
 import { BitInputSection } from "./BitInputSection";
@@ -196,89 +198,40 @@ export default function BitCalculationPanel() {
 	const { ref: scrollViewportRef, height: viewportHeight } =
 		useElementSize<HTMLDivElement>();
 
-	const parseMultiplierValues = (
-		state: MultiplierBitInputState,
-	): number[] | null => {
-		const values: number[] = [];
-		for (const v of state.sideValues) {
-			const num = parseInt(v, 10);
-			if (isNaN(num) || num <= 0) {
-				return null;
-			}
-			values.push(num);
-		}
-		return values;
-	};
-
-	const runCalculation = useCallback(() => {
+	const runCalculation = useCallback(async () => {
 		if (!inputState || !traceTNT) return;
-
-		if (hasMultiplierSupport && isMultiplierEnabled) {
-			const multiplierValues = parseMultiplierValues(multiplierState);
-
-			let blueTNT = traceTNT.blue;
-			let redTNT = traceTNT.red;
-			let blueMultiplierIndices: number[] = [];
-			let redMultiplierIndices: number[] = [];
-
-			if (multiplierValues && multiplierValues.length > 0) {
-				const blueMultResult = decodeWithMultiplier(
-					multiplierValues,
-					multiplierState.multiplier,
-					blueTNT,
-				);
-				blueMultiplierIndices = blueMultResult.activatedIndices;
-				blueTNT = blueMultResult.remainder;
-
-				const redMultResult = decodeWithMultiplier(
-					multiplierValues,
-					multiplierState.multiplier,
-					redTNT,
-				);
-				redMultiplierIndices = redMultResult.activatedIndices;
-				redTNT = redMultResult.remainder;
-			}
-
-			setMultiplierResult({
-				blue: blueMultiplierIndices,
-				red: redMultiplierIndices,
-			});
-
-			const result = calculateBits(inputState, blueTNT, redTNT, traceDirection);
-
-			if ("error" in result) {
-				const { errorKey, errorParams } = result.error;
-				if (errorKey) {
-					showError(
-						t("error.calculator.calc_failed"),
-						t(errorKey as any, errorParams as any),
-					);
-				}
-				return;
-			}
-
-			setCalculationResult(result.result);
-		} else {
-			const result = calculateBits(
-				inputState,
-				traceTNT.blue,
-				traceTNT.red,
-				traceDirection,
+		const multiplierEnabled = hasMultiplierSupport && isMultiplierEnabled;
+		try {
+			const result = await runSlot(
+				"bits",
+				{
+					template: inputState,
+					multiplier: multiplierEnabled ? multiplierState : null,
+					tnt: {
+						blue: traceTNT.blue,
+						red: traceTNT.red,
+						vertical: traceTNT.vertical,
+					},
+					direction: traceDirection,
+					mode: calculationMode,
+				},
+				builtinBits,
 			);
-
-			if ("error" in result) {
-				const { errorKey, errorParams } = result.error;
-				if (errorKey) {
+			setCalculationResult(result.standard);
+			setMultiplierResult(
+				multiplierEnabled ? result.multiplier : { blue: [], red: [] },
+			);
+		} catch (error) {
+			if (error instanceof BitTemplateError) {
+				if (error.errorKey) {
 					showError(
 						t("error.calculator.calc_failed"),
-						t(errorKey as any, errorParams as any),
+						t(error.errorKey as any, error.errorParams as any),
 					);
 				}
 				return;
 			}
-
-			setCalculationResult(result.result);
-			setMultiplierResult({ blue: [], red: [] });
+			showError(t("error.calculator.calc_failed"), error);
 		}
 	}, [
 		inputState,
@@ -289,6 +242,7 @@ export default function BitCalculationPanel() {
 		hasMultiplierSupport,
 		multiplierState,
 		isMultiplierEnabled,
+		calculationMode,
 	]);
 
 	useEffect(() => {
@@ -299,7 +253,7 @@ export default function BitCalculationPanel() {
 				(v) => v && v.trim() !== "",
 			);
 			if (allValuesPresent) {
-				runCalculation();
+				void runCalculation();
 			}
 			hasAutoCalculated.current = true;
 		}
@@ -355,7 +309,13 @@ export default function BitCalculationPanel() {
 			);
 		}
 		try {
-			await calculatorService.copyToClipboard(lines.join("\n"));
+			const text = await copyText("bits", lines.join("\n"), {
+				standard: calculationResult,
+				multiplier: multiplierResult,
+				tnt: traceTNT,
+				direction: traceDirection,
+			});
+			await calculatorService.copyToClipboard(text);
 			showSuccess(t("bit.copied"));
 		} catch (error) {
 			showError(t("bit.copy_failed"), error);
@@ -516,7 +476,7 @@ export default function BitCalculationPanel() {
 								/>
 							)}
 							<div className="flex justify-center pb-2">
-								<Button className="w-40" onClick={runCalculation}>
+								<Button className="w-40" onClick={() => void runCalculation()}>
 									{t("calculator.bit_calculate_btn")}
 								</Button>
 							</div>

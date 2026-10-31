@@ -5,6 +5,8 @@ import { useConfig } from "@/context/ConfigContext";
 import { useConfigurationState } from "@/context/ConfigurationStateContext";
 import { useToastNotifications } from "@/hooks/use-toast-notifications";
 import { toBackendMode } from "@/lib/config-utils";
+import { PearlTraceResultSchema } from "@/lib/schemas";
+import { runSlot } from "@/plugins/pipeline";
 import { calculatorService } from "@/services";
 import type { PearlTraceInput } from "@/services/interface";
 import type {
@@ -77,6 +79,15 @@ export function buildPearlTraceInput(
 	};
 }
 
+export function tracePearl(input: PearlTraceInput) {
+	return runSlot(
+		"trace",
+		input,
+		(value) => calculatorService.calculatePearlTrace(value),
+		(output) => PearlTraceResultSchema.parse(output),
+	);
+}
+
 export function usePearlTrace() {
 	const { t } = useTranslation();
 	const { showError } = useToastNotifications();
@@ -90,7 +101,7 @@ export function usePearlTrace() {
 	): Promise<PearlTraceResult | null> => {
 		setLoading(true);
 		try {
-			return await calculatorService.calculatePearlTrace(
+			return await tracePearl(
 				buildPearlTraceInput(
 					inputs,
 					tntResult,

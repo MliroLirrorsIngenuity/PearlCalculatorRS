@@ -1,4 +1,4 @@
-import { Settings } from "lucide-react";
+import { AppWindow, Settings, Wrench } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Link, useLocation } from "react-router";
 import {
@@ -9,8 +9,12 @@ import {
 	SheetTrigger,
 } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
+import { useToolLinks } from "@/plugins/tool-links";
 import { LanguageMenu, ThemeToggle, VersionMenu } from "./AppSettingsControls";
 import { NAV_ITEMS } from "./navigation";
+
+const isActive = (pathname: string, to: string) =>
+	to === "/" ? pathname === to : pathname.startsWith(to);
 
 const tabClass =
 	"flex flex-col items-center justify-center gap-0.5 text-[11px] text-muted-foreground";
@@ -18,25 +22,48 @@ const tabClass =
 export function MobileTabBar() {
 	const { t } = useTranslation();
 	const { pathname } = useLocation();
+	const tools = useToolLinks();
 
 	return (
 		<nav
 			aria-label={t("nav.modules")}
-			className="grid shrink-0 grid-cols-4 border-t bg-background px-2 pt-1.5 pb-[max(var(--safe-area-inset-bottom),0.5rem)]"
+			className="grid shrink-0 border-t bg-background px-2 pt-1.5 pb-[max(var(--safe-area-inset-bottom),0.5rem)]"
+			style={{
+				gridTemplateColumns: `repeat(${NAV_ITEMS.length + tools.length + 1}, minmax(0, 1fr))`,
+			}}
 		>
 			{NAV_ITEMS.map(({ to, icon: Icon, labelKey }) => (
+				<Link
+					key={to}
+					to={to}
+					aria-current={isActive(pathname, to) ? "page" : undefined}
+					className={cn(
+						tabClass,
+						"h-12",
+						isActive(pathname, to) && "font-semibold text-foreground",
+					)}
+				>
+					<Icon className="size-[22px]" />
+					{t(labelKey)}
+				</Link>
+			))}
+			{tools.map(({ to, title, kind }) => (
 				<Link
 					key={to}
 					to={to}
 					aria-current={pathname === to ? "page" : undefined}
 					className={cn(
 						tabClass,
-						"h-12",
+						"h-12 min-w-0 px-0.5",
 						pathname === to && "font-semibold text-foreground",
 					)}
 				>
-					<Icon className="size-[22px]" />
-					{t(labelKey)}
+					{kind === "page" ? (
+						<AppWindow className="size-[22px] shrink-0" />
+					) : (
+						<Wrench className="size-[22px] shrink-0" />
+					)}
+					<span className="w-full truncate text-center">{title}</span>
 				</Link>
 			))}
 			<Sheet>

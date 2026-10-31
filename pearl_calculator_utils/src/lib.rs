@@ -15,7 +15,7 @@ pub use config::{
 };
 pub use types::{
     BitDirection, BitInputState, BitTemplateConfig, CalculatorInputs, CannonMode,
-    ConvertedConfigDraft, DecodedConfig, DraftConfig, EncodableConfig, GeneralConfig,
-    ImportedConfiguration, MaskGroup, MultiplierBitInputState, MultiplierConfig, PearlMomentum,
-    PearlVersion, SimulatorConfig, TntDirection, Vector3,
+    ConvertedConfigDraft, DecodedConfig, DraftConfig, EmbeddedPlugin, EncodableConfig,
+    GeneralConfig, ImportedConfiguration, MaskGroup, MultiplierBitInputState, MultiplierConfig,
+    PearlMomentum, PearlVersion, SimulatorConfig, TntDirection, Vector3,
 };

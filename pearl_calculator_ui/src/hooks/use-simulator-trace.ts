@@ -1,5 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { useToastNotifications } from "@/hooks/use-toast-notifications";
+import { PearlTraceResultSchema } from "@/lib/schemas";
+import { runSlot } from "@/plugins/pipeline";
 import { calculatorService } from "@/services";
 import type { PearlTraceResult, SimulatorConfig } from "@/types/domain";
 
@@ -30,7 +32,12 @@ export function useSimulatorTrace() {
 				version: version,
 			};
 
-			return await calculatorService.calculateRawTrace(input);
+			return await runSlot(
+				"simulate",
+				input,
+				(value) => calculatorService.calculateRawTrace(value),
+				(output) => PearlTraceResultSchema.parse(output),
+			);
 		} catch (error) {
 			console.error("Pearl trace calculation failed:", error);
 			showError(t("error.calculator.pearl_trace"), error);

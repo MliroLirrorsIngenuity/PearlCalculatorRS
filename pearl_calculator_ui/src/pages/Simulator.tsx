@@ -1,6 +1,8 @@
 import { AnimatePresence, motion } from "motion/react";
+import { useMemo } from "react";
 import SimulatorInputForm from "@/components/calculator/SimulatorInputForm";
 import { SimulatorResults } from "@/components/calculator/SimulatorResults";
+import { PluginMount } from "@/components/plugins/PluginMount";
 import { Card, CardContent } from "@/components/ui/card";
 import { useCalculatorState } from "@/context/CalculatorStateContext";
 import { useConfig } from "@/context/ConfigContext";
@@ -20,6 +22,10 @@ export default function Simulator() {
 	const { isMobile, mobileView, showResults } = useMobileView();
 
 	const pearlTraceData = simulator.trace.data;
+	const pluginView = useMemo(
+		() => ({ trace: pearlTraceData ?? null }),
+		[pearlTraceData],
+	);
 
 	const handleTrace = async () => {
 		const result = await calculateSimulatorTrace(simulator.config, version);
@@ -52,6 +58,11 @@ export default function Simulator() {
 								<SimulatorResults
 									trace={pearlTraceData}
 									className="min-h-0 flex-1"
+								/>
+								<PluginMount
+									point="simulator.results"
+									view={pluginView}
+									className="max-h-[45%] shrink-0 overflow-y-auto rounded-lg border p-3"
 								/>
 							</div>
 						</>
@@ -88,6 +99,11 @@ export default function Simulator() {
 									<SimulatorResults
 										trace={pearlTraceData}
 										className="min-h-0 flex-1"
+									/>
+									<PluginMount
+										point="simulator.results"
+										view={pluginView}
+										className="max-h-[45%] shrink-0 overflow-y-auto rounded-lg border p-3"
 									/>
 								</motion.div>
 							)}

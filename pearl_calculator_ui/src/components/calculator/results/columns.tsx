@@ -3,6 +3,8 @@ import type { Column, ColumnDef } from "@tanstack/react-table";
 import { ArrowRight } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
+import { formatNumber } from "@/plugins/fields";
+import type { Column as PluginColumn } from "@/plugins/localize";
 
 export type CalculationResult = {
 	id: string;
@@ -135,3 +137,74 @@ export const columns: ColumnDef<CalculationResult>[] = [
 		enableResizing: false,
 	},
 ];
+
+export const BUILTIN_RESULT_KEYS = [
+	"distance",
+	"ticks",
+	"blue",
+	"red",
+	"vertical",
+	"total",
+];
+
+const BUILTIN_CELL_CLASS: Record<string, string> = {
+	blue: "text-blue-600 dark:text-blue-400",
+	red: "text-red-600 dark:text-red-400",
+};
+
+export function pluginResultColumn(
+	column: PluginColumn,
+	id = `plugin:${column.key}`,
+): ColumnDef<CalculationResult> {
+	return {
+		id,
+		accessorFn: (row) => (row as Record<string, unknown>)[column.key],
+		header: ({ column: tableColumn }) => (
+			<button
+				type="button"
+				onClick={() =>
+					tableColumn.toggleSorting(tableColumn.getIsSorted() === "asc")
+				}
+				className="w-full truncate text-center font-semibold hover:text-foreground/70"
+			>
+				{column.label}
+			</button>
+		),
+		cell: ({ row }) => {
+			const value = (row.original as Record<string, unknown>)[column.key];
+			return (
+				<SimpleCell
+					className={BUILTIN_CELL_CLASS[id]}
+					value={
+						typeof value === "number"
+							? formatNumber(column, value)
+							: value === undefined || value === null
+								? "—"
+								: String(value)
+					}
+				/>
+			);
+		},
+		enableResizing: false,
+	};
+}
+
+export function withPluginColumns(
+	sizing: Record<string, number>,
+	pluginColumns: PluginColumn[],
+) {
+	const extra = pluginColumns.map((column) => column.width ?? 10);
+	const total =
+		Object.values(sizing).reduce((sum, value) => sum + value, 0) +
+		extra.reduce((sum, value) => sum + value, 0);
+	return Object.fromEntries([
+		...Object.entries(sizing).map(([key, value]) => [
+			key,
+			(value / total) * 100,
+		]),
+		...pluginColumns.map((column, index) => [
+			`plugin:${column.key}`,
+			(extra[index] / total) * 100,
+		]),
+	]);
+}

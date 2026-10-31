@@ -4,6 +4,7 @@ import { DragDropOverlay } from "@/components/common/DragDropOverlay";
 import { AppBreadcrumb } from "@/components/layout/AppBreadcrumb";
 import { AppRail } from "@/components/layout/AppRail";
 import { MobileTabBar } from "@/components/layout/MobileTabBar";
+import { PluginHostBridge } from "@/components/plugins/PluginHostBridge";
 import { Toaster } from "@/components/ui/sonner";
 import { MobileViewProvider, useMobileView } from "@/context/MobileViewContext";
 import { ThemeProvider } from "@/context/ThemeContext";
@@ -41,6 +42,7 @@ function LayoutShell() {
 				</div>
 				{isMobile && <MobileTabBar />}
 			</main>
+			<PluginHostBridge />
 			<Toaster />
 		</div>
 	);

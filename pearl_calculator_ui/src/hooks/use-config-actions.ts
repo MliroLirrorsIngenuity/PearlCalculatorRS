@@ -10,6 +10,9 @@ import {
 } from "@/lib/config-codec";
 import { exportConfiguration, loadConfiguration } from "@/lib/config-service";
 import { dispatchTauriAppStateAction } from "@/lib/tauri-app-state";
+import { applyConfigPlugins } from "@/plugins/config-plugins";
+import { copyText } from "@/plugins/copy";
+import { type EmbeddedPluginEntry, exportedPlugins } from "@/plugins/store";
 import { calculatorService, isTauri } from "@/services";
 import type {
 	BitTemplateConfig,
@@ -22,6 +25,7 @@ interface ImportedConfig {
 	bitTemplate: BitTemplateConfig | null;
 	multiplierTemplate: MultiplierConfig | null;
 	path: string;
+	plugins: EmbeddedPluginEntry[];
 }
 
 export function useConfigActions() {
@@ -41,6 +45,7 @@ export function useConfigActions() {
 	const { setCalculationMode } = useConfigurationState();
 
 	const applyConfig = async (imported: ImportedConfig) => {
+		void applyConfigPlugins(imported.plugins);
 		if (isTauri) {
 			await dispatchTauriAppStateAction({
 				type: "applyConfigToCalculator",
@@ -74,6 +79,7 @@ export function useConfigActions() {
 				bitTemplate: result.bitTemplate,
 				multiplierTemplate: result.multiplierTemplate,
 				path: result.path,
+				plugins: result.plugins,
 			});
 			showSuccess(t("calculator.toast_config_loaded"));
 		} catch (error) {
@@ -91,6 +97,7 @@ export function useConfigActions() {
 				bitTemplate: decoded.bitTemplate,
 				multiplierTemplate: null,
 				path: "",
+				plugins: [],
 			});
 			showSuccess(t("calculator.toast_code_imported"));
 		} catch (error) {
@@ -101,10 +108,13 @@ export function useConfigActions() {
 
 	const copyCode = async () => {
 		try {
-			const encoded = encodeConfig(
-				buildEncodableConfig(configData, bitTemplateConfig),
+			const encodable = buildEncodableConfig(configData, bitTemplateConfig);
+			const text = await copyText(
+				"configCode",
+				encodeConfig(encodable),
+				encodable,
 			);
-			await calculatorService.copyToClipboard(encoded);
+			await calculatorService.copyToClipboard(text);
 			showSuccess(t("configuration_page.toast_code_copied"));
 		} catch (error) {
 			console.error(error);
@@ -116,6 +126,7 @@ export function useConfigActions() {
 		try {
 			await exportConfiguration(
 				buildEncodableConfig(configData, bitTemplateConfig),
+				exportedPlugins(),
 			);
 			showSuccess(t("configuration_page.toast_exported"));
 		} catch (error) {
