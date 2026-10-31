@@ -286,6 +286,7 @@ pub struct ConvertedConfigDraft {
 pub struct DecodedConfig {
     pub general_config: GeneralConfig,
     pub bit_template: Option<BitTemplateConfig>,
+    pub multiplier_template: Option<MultiplierConfig>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -329,4 +330,42 @@ pub struct EncodableConfig {
     pub red_values: Vec<u32>,
     #[serde(rename = "IsRedArrowCenter")]
     pub is_red_arrow_center: bool,
+    #[serde(
+        rename = "VerticalTNT",
+        default,
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub vertical_tnt: Option<EncodableVector3>,
+    #[serde(
+        rename = "MaxVerticalTNT",
+        default,
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub max_vertical_tnt: Option<u32>,
+    #[serde(rename = "Mode", default, skip_serializing_if = "Option::is_none")]
+    pub mode: Option<CannonMode>,
+    #[serde(
+        rename = "MultiplierSideMode",
+        default,
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub multiplier_side_mode: Option<u32>,
+    #[serde(
+        rename = "MultiplierValues",
+        default,
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub multiplier_values: Option<Vec<u32>>,
+    #[serde(
+        rename = "Multiplier",
+        default,
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub multiplier: Option<u32>,
+    #[serde(
+        rename = "MultiplierIsSwapped",
+        default,
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub multiplier_is_swapped: Option<bool>,
 }

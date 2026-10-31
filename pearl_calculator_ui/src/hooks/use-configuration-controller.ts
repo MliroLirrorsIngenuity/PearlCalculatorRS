@@ -15,9 +15,10 @@ import {
 	inputStateToMultiplierConfig,
 } from "@/lib/bit-template-utils";
 import {
-	decodeConfig,
+	decodeShareCode,
 	type EncodableConfig,
 	encodeConfig,
+	pluginSegment,
 } from "@/lib/config-codec";
 import { exportConfiguration, loadConfiguration } from "@/lib/config-service";
 import {
@@ -387,9 +388,15 @@ export function useConfigurationController() {
 				showError(t("error.calculator.clipboard_empty"));
 				return;
 			}
-			const decoded = decodeConfig(text);
-			setWizardPlugins([]);
-			hydrateWizard(decoded.generalConfig, decoded.bitTemplate, null, null);
+			const decoded = await decodeShareCode(text);
+			setWizardPlugins(decoded.plugins);
+			noticeWizardPlugins(decoded.plugins.length);
+			hydrateWizard(
+				decoded.generalConfig,
+				decoded.bitTemplate,
+				null,
+				decoded.multiplierTemplate,
+			);
 		} catch (error) {
 			console.error(error);
 			showError(t("error.calculator.code_import_failed"), error);
@@ -427,7 +434,8 @@ export function useConfigurationController() {
 			const encoded = encodeConfig(config as unknown as EncodableConfig);
 			const { calculatorService } = await import("@/services");
 			await calculatorService.copyToClipboard(
-				await copyText("configCode", encoded, config, false),
+				(await copyText("configCode", encoded, config, false)) +
+					(await pluginSegment(wizardExportPlugins())),
 			);
 			showSuccess(t("configuration_page.toast_code_copied"));
 		} catch (error) {

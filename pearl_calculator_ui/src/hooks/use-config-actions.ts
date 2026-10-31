@@ -5,8 +5,9 @@ import { useConfigurationState } from "@/context/ConfigurationStateContext";
 import { useToastNotifications } from "@/hooks/use-toast-notifications";
 import {
 	buildEncodableConfig,
-	decodeConfig,
+	decodeShareCode,
 	encodeConfig,
+	pluginSegment,
 } from "@/lib/config-codec";
 import { exportConfiguration, loadConfiguration } from "@/lib/config-service";
 import { dispatchTauriAppStateAction } from "@/lib/tauri-app-state";
@@ -34,6 +35,7 @@ export function useConfigActions() {
 	const {
 		configData,
 		bitTemplateConfig,
+		multiplierConfig,
 		setConfigData,
 		setConfigPath,
 		setBitTemplateConfig,
@@ -42,7 +44,13 @@ export function useConfigActions() {
 	} = useConfig();
 	const { updateDefaultInput, updateDefaultTrace, updateBitCalculation } =
 		useCalculatorState();
-	const { setCalculationMode } = useConfigurationState();
+	const { calculationMode, setCalculationMode } = useConfigurationState();
+	const encodableConfig = () =>
+		buildEncodableConfig(
+			{ ...configData, mode: calculationMode },
+			bitTemplateConfig,
+			multiplierConfig,
+		);
 
 	const applyConfig = async (imported: ImportedConfig) => {
 		void applyConfigPlugins(imported.plugins);
@@ -91,13 +99,13 @@ export function useConfigActions() {
 	const importFromCode = async (code?: string) => {
 		try {
 			const text = code ?? (await calculatorService.readFromClipboard());
-			const decoded = decodeConfig(text.trim());
+			const decoded = await decodeShareCode(text);
 			await applyConfig({
 				config: decoded.generalConfig,
 				bitTemplate: decoded.bitTemplate,
-				multiplierTemplate: null,
+				multiplierTemplate: decoded.multiplierTemplate,
 				path: "",
-				plugins: [],
+				plugins: decoded.plugins,
 			});
 			showSuccess(t("calculator.toast_code_imported"));
 		} catch (error) {
@@ -108,13 +116,15 @@ export function useConfigActions() {
 
 	const copyCode = async () => {
 		try {
-			const encodable = buildEncodableConfig(configData, bitTemplateConfig);
+			const encodable = encodableConfig();
 			const text = await copyText(
 				"configCode",
 				encodeConfig(encodable),
 				encodable,
 			);
-			await calculatorService.copyToClipboard(text);
+			await calculatorService.copyToClipboard(
+				text + (await pluginSegment(exportedPlugins())),
+			);
 			showSuccess(t("configuration_page.toast_code_copied"));
 		} catch (error) {
 			console.error(error);
@@ -124,10 +134,7 @@ export function useConfigActions() {
 
 	const exportJson = async () => {
 		try {
-			await exportConfiguration(
-				buildEncodableConfig(configData, bitTemplateConfig),
-				exportedPlugins(),
-			);
+			await exportConfiguration(encodableConfig(), exportedPlugins());
 			showSuccess(t("configuration_page.toast_exported"));
 		} catch (error) {
 			console.error(error);

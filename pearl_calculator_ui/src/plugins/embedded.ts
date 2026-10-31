@@ -1,3 +1,4 @@
+import { pluginSegmentOf } from "@/lib/config-codec";
 import { utilsRust } from "@/lib/utils-rust";
 
 function hasPluginsKey(value: unknown): boolean {
@@ -10,6 +11,9 @@ function hasPluginsKey(value: unknown): boolean {
 
 export function embedsPlugins(content: string) {
 	const text = new TextDecoder().decode(new TextEncoder().encode(content));
+	if (pluginSegmentOf(content) !== null || pluginSegmentOf(text) !== null) {
+		return true;
+	}
 	try {
 		if (hasPluginsKey(JSON.parse(text))) return true;
 	} catch {}

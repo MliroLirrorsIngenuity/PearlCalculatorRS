@@ -22,6 +22,7 @@ declare module "pearl_calculator_wasm" {
 	export function build_encodable_config(
 		config: unknown,
 		bitTemplate: unknown,
+		multiplierTemplate: unknown,
 	): unknown;
 	export function encode_config(config: unknown): string;
 	export function decode_config(code: string): unknown;

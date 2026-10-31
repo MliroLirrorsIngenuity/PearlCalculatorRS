@@ -10,6 +10,11 @@ use std::collections::BTreeMap;
 
 const SCALE: f64 = 1e12;
 const PREFIX: &str = "#";
+const EXTENSION_FLAG: u8 = 0x40;
+const EXTENSION_VERTICAL: u8 = 0x04;
+const EXTENSION_MAX_VERTICAL: u8 = 0x08;
+const EXTENSION_MULTIPLIER: u8 = 0x10;
+const EXTENSION_MULTIPLIER_SWAPPED: u8 = 0x20;
 const LEGACY_LAYOUT_POSITIVE_SIDE_CORRECTION: f64 = 0.02;
 const LEGACY_OFFSET_EPSILON: f64 = 1e-12;
 const LEGACY_LAYOUT_EPSILON: f64 = 1e-6;
@@ -308,6 +313,7 @@ pub fn convert_config_to_draft(config: &GeneralConfig) -> ConvertedConfigDraft {
 pub fn build_encodable_config(
     config: &GeneralConfig,
     bit_template: Option<&BitTemplateConfig>,
+    multiplier_template: Option<&MultiplierConfig>,
 ) -> EncodableConfig {
     EncodableConfig {
         north_east_tnt: EncodableVector3::from(config.north_east_tnt),
@@ -345,15 +351,124 @@ pub fn build_encodable_config(
         is_red_arrow_center: bit_template
             .map(|template| template.is_red_arrow_center)
             .unwrap_or(false),
+        vertical_tnt: config.vertical_tnt.map(EncodableVector3::from),
+        max_vertical_tnt: config.max_vertical_tnt,
+        mode: config.mode,
+        multiplier_side_mode: multiplier_template.map(|template| template.multiplier_side_mode),
+        multiplier_values: multiplier_template.map(|template| template.multiplier_values.clone()),
+        multiplier: multiplier_template.map(|template| template.multiplier),
+        multiplier_is_swapped: multiplier_template.map(|template| template.multiplier_is_swapped),
     }
+}
+
+fn encode_extension(data: &EncodableConfig) -> Option<Vec<u8>> {
+    let multiplier_side = data.multiplier_side_mode.filter(|side| *side > 0);
+    let mode = data.mode.unwrap_or_default();
+    if mode == CannonMode::Standard
+        && data.vertical_tnt.is_none()
+        && data.max_vertical_tnt.is_none()
+        && multiplier_side.is_none()
+    {
+        return None;
+    }
+
+    let mut flags = match mode {
+        CannonMode::Standard => 0,
+        CannonMode::Accumulation => 1,
+        CannonMode::Vector3D => 2,
+    };
+    let mut bytes = Vec::new();
+    if let Some(vertical) = &data.vertical_tnt {
+        flags |= EXTENSION_VERTICAL;
+        for value in [vertical.x, vertical.y, vertical.z] {
+            bytes.extend(float_to_bytes(value));
+        }
+    }
+    if let Some(max_vertical) = data.max_vertical_tnt {
+        flags |= EXTENSION_MAX_VERTICAL;
+        write_var_int(&mut bytes, max_vertical);
+    }
+    if let Some(side) = multiplier_side {
+        flags |= EXTENSION_MULTIPLIER;
+        if data.multiplier_is_swapped.unwrap_or(false) {
+            flags |= EXTENSION_MULTIPLIER_SWAPPED;
+        }
+        let values = data.multiplier_values.as_deref().unwrap_or_default();
+        write_var_int(&mut bytes, side);
+        write_var_int(&mut bytes, data.multiplier.unwrap_or(200));
+        write_var_int(&mut bytes, values.len() as u32);
+        for value in values {
+            write_var_int(&mut bytes, *value);
+        }
+    }
+    bytes.insert(0, flags);
+    Some(bytes)
+}
+
+struct CodeExtension {
+    mode: CannonMode,
+    vertical_tnt: Option<Vector3>,
+    max_vertical_tnt: Option<u32>,
+    multiplier_template: Option<MultiplierConfig>,
+}
+
+fn decode_extension(cursor: &mut ByteCursor) -> Result<CodeExtension, String> {
+    let flags = cursor.next_u8()?;
+    let mode = match flags & 0x03 {
+        1 => CannonMode::Accumulation,
+        2 => CannonMode::Vector3D,
+        _ => CannonMode::Standard,
+    };
+    let vertical_tnt = if flags & EXTENSION_VERTICAL != 0 {
+        Some(Vector3 {
+            x: cursor.next_float()?,
+            y: cursor.next_float()?,
+            z: cursor.next_float()?,
+        })
+    } else {
+        None
+    };
+    let max_vertical_tnt = if flags & EXTENSION_MAX_VERTICAL != 0 {
+        Some(cursor.read_var_int()?)
+    } else {
+        None
+    };
+    let multiplier_template = if flags & EXTENSION_MULTIPLIER != 0 {
+        let multiplier_side_mode = cursor.read_var_int()?;
+        let multiplier = cursor.read_var_int()?;
+        let count = cursor.read_var_int()?;
+        let multiplier_values = (0..count)
+            .map(|_| cursor.read_var_int())
+            .collect::<Result<Vec<_>, _>>()?;
+        Some(MultiplierConfig {
+            multiplier_side_mode,
+            multiplier_values,
+            multiplier,
+            multiplier_is_swapped: flags & EXTENSION_MULTIPLIER_SWAPPED != 0,
+        })
+    } else {
+        None
+    };
+    Ok(CodeExtension {
+        mode,
+        vertical_tnt,
+        max_vertical_tnt,
+        multiplier_template,
+    })
 }
 
 pub fn encode_config(data: &EncodableConfig) -> Result<String, String> {
     let mut stream = Vec::new();
 
+    let extension = encode_extension(data);
     let side_mode = data.side_mode & 0x1f;
     let is_center = if data.is_red_arrow_center { 1 } else { 0 };
-    stream.push((side_mode as u8) | ((is_center as u8) << 5));
+    let extended = if extension.is_some() {
+        EXTENSION_FLAG
+    } else {
+        0
+    };
+    stream.push((side_mode as u8) | ((is_center as u8) << 5) | extended);
 
     stream.push((data.max_tnt & 0xff) as u8);
     stream.push(((data.max_tnt >> 8) & 0xff) as u8);
@@ -384,9 +499,10 @@ pub fn encode_config(data: &EncodableConfig) -> Result<String, String> {
     let d11 = bit_dir_to_u8(data.direction_masks.get("11"));
     stream.push((d11 << 6) | (d10 << 4) | (d01 << 2) | d00);
 
-    for value in data.red_values.iter().take(data.side_mode as usize) {
+    for value in data.red_values.iter().take(side_mode as usize) {
         write_var_int(&mut stream, *value);
     }
+    stream.extend(extension.unwrap_or_default());
 
     stream.push(crc8(&stream));
 
@@ -417,6 +533,7 @@ pub fn decode_config(input: &str) -> Result<DecodedConfig, String> {
     let header = cursor.next_u8()?;
     let side_mode = (header & 0x1f) as u32;
     let is_red_arrow_center = ((header >> 5) & 0x01) == 1;
+    let extended = header & EXTENSION_FLAG != 0;
 
     let low = cursor.next_u8()? as u32;
     let high = cursor.next_u8()? as u32;
@@ -429,12 +546,7 @@ pub fn decode_config(input: &str) -> Result<DecodedConfig, String> {
     let mut float_values = Vec::with_capacity(20);
     for index in 0..20 {
         if ((mask >> index) & 1) == 1 {
-            float_values.push(bytes_to_float([
-                cursor.next_u8()?,
-                cursor.next_u8()?,
-                cursor.next_u8()?,
-                cursor.next_u8()?,
-            ]));
+            float_values.push(cursor.next_float()?);
         } else {
             float_values.push(0.0);
         }
@@ -465,6 +577,11 @@ pub fn decode_config(input: &str) -> Result<DecodedConfig, String> {
     for _ in 0..side_mode {
         red_values.push(cursor.read_var_int()?);
     }
+    let extension = if extended {
+        Some(decode_extension(&mut cursor)?)
+    } else {
+        None
+    };
 
     let offset_x = float_values[12];
     let offset_z = float_values[13];
@@ -516,6 +633,18 @@ pub fn decode_config(input: &str) -> Result<DecodedConfig, String> {
         pearl_z_motion: float_values[19],
         default_red_tnt_position: default_red_dir,
         default_blue_tnt_position: default_blue_dir,
+        vertical_tnt: extension
+            .as_ref()
+            .and_then(|extension| extension.vertical_tnt)
+            .map(|vertical| Vector3 {
+                x: precise_subtract(vertical.x, offset_x),
+                y: vertical.y,
+                z: precise_subtract(vertical.z, offset_z),
+            }),
+        max_vertical_tnt: extension
+            .as_ref()
+            .and_then(|extension| extension.max_vertical_tnt),
+        mode: extension.as_ref().map(|extension| extension.mode),
         ..GeneralConfig::default()
     };
 
@@ -535,6 +664,7 @@ pub fn decode_config(input: &str) -> Result<DecodedConfig, String> {
     Ok(DecodedConfig {
         general_config,
         bit_template,
+        multiplier_template: extension.and_then(|extension| extension.multiplier_template),
     })
 }
 
@@ -1107,6 +1237,15 @@ impl<'a> ByteCursor<'a> {
         Ok(byte)
     }
 
+    fn next_float(&mut self) -> Result<f64, String> {
+        Ok(bytes_to_float([
+            self.next_u8()?,
+            self.next_u8()?,
+            self.next_u8()?,
+            self.next_u8()?,
+        ]))
+    }
+
     fn read_var_int(&mut self) -> Result<u32, String> {
         let mut value = 0u32;
         let mut shift = 0u32;
@@ -1283,10 +1422,165 @@ mod tests {
             ..GeneralConfig::default()
         };
 
-        let encodable = build_encodable_config(&config, None);
+        let encodable = build_encodable_config(&config, None, None);
 
         assert_close(encodable.pearl.position.x, 0.0, 1e-12);
         assert_close(encodable.pearl.position.z, 0.0, 1e-12);
+    }
+
+    fn extended_config() -> (GeneralConfig, BitTemplateConfig, MultiplierConfig) {
+        let config = GeneralConfig {
+            max_tnt: 1200,
+            north_east_tnt: Vector3 {
+                x: 0.51,
+                y: 99.0,
+                z: -0.76,
+            },
+            pearl_y_position: 100.5,
+            pearl_y_motion: 0.25,
+            vertical_tnt: Some(Vector3 {
+                x: 0.5,
+                y: 97.0,
+                z: 0.5,
+            }),
+            max_vertical_tnt: Some(300),
+            mode: Some(CannonMode::Vector3D),
+            ..GeneralConfig::default()
+        };
+        let bits = BitTemplateConfig {
+            side_mode: 3,
+            direction_masks: BTreeMap::from_iter([
+                ("00".to_string(), BitDirection::North),
+                ("11".to_string(), BitDirection::East),
+            ]),
+            red_values: vec![1, 2, 4],
+            is_red_arrow_center: true,
+        };
+        let multiplier = MultiplierConfig {
+            multiplier_side_mode: 4,
+            multiplier_values: vec![1, 2, 4, 8],
+            multiplier: 640,
+            multiplier_is_swapped: true,
+        };
+        (config, bits, multiplier)
+    }
+
+    #[test]
+    fn code_round_trips_mode_vertical_and_multiplier() {
+        let (config, bits, multiplier) = extended_config();
+        let code = encode_config(&build_encodable_config(
+            &config,
+            Some(&bits),
+            Some(&multiplier),
+        ))
+        .unwrap();
+        let decoded = decode_config(&code).unwrap();
+
+        assert_eq!(decoded.general_config.mode, Some(CannonMode::Vector3D));
+        assert_eq!(decoded.general_config.max_vertical_tnt, Some(300));
+        let vertical = decoded.general_config.vertical_tnt.unwrap();
+        assert_close(vertical.x, 0.5, 1e-6);
+        assert_close(vertical.y, 97.0, 1e-6);
+        assert_close(vertical.z, 0.5, 1e-6);
+        assert_eq!(decoded.multiplier_template, Some(multiplier));
+        assert_eq!(decoded.bit_template.unwrap().red_values, vec![1, 2, 4]);
+        assert_eq!(decoded.general_config.max_tnt, 1200);
+    }
+
+    #[test]
+    fn standard_code_has_no_extension() {
+        let (config, bits, _) = extended_config();
+        let standard = GeneralConfig {
+            vertical_tnt: None,
+            max_vertical_tnt: None,
+            mode: Some(CannonMode::Standard),
+            ..config
+        };
+        let code = encode_config(&build_encodable_config(&standard, Some(&bits), None)).unwrap();
+        let bytes = STANDARD.decode(code.trim_start_matches('#')).unwrap();
+
+        assert_eq!(bytes[0] & EXTENSION_FLAG, 0);
+        let decoded = decode_config(&code).unwrap();
+        assert_eq!(decoded.general_config.mode, None);
+        assert_eq!(decoded.multiplier_template, None);
+    }
+
+    #[test]
+    fn accumulation_code_keeps_mode_without_vertical() {
+        let (config, _, multiplier) = extended_config();
+        let accumulation = GeneralConfig {
+            vertical_tnt: None,
+            max_vertical_tnt: None,
+            mode: Some(CannonMode::Accumulation),
+            ..config
+        };
+        let code = encode_config(&build_encodable_config(
+            &accumulation,
+            None,
+            Some(&multiplier),
+        ))
+        .unwrap();
+        let decoded = decode_config(&code).unwrap();
+
+        assert_eq!(decoded.general_config.mode, Some(CannonMode::Accumulation));
+        assert_eq!(decoded.general_config.vertical_tnt, None);
+        assert_eq!(decoded.bit_template, None);
+        assert_eq!(decoded.multiplier_template, Some(multiplier));
+    }
+
+    #[test]
+    fn wizard_export_json_encodes_extension() {
+        let draft = DraftConfig {
+            max_tnt: "800".to_string(),
+            vertical_tnt: DraftVector3 {
+                x: "0.5".to_string(),
+                y: "96".to_string(),
+                z: "0.5".to_string(),
+            },
+            max_vertical_tnt: "64".to_string(),
+            pearl_y_position: "100".to_string(),
+            ..DraftConfig::default()
+        };
+        let bits = BitInputState {
+            side_count: 2,
+            masks: Vec::new(),
+            side_values: vec!["2".to_string(), "1".to_string()],
+            is_swapped: false,
+        };
+        let multiplier = MultiplierBitInputState {
+            side_count: 2,
+            side_values: vec!["2".to_string(), "1".to_string()],
+            multiplier: 320,
+            is_swapped: false,
+        };
+        let exported = build_export_config(
+            &draft,
+            None,
+            Some(&bits),
+            Some(CannonMode::Vector3D),
+            Some(&multiplier),
+        );
+        let encodable: EncodableConfig = serde_json::from_value(exported).unwrap();
+        let decoded = decode_config(&encode_config(&encodable).unwrap()).unwrap();
+
+        assert_eq!(decoded.general_config.mode, Some(CannonMode::Vector3D));
+        assert_eq!(decoded.general_config.max_vertical_tnt, Some(64));
+        assert_close(decoded.general_config.vertical_tnt.unwrap().y, 96.0, 1e-6);
+        assert_eq!(decoded.multiplier_template.unwrap().multiplier, 320);
+    }
+
+    #[test]
+    fn encodable_json_export_round_trips_extension() {
+        let (config, bits, multiplier) = extended_config();
+        let encodable = build_encodable_config(&config, Some(&bits), Some(&multiplier));
+        let content = serde_json::to_string(&encodable).unwrap();
+        let imported = parse_configuration_content(&content, "export.json").unwrap();
+
+        assert_eq!(imported.config.mode, Some(CannonMode::Vector3D));
+        assert_eq!(imported.config.max_vertical_tnt, Some(300));
+        assert_close(imported.config.vertical_tnt.unwrap().y, 97.0, 1e-9);
+        assert_eq!(imported.multiplier_template, Some(multiplier));
+        assert_eq!(imported.bit_template.unwrap().red_values, vec![1, 2, 4]);
     }
 
     #[test]

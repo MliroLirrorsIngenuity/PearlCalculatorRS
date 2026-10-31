@@ -78,10 +78,16 @@ pub fn build_export_config(
 }
 
 #[wasm_bindgen]
-pub fn build_encodable_config(config: JsValue, bit_template: JsValue) -> Result<JsValue, JsError> {
+pub fn build_encodable_config(
+    config: JsValue,
+    bit_template: JsValue,
+    multiplier_template: JsValue,
+) -> Result<JsValue, JsError> {
     let config = serde_wasm_bindgen::from_value(config)?;
     let bit_template = serde_wasm_bindgen::from_value(bit_template).ok();
-    let result = utils::build_encodable_config(&config, bit_template.as_ref());
+    let multiplier_template = serde_wasm_bindgen::from_value(multiplier_template).ok();
+    let result =
+        utils::build_encodable_config(&config, bit_template.as_ref(), multiplier_template.as_ref());
     Ok(serde_wasm_bindgen::to_value(&result)?)
 }
 

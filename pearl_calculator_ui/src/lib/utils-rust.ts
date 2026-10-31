@@ -39,11 +39,19 @@ interface EncodableConfig {
 	DirectionMasks: Record<string, string>;
 	RedValues: number[];
 	IsRedArrowCenter: boolean;
+	VerticalTNT?: { X: number; Y: number; Z: number };
+	MaxVerticalTNT?: number;
+	Mode?: CannonMode;
+	MultiplierSideMode?: number;
+	MultiplierValues?: number[];
+	Multiplier?: number;
+	MultiplierIsSwapped?: boolean;
 }
 
 interface DecodedConfig {
 	generalConfig: GeneralConfig;
 	bitTemplate: BitTemplateConfig | null;
+	multiplierTemplate: MultiplierConfig | null;
 }
 
 interface UtilsRustBridge {
@@ -67,6 +75,7 @@ interface UtilsRustBridge {
 	build_encodable_config(
 		config: GeneralConfig,
 		bitTemplate: BitTemplateConfig | null,
+		multiplierTemplate: MultiplierConfig | null,
 	): EncodableConfig;
 	encode_config(config: EncodableConfig): string;
 	decode_config(code: string): DecodedConfig;
