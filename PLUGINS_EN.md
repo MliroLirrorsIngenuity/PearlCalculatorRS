@@ -8,7 +8,7 @@ By default a plugin runs in an isolated sandbox with no network and no access to
 
 ## Quick start
 
-1. In the plugin section at the bottom of the calculator's Config tab, click "Download type definitions (.d.ts)" and put `pearlcalc-plugin.d.ts` next to your plugin.
+1. Download the type definitions [`pearlcalc-plugin.d.ts`](pearl_calculator_ui/src/plugins/pearlcalc-plugin.d.ts) (the "Download type definitions (.d.ts)" button in the plugin section at the bottom of the calculator's Config tab gives the same file) and put it next to your plugin.
 2. Create `my-plugin.js`:
 
    ```js
@@ -190,7 +190,7 @@ Every call opens the system file dialog and the user picks the file; only one di
 
 ## Slots
 
-A slot is middleware: `(input, next, ctx) => output`. A plugin can change the input before calling `next`, post-process what `next` returns, replace the whole step (never calling `next`), or hand back to the built-in conditionally.
+A slot is a built-in feature a plugin takes over by giving it a function in `slots`; the plugin details list them under "Features taken over". The function is middleware: `(input, next, ctx) => output`, where `next` is the original implementation. A plugin can change the input before calling `next`, post-process what `next` returns, replace the whole step (never calling `next`), or hand back to the built-in conditionally.
 
 ```js
 slots: {
@@ -209,7 +209,7 @@ slots: {
 | `importConfig` | Opening config files (dialog, drop, simulator import) | `{ name, content }` | `ImportedConfiguration` |
 | `exportConfig` | Exporting config JSON | config object | config object |
 
-The full types are in `pearlcalc-plugin.d.ts`. Conventions:
+The full types are in [`pearlcalc-plugin.d.ts`](pearl_calculator_ui/src/plugins/pearlcalc-plugin.d.ts). Conventions:
 
 - Every result returned by `solve` needs `distance`, `tick`, `blue`, `red`, `total`, `pearl_end_pos`, `pearl_end_motion` and `direction`; extra fields are allowed and can be shown via `resultColumns`.
 - `copy` gets `kind` = `"bits"`, `"configCode"`, `"row"` or `"trace"`, the built-in `text`, and the raw `data`. `"trace"` comes from the trace table on the pearl trace and simulator pages: `text` is three space-separated values and `data` is `{ tick, view, x, y, z }`, where `view` is `"trajectory"` (position) or `"momentum"`.
