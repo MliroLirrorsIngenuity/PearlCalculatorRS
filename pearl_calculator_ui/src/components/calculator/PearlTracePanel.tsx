@@ -1,5 +1,5 @@
 import { Copy, TableProperties } from "lucide-react";
-import { useMemo, useRef, useState } from "react";
+import { type ReactNode, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import TraceDataPanel, {
 	type TraceDataPanelRef,
@@ -30,6 +30,12 @@ import {
 } from "@/components/common/Metric";
 import { PluginMount } from "@/components/plugins/PluginMount";
 import { Button } from "@/components/ui/button";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useCalculatorState } from "@/context/CalculatorStateContext";
 import { useConfigurationState } from "@/context/ConfigurationStateContext";
 import { useMobileView } from "@/context/MobileViewContext";
@@ -37,6 +43,32 @@ import { useDirectionLabel } from "@/hooks/use-direction-label";
 import { useTracePointCopy } from "@/hooks/use-trace-copy";
 import { targetHeight } from "@/lib/calculator-defaults";
 import { cn } from "@/lib/utils";
+
+function IconAction({
+	label,
+	onClick,
+	children,
+}: {
+	label: string;
+	onClick: () => void;
+	children: ReactNode;
+}) {
+	return (
+		<Tooltip>
+			<TooltipTrigger asChild>
+				<button
+					type="button"
+					aria-label={label}
+					onClick={onClick}
+					className="inline-flex size-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground [&_svg]:size-4"
+				>
+					{children}
+				</button>
+			</TooltipTrigger>
+			<TooltipContent>{label}</TooltipContent>
+		</Tooltip>
+	);
+}
 
 export default function PearlTracePanel() {
 	const { t } = useTranslation();
@@ -163,42 +195,32 @@ export default function PearlTracePanel() {
 							</Metric>
 							<Metric
 								label={t("trace.flight")}
-								sub={
-									<>
-										{t("trace.seconds", { value: (landing / 20).toFixed(2) })}
-										<span className="mt-2 flex flex-wrap gap-1.5">
-											<Button
-												variant="outline"
-												size="sm"
-												className="h-7 px-2.5 text-xs"
-												title={t("trace.locate_title")}
-												onClick={() => tableRef.current?.scrollToRow(landing)}
-											>
-												<TableProperties />
-												{t("trace.locate")}
-											</Button>
-											<Button
-												variant="outline"
-												size="sm"
-												className="h-7 px-2.5 text-xs"
-												title={t("trace.copy_position_title")}
-												onClick={() =>
-													copyPoint(
-														landing,
-														"trajectory",
-														trace.pearl_trace[landing],
-													)
-												}
-											>
-												<Copy />
-												{t("trace.copy_position")}
-											</Button>
-										</span>
-									</>
-								}
+								sub={t("trace.seconds", { value: (landing / 20).toFixed(2) })}
 							>
 								{landing}
 								<Unit>tick</Unit>
+								<TooltipProvider>
+									<span className="inline-flex align-middle">
+										<IconAction
+											label={t("trace.locate_title")}
+											onClick={() => tableRef.current?.scrollToRow(landing)}
+										>
+											<TableProperties />
+										</IconAction>
+										<IconAction
+											label={t("trace.copy_position_title")}
+											onClick={() =>
+												copyPoint(
+													landing,
+													"trajectory",
+													trace.pearl_trace[landing],
+												)
+											}
+										>
+											<Copy />
+										</IconAction>
+									</span>
+								</TooltipProvider>
 							</Metric>
 							<Metric
 								label={t("trace.peak")}
