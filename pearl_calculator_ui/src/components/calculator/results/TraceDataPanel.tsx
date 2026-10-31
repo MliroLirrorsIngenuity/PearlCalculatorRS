@@ -9,10 +9,8 @@ import { useTranslation } from "react-i18next";
 import { landingIndex } from "@/components/charts/trajectory";
 import { Segmented } from "@/components/common/Metric";
 import { useElementSize } from "@/hooks/use-element-size";
-import { useToastNotifications } from "@/hooks/use-toast-notifications";
+import { type TraceView, useTracePointCopy } from "@/hooks/use-trace-copy";
 import { cn } from "@/lib/utils";
-import { copyText } from "@/plugins/copy";
-import { calculatorService } from "@/services";
 import type { PearlTraceResult } from "@/types/domain";
 
 export interface TraceDataPanelRef {
@@ -23,8 +21,6 @@ interface TraceDataPanelProps {
 	data: PearlTraceResult | null;
 }
 
-type View = "trajectory" | "momentum";
-
 const ROW_HEIGHT = 29;
 const OVERSCAN = 8;
 const gridClass =
@@ -33,8 +29,8 @@ const gridClass =
 const TraceDataPanel = forwardRef<TraceDataPanelRef, TraceDataPanelProps>(
 	function TraceDataPanel({ data }, ref) {
 		const { t } = useTranslation();
-		const { showSuccess, showError } = useToastNotifications();
-		const [view, setView] = useState<View>("trajectory");
+		const copyPoint = useTracePointCopy();
+		const [view, setView] = useState<TraceView>("trajectory");
 		const [scrollTop, setScrollTop] = useState(0);
 		const [flashRow, setFlashRow] = useState<number | null>(null);
 		const flashTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
@@ -57,34 +53,13 @@ const TraceDataPanel = forwardRef<TraceDataPanelRef, TraceDataPanelProps>(
 					rowIndex * ROW_HEIGHT - viewport.clientHeight / 3,
 				);
 				viewport.scrollTop = top;
+				viewport.scrollIntoView({ block: "nearest", behavior: "smooth" });
 				setScrollTop(top);
 				setFlashRow(rowIndex);
 				clearTimeout(flashTimer.current);
 				flashTimer.current = setTimeout(() => setFlashRow(null), 1500);
 			},
 		}));
-
-		const copyRow = async (
-			tick: number,
-			point: { X: number; Y: number; Z: number },
-		) => {
-			const values = [point.X, point.Y, point.Z].map((value) =>
-				value.toFixed(10),
-			);
-			try {
-				const text = await copyText("trace", values.join(" "), {
-					tick,
-					view,
-					x: point.X,
-					y: point.Y,
-					z: point.Z,
-				});
-				await calculatorService.copyToClipboard(text);
-				showSuccess(t(`trace.copied_${view}`, { tick }));
-			} catch (error) {
-				showError(t("trace.copy_failed"), error);
-			}
-		};
 
 		const first = Math.max(0, Math.floor(scrollTop / ROW_HEIGHT) - OVERSCAN);
 		const last = Math.min(
@@ -151,7 +126,7 @@ const TraceDataPanel = forwardRef<TraceDataPanelRef, TraceDataPanelProps>(
 									type="button"
 									key={tick}
 									title={t("trace.copy_hint")}
-									onClick={() => copyRow(tick, point)}
+									onClick={() => copyPoint(tick, view, point)}
 									className={cn(
 										gridClass,
 										"absolute inset-x-0 cursor-pointer items-center border-b border-border/50 text-right text-xs tabular-nums transition-colors hover:bg-muted/70 focus-visible:bg-muted/70 focus-visible:outline-none",

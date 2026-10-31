@@ -1,3 +1,4 @@
+import { Copy, TableProperties } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import TraceDataPanel, {
@@ -33,6 +34,7 @@ import { useCalculatorState } from "@/context/CalculatorStateContext";
 import { useConfigurationState } from "@/context/ConfigurationStateContext";
 import { useMobileView } from "@/context/MobileViewContext";
 import { useDirectionLabel } from "@/hooks/use-direction-label";
+import { useTracePointCopy } from "@/hooks/use-trace-copy";
 import { targetHeight } from "@/lib/calculator-defaults";
 import { cn } from "@/lib/utils";
 
@@ -43,6 +45,7 @@ export default function PearlTracePanel() {
 	const { calculationMode } = useConfigurationState();
 	const { isMobile } = useMobileView();
 	const tableRef = useRef<TraceDataPanelRef>(null);
+	const copyPoint = useTracePointCopy();
 	const [chartView, setChartView] = useState<"side" | "top">("side");
 	const [landingView, setLandingView] = useState<"block" | "face" | "zoom">(
 		"block",
@@ -162,14 +165,35 @@ export default function PearlTracePanel() {
 								label={t("trace.flight")}
 								sub={
 									<>
-										{t("trace.seconds", { value: (landing / 20).toFixed(2) })} ·{" "}
-										<button
-											type="button"
-											className="underline-offset-2 hover:text-foreground hover:underline"
-											onClick={() => tableRef.current?.scrollToRow(landing)}
-										>
-											{t("trace.locate")}
-										</button>
+										{t("trace.seconds", { value: (landing / 20).toFixed(2) })}
+										<span className="mt-2 flex flex-wrap gap-1.5">
+											<Button
+												variant="outline"
+												size="sm"
+												className="h-7 px-2.5 text-xs"
+												title={t("trace.locate_title")}
+												onClick={() => tableRef.current?.scrollToRow(landing)}
+											>
+												<TableProperties />
+												{t("trace.locate")}
+											</Button>
+											<Button
+												variant="outline"
+												size="sm"
+												className="h-7 px-2.5 text-xs"
+												title={t("trace.copy_position_title")}
+												onClick={() =>
+													copyPoint(
+														landing,
+														"trajectory",
+														trace.pearl_trace[landing],
+													)
+												}
+											>
+												<Copy />
+												{t("trace.copy_position")}
+											</Button>
+										</span>
 									</>
 								}
 							>
