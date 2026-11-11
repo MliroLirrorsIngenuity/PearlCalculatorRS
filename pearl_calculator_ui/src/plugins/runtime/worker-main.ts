@@ -454,14 +454,20 @@ export function workerMain(
 		ctx: CallContext,
 		state: CallState,
 	) => {
-		const topN = makeTopN(ctx.sortBy, ctx.limit ?? 100);
+		const limit = ctx.limit ?? 100;
+		const topN = makeTopN(ctx.sortBy, limit);
 		topN.setFloor(state.floor);
 		state.topN = topN;
 		let outgoing: Row[] = [];
 		let lastFlush = performance.now();
 		let lastProgress = 0;
 		let counter = 0;
+		const dropEvicted = () => {
+			const kept = new Set(topN.rows());
+			outgoing = outgoing.filter((row) => kept.has(row));
+		};
 		const flush = () => {
+			dropEvicted();
 			if (outgoing.length > 0) {
 				post({ t: "rows", id, rows: outgoing });
 				outgoing = [];
@@ -481,7 +487,10 @@ export function workerMain(
 					throw new Error("emit() expects an object");
 				}
 				const accepted = topN.offer(row);
-				if (accepted) outgoing.push(row);
+				if (accepted) {
+					outgoing.push(row);
+					if (outgoing.length >= 2 * limit) dropEvicted();
+				}
 				if (
 					(accepted || (++counter & 1023) === 0) &&
 					performance.now() - lastFlush > 150
