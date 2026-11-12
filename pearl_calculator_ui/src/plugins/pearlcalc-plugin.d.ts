@@ -223,7 +223,7 @@ export interface TextField extends FieldBase {
 
 export interface SelectField extends FieldBase {
 	type: "select";
-	options: { value: string; label: Text }[];
+	options: { value: string; label: Text; sets?: InputValues }[];
 	default?: string;
 }
 

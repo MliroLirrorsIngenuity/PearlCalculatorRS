@@ -88,13 +88,23 @@ The app picks the UI language and falls back to `en`, then `zh`, then the first 
 | `number` / `integer` | number | `min`, `max`, `step` |
 | `boolean` | boolean | — |
 | `text` | string | `multiline` |
-| `select` | string | `options: [{ value, label }]` (required) |
+| `select` | string | `options: [{ value, label, sets }]` (required; `sets` optional) |
 | `range` | `[low, high]` | `integer` |
 | `vec3` | `{ x, y, z }` | — |
 
 Common properties: `key`, `label` (required), `description` (shown as a tooltip), `required`, `default`, `from`. `default` must match the field type.
 
 `from` takes the default from the current environment. The path starts at `{ config, calculator, version, mode }`, so `from: "config.north_west_tnt.y"` reads the north-west TNT Y of the loaded config and `from: "calculator.destX"` reads the calculator's target X. Once the user edits the field, their value wins.
+
+An option's `sets` turns it into a preset: choosing it fills the listed fields of the same form. When the user edits one of those fields so it no longer matches, the select switches to a preset that does match, or to the first option without `sets`, so keep a "Custom" option. `sets` may only name other fields in the same form, and each value must match the target field's type.
+
+```js
+{ key: "yOffsets", type: "select", default: "all", options: [
+  { value: "all", label: "All", sets: { yCustom: "0-15" } },
+  { value: "custom", label: "Custom" },
+] },
+{ key: "yCustom", type: "text", default: "0-15" },
+```
 
 ### Columns
 

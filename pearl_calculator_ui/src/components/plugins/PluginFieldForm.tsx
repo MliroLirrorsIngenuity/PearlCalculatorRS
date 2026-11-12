@@ -16,7 +16,12 @@ import {
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import type { FieldError, RawValue, RawValues } from "@/plugins/fields";
+import {
+	applyEdit,
+	type FieldError,
+	type RawValue,
+	type RawValues,
+} from "@/plugins/fields";
 import type { InputField } from "@/plugins/localize";
 
 const labelClass = "text-sm font-medium leading-none";
@@ -198,7 +203,9 @@ export function PluginFieldForm({
 							field={field}
 							id={id}
 							value={values[field.key]}
-							onChange={(value) => onChange({ ...values, [field.key]: value })}
+							onChange={(value) =>
+								onChange(applyEdit(fields, values, field.key, value))
+							}
 						/>
 					</div>
 				);
@@ -216,7 +223,9 @@ export function PluginFieldForm({
 								type="checkbox"
 								checked={values[field.key] === true}
 								onChange={(event) =>
-									onChange({ ...values, [field.key]: event.target.checked })
+									onChange(
+										applyEdit(fields, values, field.key, event.target.checked),
+									)
 								}
 								className="size-4 rounded border-input accent-foreground"
 							/>

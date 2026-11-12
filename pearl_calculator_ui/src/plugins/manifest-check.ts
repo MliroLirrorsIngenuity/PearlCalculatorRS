@@ -123,7 +123,7 @@ function validDefault(type: string, value: unknown) {
 
 function checkFields(value: unknown, where: string): InputField[] {
 	const seen = new Set<string>();
-	return list(value, 200, "fields_not_array", where).map((entry) => {
+	const fields = list(value, 200, "fields_not_array", where).map((entry) => {
 		if (!isRecord(entry) || !isString(entry.key, 64) || !KEY.test(entry.key)) {
 			return fail("field_key", { where });
 		}
@@ -171,18 +171,42 @@ function checkFields(value: unknown, where: string): InputField[] {
 					(option) =>
 						!isRecord(option) ||
 						!isString(option.value, LABEL) ||
-						!isText(option.label, LABEL),
+						!isText(option.label, LABEL) ||
+						!optional(option.sets, isRecord),
 				)
 			) {
 				fail("field_options", { where, key });
 			}
 			field.options = options.map((option) => {
 				const item = option as Record<string, unknown>;
-				return { value: item.value, label: item.label };
+				return { value: item.value, label: item.label, sets: item.sets };
 			});
 		}
 		return JSON.parse(JSON.stringify(field)) as InputField;
 	});
+	return checkPresets(fields, where);
+}
+
+function checkPresets(fields: InputField[], where: string) {
+	const byKey = new Map(fields.map((field) => [field.key, field]));
+	for (const field of fields) {
+		if (field.type !== "select") continue;
+		for (const option of field.options) {
+			for (const [key, value] of Object.entries(option.sets ?? {})) {
+				const target = byKey.get(key);
+				if (
+					!target ||
+					target === field ||
+					!validDefault(target.type, value) ||
+					(target.type === "select" &&
+						!target.options.some((entry) => entry.value === value))
+				) {
+					fail("field_options", { where, key: field.key });
+				}
+			}
+		}
+	}
+	return fields;
 }
 
 function checkColumns(value: unknown, where: string): Column[] {

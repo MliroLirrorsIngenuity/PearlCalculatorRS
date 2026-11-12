@@ -71,16 +71,75 @@ export function toRaw(field: InputField, value: unknown): RawValue | undefined {
 	}
 }
 
+type SelectOption = Extract<InputField, { type: "select" }>["options"][number];
+
+const same = (left: unknown, right: unknown) =>
+	JSON.stringify(left) === JSON.stringify(right);
+
+function presetRaw(fields: InputField[], option: SelectOption | undefined) {
+	const sets = option?.sets;
+	if (!sets || typeof sets !== "object" || Array.isArray(sets)) return [];
+	return Object.entries(sets).flatMap(([key, value]) => {
+		const target = fields.find((field) => field.key === key);
+		const raw = target ? toRaw(target, value) : undefined;
+		return raw === undefined ? [] : [[key, raw] as const];
+	});
+}
+
+function selectedOption(field: InputField, values: RawValues) {
+	return field.type === "select"
+		? field.options.find((option) => option.value === values[field.key])
+		: undefined;
+}
+
+function withPresets(fields: InputField[], values: RawValues): RawValues {
+	let next = values;
+	for (const field of fields) {
+		const preset = presetRaw(fields, selectedOption(field, next));
+		if (preset.length > 0) next = { ...next, ...Object.fromEntries(preset) };
+	}
+	return next;
+}
+
+export function applyEdit(
+	fields: InputField[],
+	values: RawValues,
+	key: string,
+	value: RawValue,
+): RawValues {
+	let next: RawValues = { ...values, [key]: value };
+	const matches = (option: SelectOption) =>
+		presetRaw(fields, option).every(([target, raw]) => same(next[target], raw));
+	for (const field of fields) {
+		if (field.type !== "select" || field.key === key) continue;
+		const current = selectedOption(field, next);
+		const touched = presetRaw(fields, current).some(
+			([target]) => target === key,
+		);
+		if (!current || !touched || matches(current)) continue;
+		const fallback =
+			field.options.find(
+				(option) => presetRaw(fields, option).length > 0 && matches(option),
+			) ??
+			field.options.find((option) => presetRaw(fields, option).length === 0);
+		if (fallback) next = { ...next, [field.key]: fallback.value };
+	}
+	return withPresets(fields, next);
+}
+
 export function resolveRaw(
 	fields: InputField[],
 	raw: RawValues | undefined,
 	scope: unknown,
 ): RawValues {
-	return Object.fromEntries(
-		fields.map((field) => [
-			field.key,
-			raw?.[field.key] ?? initialRaw(field, scope),
-		]),
+	return withPresets(
+		fields,
+		Object.fromEntries(
+			fields.map((field) => [
+				field.key,
+				raw?.[field.key] ?? initialRaw(field, scope),
+			]),
+		),
 	);
 }
 
@@ -185,7 +244,7 @@ export function editedRaw(
 ): RawValues {
 	const result: RawValues = { ...(stored ?? {}) };
 	for (const [key, value] of Object.entries(next)) {
-		if (JSON.stringify(value) !== JSON.stringify(resolved[key])) {
+		if (!same(value, stored?.[key] ?? resolved[key])) {
 			result[key] = value;
 		}
 	}

@@ -88,7 +88,7 @@ name: { zh: "上炸查找器", en: "Upward blast finder" }
 | `number` / `integer` | 数字 | `min`、`max`、`step` |
 | `boolean` | 布尔 | — |
 | `text` | 字符串 | `multiline` |
-| `select` | 字符串 | `options: [{ value, label }]`（必填） |
+| `select` | 字符串 | `options: [{ value, label, sets }]`（必填，`sets` 可选） |
 | `range` | `[下限, 上限]` | `integer` |
 | `vec3` | `{ x, y, z }` | — |
 
@@ -101,6 +101,16 @@ name: { zh: "上炸查找器", en: "Upward blast finder" }
 ```
 
 例如 `from: "config.north_west_tnt.y"` 取当前配置西北 TNT 的 Y，`from: "calculator.destX"` 取计算页填的目标 X。用户改过字段后就以用户的值为准。
+
+下拉选项的 `sets` 用来做预设：选中这一项时，把 `sets` 里的值填进同一表单的其他字段。用户手动改了这些字段、和当前预设对不上时，下拉框会切到能对上的预设，都对不上就切到第一个不带 `sets` 的选项，所以请留一个「自定义」选项。`sets` 只能指向同一表单里的其他字段，值的类型要和目标字段一致。
+
+```js
+{ key: "yOffsets", type: "select", default: "all", options: [
+  { value: "all", label: "全部", sets: { yCustom: "0-15" } },
+  { value: "custom", label: "自定义" },
+] },
+{ key: "yCustom", type: "text", default: "0-15" },
+```
 
 ### 列
 

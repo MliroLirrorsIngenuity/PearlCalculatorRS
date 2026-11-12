@@ -5,7 +5,7 @@ type LocalizeField<F> = F extends Api.SelectField
 	? Omit<F, "label" | "description" | "options"> & {
 			label: string;
 			description?: string;
-			options: { value: string; label: string }[];
+			options: { value: string; label: string; sets?: Api.InputValues }[];
 		}
 	: F extends unknown
 		? Omit<F, "label" | "description"> & { label: string; description?: string }
@@ -51,6 +51,7 @@ export function localizeField(
 				options: (field.options ?? []).map((option) => ({
 					value: String(option.value),
 					label: localize(option.label, locale),
+					sets: option.sets,
 				})),
 			} as InputField)
 		: (base as InputField);
