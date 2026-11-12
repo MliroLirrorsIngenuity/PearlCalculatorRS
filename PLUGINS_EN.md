@@ -483,4 +483,4 @@ Full control hands the whole app to the plugin. Only ask for it when nothing els
 
 ## A note on physics constants
 
-`pc.physics` uses the same core constants as the calculator (drag 0.99, pearl eye height 0.2125, TNT explosion offset 0.06125). The game uses float-derived values: drag `(double)0.99f`, eye height `(double)(0.25f*0.85f)`, explosion point `y + (double)0.98f*0.0625`. The two differ around 1e-8. Plugins that need bit-exact vanilla behaviour can implement that part in JS themselves.
+`pc.physics` uses the same core constants as the calculator, widened from float exactly as the game does: drag `(double)0.99f`, pearl eye height `(double)(0.25f*0.85f)`, TNT explosion point `y + (double)0.98f*0.0625`, checked bit for bit against an in-game 1.21.2+ sample. Plugins that do their own physics should read `pc.constants` instead of hard-coding decimals such as 0.99 or 0.2125.

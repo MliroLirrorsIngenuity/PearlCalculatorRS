@@ -197,13 +197,13 @@ export function createPluginApi(
 	return {
 		constants: {
 			GRAVITY: 0.03,
-			DRAG: 0.99,
+			DRAG: Math.fround(0.99),
 			PEARL_HEIGHT: 0.25,
-			PEARL_EYE_HEIGHT: 0.85 * 0.25,
+			PEARL_EYE_HEIGHT: Math.fround(Math.fround(0.25) * Math.fround(0.85)),
 			PEARL_RADIUS: 0.125,
-			TNT_HALF_WIDTH: 0.49,
-			TNT_HEIGHT: 0.98,
-			TNT_EXPLOSION_Y_OFFSET: 0.06125,
+			TNT_HALF_WIDTH: Math.fround(0.49),
+			TNT_HEIGHT: Math.fround(0.98),
+			TNT_EXPLOSION_Y_OFFSET: Math.fround(0.98) * 0.0625,
 			TNT_EXPLOSION_RADIUS: 8,
 			FLIGHT_STRIDE: STRIDE,
 		},

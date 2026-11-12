@@ -2,8 +2,7 @@ use crate::calculation::inputs::GeneralData;
 use crate::calculation::results::CalculationResult;
 use crate::physics::aabb::aabb_box::AABBBox;
 use crate::physics::constants::constants::{
-    FLOAT_PRECISION_EPSILON, PEARL_EXPLOSION_Y_FACTOR, PEARL_HEIGHT, TNT_ENTITY_Y_OFFSET,
-    TNT_EXPLOSION_RADIUS,
+    FLOAT_PRECISION_EPSILON, PEARL_EYE_HEIGHT, TNT_ENTITY_Y_OFFSET, TNT_EXPLOSION_RADIUS,
 };
 use crate::physics::entities::movement::{
     MovementLegacy, MovementPost1205, MovementPost1212, PearlMovement, PearlVersion,
@@ -317,7 +316,7 @@ pub fn calculate_tnt_motion(pearl_pos: Space3D, tnt_pos: Space3D) -> Space3D {
 
     let mut explosion_vec = Space3D::new(
         distance_vec.x,
-        pearl_pos.y + (PEARL_EXPLOSION_Y_FACTOR * PEARL_HEIGHT) - tnt_pos_adjusted.y,
+        pearl_pos.y + PEARL_EYE_HEIGHT - tnt_pos_adjusted.y,
         distance_vec.z,
     );
 

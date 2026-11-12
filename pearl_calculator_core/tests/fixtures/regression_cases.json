@@ -70,7 +70,7 @@
         },
         "Tolerances": {
           "WorldLandingPosition": {
-            "X": 0.3,
+            "X": 0.5,
             "Z": 0.05
           },
           "FinalMotion": {

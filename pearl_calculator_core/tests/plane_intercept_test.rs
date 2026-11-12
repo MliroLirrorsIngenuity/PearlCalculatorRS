@@ -184,6 +184,6 @@ fn plane_intercept_applies_max_distance_per_horizontal_axis() {
         .iter()
         .find(|result| result.red == 10 && result.blue == 84)
         .expect("axis-aligned bounds must retain the diagonal solution");
-    assert!((diagonal.distance - 46.582587).abs() < 1e-6);
+    assert!((diagonal.distance - 46.580282).abs() < 1e-6);
     assert!(diagonal.pearl_end_pos.distance_2d(&destination) > MAX_DISTANCE);
 }
